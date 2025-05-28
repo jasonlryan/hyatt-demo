@@ -1,0 +1,19 @@
+{
+  "name": "hyatt-gpt-demo",
+  "version": "1.0.0",
+  "description": "Hyatt GPT Demo - Parent Directory",
+  "scripts": {
+    "start": "cd hyatt-gpt-prototype && npm start",
+    "dev": "cd hyatt-gpt-prototype && npm run dev",
+    "stop": "pkill -f 'node server.js'"
+  },
+  "private": true,
+  "dependencies": {
+    "lucide-react": "^0.511.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.7"
+  }
+}
