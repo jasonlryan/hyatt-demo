@@ -6,6 +6,7 @@ const ResearchAudienceAgent = require("./agents/ResearchAudienceAgent");
 const TrendingNewsAgent = require("./agents/TrendingNewsAgent");
 const StoryAnglesAgent = require("./agents/StoryAnglesAgent");
 const PRManagerAgent = require("./agents/PRManagerAgent");
+const StrategicInsightAgent = require("./agents/StrategicInsightAgent");
 
 // Import new dynamic components
 const DataSourceManager = require("./utils/DataSourceManager");
@@ -18,6 +19,7 @@ class AgentOrchestrator {
     this.trendingAgent = new TrendingNewsAgent();
     this.storyAgent = new StoryAnglesAgent();
     this.prManagerAgent = new PRManagerAgent();
+    this.strategicInsightAgent = new StrategicInsightAgent();
 
     // Initialize dynamic components
     this.dataSourceManager = new DataSourceManager();
@@ -33,6 +35,7 @@ class AgentOrchestrator {
   async startCampaign(campaignBrief) {
     const campaignId = this.generateCampaignId();
     const campaignContext = this.analyzeCampaignBrief(campaignBrief);
+    campaignContext.originalBrief = campaignBrief; // Include original brief for agents
 
     const campaign = {
       id: campaignId,
@@ -54,8 +57,8 @@ class AgentOrchestrator {
       // Generate dynamic campaign introduction
       const introMessage =
         await this.prManagerAgent.generateCampaignIntroduction(
-          campaignContext,
-          campaignBrief
+          campaignBrief,
+          campaignContext
         );
 
       campaign.conversation.push({
@@ -89,6 +92,7 @@ class AgentOrchestrator {
     const complexity = this.assessComplexity(brief);
 
     return {
+      originalBrief: brief,
       campaignType,
       urgency,
       complexity,
@@ -97,6 +101,8 @@ class AgentOrchestrator {
       estimatedDuration: this.estimateDuration(complexity, urgency),
       riskLevel: this.assessRiskLevel(brief),
       dataRequirements: this.identifyDataRequirements(brief),
+      targetMarket: this.extractTargetMarket(brief),
+      focusAreas: this.extractFocusAreas(brief),
     };
   }
 
@@ -287,7 +293,7 @@ class AgentOrchestrator {
       }
 
       const researchResult = await this.researchAgent.analyzeAudience(
-        campaign.brief,
+        campaignContext.originalBrief || campaign.brief,
         externalData
       );
 
@@ -327,8 +333,8 @@ class AgentOrchestrator {
       campaign.conversation.push({
         speaker: "Research & Audience GPT",
         message: deliveryMessage,
-        deliverable: "Audience Research & Insights",
-        data: researchResult.insights,
+        deliverable: researchResult.insights,
+        agent: "Research & Audience GPT",
         qualityScore: qualityValidation.confidence,
         timestamp: new Date().toISOString(),
       });
@@ -359,7 +365,7 @@ class AgentOrchestrator {
         try {
           const handoffMessage = await this.generatePRManagerHandoffMessage(
             campaignContext,
-            "trending",
+            "strategic_insight",
             researchResult.insights
           );
 
@@ -369,18 +375,26 @@ class AgentOrchestrator {
             timestamp: new Date().toISOString(),
           });
 
-          console.log(`[${campaignId}] Starting trending phase handoff...`);
-          this.runTrendingPhase(campaignId, campaignContext);
+          console.log(
+            `[${campaignId}] Starting strategic insight phase handoff...`
+          );
+          console.log(
+            `🔄 TRANSFORMATION PHASE: Converting functional insights to emotional truths...`
+          );
+          this.runStrategicInsightPhase(campaignId, campaignContext);
         } catch (error) {
-          console.error(`[${campaignId}] Handoff to trending failed:`, error);
-          // Still proceed to trending phase even if handoff message fails
+          console.error(
+            `[${campaignId}] Handoff to strategic insight failed:`,
+            error
+          );
+          // Still proceed to strategic insight phase even if handoff message fails
           campaign.conversation.push({
             speaker: "PR Manager",
             message:
-              "Now let's analyze current trends and cultural moments that could amplify our campaign.",
+              "Now we need to transform these functional insights into deeper human truths. Strategic Insight Agent, please dig beneath the surface to find the emotional core that will drive authentic connection.",
             timestamp: new Date().toISOString(),
           });
-          this.runTrendingPhase(campaignId, campaignContext);
+          this.runStrategicInsightPhase(campaignId, campaignContext);
         }
       }, 2000);
     } catch (error) {
@@ -484,9 +498,125 @@ class AgentOrchestrator {
     );
   }
 
-  async runTrendingPhase(campaignId, campaignContext) {
+  async runStrategicInsightPhase(campaignId, campaignContext) {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign || !campaign.phases.research) return;
+
+    try {
+      console.log(`[${campaignId}] Starting strategic insight phase...`);
+      campaign.status = "strategic_insight";
+      campaign.lastUpdated = new Date().toISOString();
+
+      // Add processing indicator
+      campaign.conversation.push({
+        speaker: "Strategic Insight & Human Truth GPT",
+        message:
+          "_[Analyzing research data to discover deeper human truths...]_",
+        timestamp: new Date().toISOString(),
+        isProcessing: true,
+      });
+
+      console.log(
+        `🔄 TRANSFORMATION PHASE: Converting functional insights to emotional truths...`
+      );
+      const strategicInsightResult =
+        await this.strategicInsightAgent.discoverHumanTruth(
+          campaign.phases.research.insights,
+          campaignContext
+        );
+
+      // Remove processing indicator
+      campaign.conversation = campaign.conversation.filter(
+        (msg) => !msg.isProcessing
+      );
+
+      // Log the transformation for visibility - use the actual response structure
+      console.log(`
+🔍 STRATEGIC TRANSFORMATION COMPLETE:
+- Human Truth Analysis: Generated via Responses API
+- Confidence: ${strategicInsightResult.confidence_score}% confidence
+- Analysis: ${strategicInsightResult.humanTruthAnalysis?.substring(0, 100)}...
+`);
+
+      // Store results
+      campaign.phases.strategic_insight = {
+        insights: strategicInsightResult,
+        timestamp: new Date().toISOString(),
+        quality: {
+          isValid: true,
+          confidence: strategicInsightResult.confidence_score || 85,
+        },
+      };
+
+      // Add the actual analysis to conversation
+      campaign.conversation.push({
+        speaker: "Strategic Insight & Human Truth GPT",
+        message: strategicInsightResult.humanTruthAnalysis,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Generate dynamic PR Manager handoff
+      setTimeout(async () => {
+        try {
+          const handoffMessage = await this.generatePRManagerHandoffMessage(
+            campaignContext,
+            "trending",
+            strategicInsightResult
+          );
+
+          campaign.conversation.push({
+            speaker: "PR Manager",
+            message: handoffMessage,
+            timestamp: new Date().toISOString(),
+          });
+
+          console.log(`[${campaignId}] Starting trending phase handoff...`);
+          this.runTrendingPhase(campaignId, campaignContext);
+        } catch (error) {
+          console.error(`[${campaignId}] Handoff to trending failed:`, error);
+        }
+      }, 2000);
+    } catch (error) {
+      console.error(
+        `[${campaignId}] Strategic insight phase failed:`,
+        error.message
+      );
+      campaign.status = "error";
+      campaign.lastError = error.message;
+    }
+  }
+
+  async gatherStrategicInsightData(campaignContext) {
+    const keywords = campaignContext.keywords || ["hospitality", "travel"];
+
+    try {
+      const [insightsData, newsData] = await Promise.all([
+        this.dataSourceManager.getStrategicInsights(keywords),
+        this.dataSourceManager.getRelevantNews(keywords, "business", 3),
+      ]);
+
+      return {
+        insights: insightsData,
+        recentNews: newsData,
+        dataQuality:
+          insightsData.dataQuality === "real" && newsData.dataQuality === "real"
+            ? "real"
+            : "mixed",
+      };
+    } catch (error) {
+      console.warn("Failed to gather external strategic insight data:", error);
+      return null;
+    }
+  }
+
+  async runTrendingPhase(campaignId, campaignContext) {
+    const campaign = this.campaigns.get(campaignId);
+    if (
+      !campaign ||
+      !campaign.phases.research ||
+      !campaign.phases.strategic_insight
+    )
+      return;
 
     try {
       console.log(`[${campaignId}] Starting trending phase...`);
@@ -529,8 +659,9 @@ class AgentOrchestrator {
       }
 
       const trendingResult = await this.trendingAgent.analyzeTrends(
-        campaign.brief,
+        campaignContext.originalBrief || campaign.brief,
         campaign.phases.research.insights,
+        campaign.phases.strategic_insight.insights,
         externalData
       );
 
@@ -574,8 +705,8 @@ class AgentOrchestrator {
       campaign.conversation.push({
         speaker: "Trending News GPT",
         message: deliveryMessage,
-        deliverable: "Current Trend Analysis",
-        data: trendingResult.trends,
+        deliverable: trendingResult.trends,
+        agent: "Trending News GPT",
         qualityScore: qualityValidation.confidence,
         timestamp: new Date().toISOString(),
       });
@@ -624,7 +755,7 @@ class AgentOrchestrator {
           campaign.conversation.push({
             speaker: "PR Manager",
             message:
-              "Now let's develop compelling story angles and headlines that bridge these insights.",
+              "Now let's develop compelling story angles and headlines for our campaign.",
             timestamp: new Date().toISOString(),
           });
           this.runStoryPhase(campaignId, campaignContext);
@@ -663,7 +794,12 @@ class AgentOrchestrator {
 
   async runStoryPhase(campaignId, campaignContext) {
     const campaign = this.campaigns.get(campaignId);
-    if (!campaign || !campaign.phases.research || !campaign.phases.trending)
+    if (
+      !campaign ||
+      !campaign.phases.research ||
+      !campaign.phases.strategic_insight ||
+      !campaign.phases.trending
+    )
       return;
 
     try {
@@ -687,15 +823,15 @@ class AgentOrchestrator {
       // Add processing indicator
       campaign.conversation.push({
         speaker: "Story Angles & Headlines GPT",
-        message: "_[Analyzing media opportunities and developing angles...]_",
+        message: "_[Crafting compelling story angles...]_",
         timestamp: new Date().toISOString(),
         isProcessing: true,
       });
 
       const storyResult = await this.storyAgent.generateStoryAngles(
-        campaign.brief,
+        campaignContext.originalBrief || campaign.brief,
         campaign.phases.research.insights,
-        campaign.phases.trending.trends
+        campaign.phases.trending?.trends
       );
 
       // Remove processing indicator and add results
@@ -729,8 +865,8 @@ class AgentOrchestrator {
       campaign.conversation.push({
         speaker: "Story Angles & Headlines GPT",
         message: deliveryMessage,
-        deliverable: "Story Angles & Headlines",
-        data: storyResult.storyAngles,
+        deliverable: storyResult.storyAngles,
+        agent: "Story Angles & Headlines GPT",
         qualityScore: qualityValidation.confidence,
         timestamp: new Date().toISOString(),
       });
@@ -785,7 +921,7 @@ class AgentOrchestrator {
     if (
       !campaign ||
       !campaign.phases.research ||
-      !campaign.phases.trending ||
+      !campaign.phases.strategic_insight ||
       !campaign.phases.story
     )
       return;
@@ -796,23 +932,33 @@ class AgentOrchestrator {
       campaign.lastUpdated = new Date().toISOString();
 
       // Enhanced collaborative discussion with real agent interaction
-      let collaborativeResults = [];
+      const collaborativePrompts = {
+        research:
+          "Based on the strategic insight, trending analysis, and story angles, how would you refine your audience insights?",
+        strategic_insight:
+          "Given the research findings, trending data, and story direction, which insights should we prioritize?",
+        trending:
+          "Considering the research insights, strategic truths, and story angles, which trends should we emphasize?",
+        story:
+          "Considering the audience research, strategic insights, and trending data, how can we strengthen our story angles?",
+      };
+
+      let results = [];
 
       if (this.enableAgentInteraction) {
-        collaborativeResults =
-          await this.generateEnhancedCollaborativeDiscussion(
-            campaignContext,
-            campaign.phases
-          );
+        results = await this.generateEnhancedCollaborativeDiscussion(
+          campaignContext,
+          campaign.phases
+        );
       } else {
-        collaborativeResults = await this.generateCollaborativeDiscussion(
+        results = await this.generateCollaborativeDiscussion(
           campaignContext,
           campaign.phases
         );
       }
 
       // Add collaborative messages to conversation
-      collaborativeResults.forEach((result) => {
+      results.forEach((result) => {
         campaign.conversation.push({
           speaker: result.speaker,
           message: result.message,
@@ -822,30 +968,35 @@ class AgentOrchestrator {
 
       // Quality control - validate data synthesis
       let synthesisValidation = { isCoherent: true, alignmentScore: 85 };
-      if (this.enableQualityControl) {
-        synthesisValidation = this.qualityController.validateDataSynthesis(
-          campaign.phases.research.insights,
-          campaign.phases.trending.trends,
-          campaign.phases.story.storyAngles
-        );
-
-        console.log(
-          `🔗 Data Synthesis: ${synthesisValidation.alignmentScore}% alignment`
-        );
-        if (!synthesisValidation.isCoherent) {
-          console.log(
-            `⚠️ Synthesis Issues: ${synthesisValidation.gaps.join(", ")}`
+      if (this.enableQualityControl && this.qualityController) {
+        try {
+          synthesisValidation = this.qualityController.validateDataSynthesis(
+            campaign.phases.research.insights,
+            campaign.phases.strategic_insight.insights,
+            campaign.phases.trending?.trends,
+            campaign.phases.story.storyAngles
           );
+
+          console.log(
+            `🔗 Data Synthesis: ${synthesisValidation.alignmentScore}% alignment`
+          );
+          if (!synthesisValidation.isCoherent) {
+            console.log(
+              `⚠️ Synthesis Issues: ${synthesisValidation.gaps.join(", ")}`
+            );
+          }
+        } catch (error) {
+          console.log(`⚠️ Quality control validation failed, using defaults`);
         }
       }
 
       campaign.phases.collaborative = {
         phase: "collaborative",
-        contributions: collaborativeResults,
+        contributions: results,
         synthesisQuality: synthesisValidation,
-        finalStrategy: this.synthesizeFinalStrategy(
+        finalStrategy: await this.synthesizeFinalStrategy(
           campaign.phases,
-          collaborativeResults
+          results
         ),
       };
 
@@ -856,8 +1007,8 @@ class AgentOrchestrator {
           campaignContext,
           campaign.phases
         ),
-        deliverable: "Integrated Campaign Plan",
-        data: campaign.phases.collaborative.finalStrategy,
+        deliverable: campaign.phases.collaborative.finalStrategy,
+        agent: "All Agents",
         synthesisScore: synthesisValidation.alignmentScore,
         timestamp: new Date().toISOString(),
       });
@@ -903,11 +1054,13 @@ class AgentOrchestrator {
     // Enhanced collaborative discussion with real agent interaction
     const collaborativePrompts = {
       research:
-        "Based on the trending analysis and story angles, how would you refine your audience insights?",
+        "Based on the strategic insight, trending analysis, and story angles, how would you refine your audience insights?",
+      strategic_insight:
+        "Given the research findings, trending data, and story direction, which insights should we prioritize?",
       trending:
-        "Given the research findings and story direction, which trends should we prioritize?",
+        "Considering the research insights, strategic truths, and story angles, which trends should we emphasize?",
       story:
-        "Considering the audience research and trending data, how can we strengthen our story angles?",
+        "Considering the audience research, strategic insights, and trending data, how can we strengthen our story angles?",
     };
 
     const results = [];
@@ -946,6 +1099,8 @@ class AgentOrchestrator {
     switch (type) {
       case "research":
         return this.researchAgent;
+      case "strategic_insight":
+        return this.strategicInsightAgent;
       case "trending":
         return this.trendingAgent;
       case "story":
@@ -966,55 +1121,85 @@ class AgentOrchestrator {
   }
 
   async generateCollaborativeDiscussion(context, phases) {
-    const { campaignType } = context;
+    try {
+      console.log("🔄 Generating dynamic collaborative discussion...");
 
-    // Safe data extraction with fallbacks
-    const primaryAngle =
-      phases.story?.storyAngles?.primaryAngle?.angle ||
-      "Primary campaign angle";
-    const topTrend =
-      phases.trending?.trends?.relevantTrends?.[0]?.trend ||
-      "Key trending topic";
-    const topDriverEntry = phases.research?.insights?.keyDrivers
-      ? Object.entries(phases.research.insights.keyDrivers)[0]
-      : ["audience motivation", "key driver"];
+      // Generate dynamic collaborative messages using each agent's actual collaborative input
+      const [
+        researchMessage,
+        strategicInsightMessage,
+        trendingMessage,
+        storyMessage,
+      ] = await Promise.all([
+        this.generateCollaborativeMessage(
+          this.researchAgent,
+          context,
+          phases,
+          "research"
+        ),
+        this.generateCollaborativeMessage(
+          this.strategicInsightAgent,
+          context,
+          phases,
+          "strategic_insight"
+        ),
+        this.generateCollaborativeMessage(
+          this.trendingAgent,
+          context,
+          phases,
+          "trending"
+        ),
+        this.generateCollaborativeMessage(
+          this.storyAgent,
+          context,
+          phases,
+          "story"
+        ),
+      ]);
 
-    // Generate dynamic collaborative messages using agent context
-    const researchMessage = await this.generateCollaborativeMessage(
-      this.researchAgent,
-      context,
-      phases,
-      "research"
-    );
+      console.log("✅ Dynamic collaborative discussion generated");
 
-    const trendingMessage = await this.generateCollaborativeMessage(
-      this.trendingAgent,
-      context,
-      phases,
-      "trending"
-    );
+      return [
+        {
+          speaker: "Research & Audience GPT",
+          message: researchMessage,
+        },
+        {
+          speaker: "Strategic Insight GPT",
+          message: strategicInsightMessage,
+        },
+        {
+          speaker: "Trending News GPT",
+          message: trendingMessage,
+        },
+        {
+          speaker: "Story Angles & Headlines GPT",
+          message: storyMessage,
+        },
+      ];
+    } catch (error) {
+      console.error("❌ Dynamic collaborative discussion failed:", error);
 
-    const storyMessage = await this.generateCollaborativeMessage(
-      this.storyAgent,
-      context,
-      phases,
-      "story"
-    );
-
-    return [
-      {
-        speaker: "Research & Audience GPT",
-        message: researchMessage,
-      },
-      {
-        speaker: "Trending News GPT",
-        message: trendingMessage,
-      },
-      {
-        speaker: "Story Angles & Headlines GPT",
-        message: storyMessage,
-      },
-    ];
+      // If all dynamic generation fails, return minimal structure
+      return [
+        {
+          speaker: "Research & Audience GPT",
+          message: "Research insights contributed to collaborative strategy.",
+        },
+        {
+          speaker: "Strategic Insight GPT",
+          message: "Strategic insights contributed to collaborative strategy.",
+        },
+        {
+          speaker: "Trending News GPT",
+          message: "Trending analysis contributed to collaborative strategy.",
+        },
+        {
+          speaker: "Story Angles & Headlines GPT",
+          message: "Story angles contributed to collaborative strategy.",
+        },
+      ];
+    }
   }
 
   async generateCollaborativeMessage(
@@ -1024,15 +1209,62 @@ class AgentOrchestrator {
     agentPhase
   ) {
     try {
+      console.log(`🔄 Generating collaborative message for ${agent.name}...`);
+
       // Use the agent's own collaborative input method to generate the message
       const collaborativeInput = await agent.collaborativeInput(phases);
-      return collaborativeInput.contribution;
+
+      if (collaborativeInput && collaborativeInput.contribution) {
+        console.log(`✅ ${agent.name} provided collaborative input`);
+        return collaborativeInput.contribution;
+      } else {
+        console.warn(
+          `⚠️ ${agent.name} collaborative input was empty or invalid`
+        );
+        throw new Error(`Invalid collaborative input from ${agent.name}`);
+      }
     } catch (error) {
       console.warn(
-        `Collaborative message generation failed for ${agent.name}:`,
-        error
+        `❌ Collaborative message generation failed for ${agent.name}:`,
+        error.message
       );
-      return `I've contributed my ${agentPhase} analysis to this ${campaignContext.campaignType} campaign.`;
+
+      // Generate a dynamic message using the agent's conversation response capability
+      try {
+        console.log(
+          `🔄 Fallback: Using ${agent.name} conversation response for collaboration...`
+        );
+
+        const fallbackMessage = await agent.generateConversationResponse(
+          campaignContext,
+          "collaborative_summary",
+          {
+            phases: phases,
+            role: agentPhase,
+            context:
+              "Providing collaborative input for final strategy synthesis",
+          }
+        );
+
+        if (fallbackMessage && typeof fallbackMessage === "string") {
+          console.log(
+            `✅ ${agent.name} provided fallback collaborative message`
+          );
+          return fallbackMessage;
+        } else {
+          throw new Error(
+            `Fallback message generation failed for ${agent.name}`
+          );
+        }
+      } catch (fallbackError) {
+        console.error(
+          `❌ All collaborative message generation failed for ${agent.name}:`,
+          fallbackError.message
+        );
+
+        // Only as last resort, return a minimal but specific message
+        return `${agent.name} has completed ${agentPhase} analysis and contributed insights to the collaborative strategy development.`;
+      }
     }
   }
 
@@ -1052,68 +1284,53 @@ class AgentOrchestrator {
     );
   }
 
-  synthesizeFinalStrategy(phases, collaborativeResults) {
+  async synthesizeFinalStrategy(phases, collaborativeResults) {
     const research = phases.research?.insights;
-    const trends = phases.trending?.trends;
+    const strategicInsight = phases.strategic_insight?.insights;
+    const trending = phases.trending?.trends;
     const story = phases.story?.storyAngles;
 
-    if (!research || !trends || !story) {
+    if (!research || !strategicInsight || !story) {
+      console.warn("⚠️ Incomplete phase data for strategy synthesis");
       return {
-        summary: "Unable to synthesize strategy due to incomplete phase data",
-        recommendations: [],
+        error: "Unable to synthesize strategy due to incomplete phase data",
+        missingPhases: [
+          !research ? "research" : null,
+          !strategicInsight ? "strategic_insight" : null,
+          !trending ? "trending" : null,
+          !story ? "story" : null,
+        ].filter(Boolean),
       };
     }
 
-    // Safe data extraction with fallbacks
-    const topDriverEntry = Object.entries(research.keyDrivers || {})[0] || [
-      "engagement",
-      "key metric",
-    ];
-    const topTrend = trends.relevantTrends?.[0] || {
-      trend: "industry trend",
-      relevance: "75%",
-    };
-    const primaryAngle = story.primaryAngle || {
-      angle: "Primary campaign angle",
-      emotionalHook: "Key message",
-    };
-
-    // Format target audience properly - extract segment names from objects
-    const targetAudienceNames =
-      (research.targetDemographics || [])
-        .map((demo) => demo.segment || demo.name || demo)
-        .join(", ") || "Target audience";
-
-    // Calculate strategic alignment properly - extract numeric values from relevance percentages
-    let strategicAlignment = "N/A";
     try {
-      const relevanceStr = topTrend.relevance || "75%";
-      const relevanceMatch = relevanceStr.toString().match(/(\d+)/);
-      const relevanceNum = relevanceMatch ? parseInt(relevanceMatch[1]) : 75;
-      strategicAlignment = `${relevanceNum}%`;
-    } catch (error) {
-      strategicAlignment = "75%"; // Default fallback
-    }
+      console.log("🔄 Generating comprehensive strategy synthesis...");
 
-    return {
-      campaignTheme: primaryAngle.angle,
-      primaryHeadline: story.headlines?.[0] || "Campaign Headline",
-      targetAudience: targetAudienceNames,
-      keyMessage: primaryAngle.emotionalHook || "Key campaign message",
-      strategicAlignment: strategicAlignment,
-      launchTiming: trends.timingRecommendation || "Optimal timing recommended",
-      mediaStrategy: (trends.mediaOpportunities || []).slice(0, 3),
-      successMetrics: [
-        `${topDriverEntry[0]} engagement rate`,
-        `${topTrend.trend} mention share`,
-        "Campaign reach and impressions",
-        "Audience sentiment analysis",
-      ],
-      collaborativeInsights: collaborativeResults.map((result) => ({
-        agent: result.agent || result.speaker,
-        keyInsight: result.contribution || result.message,
-      })),
-    };
+      // Use the human truth as the foundation for strategy
+      const humanTruth =
+        strategicInsight.human_truth ||
+        "Audience seeks authentic connection and meaningful experiences";
+
+      const strategy = {
+        theme: `Campaign built on human truth: ${humanTruth}`,
+        humanTruth: humanTruth,
+        targetAudience: research.primarySegments ||
+          research.segments || ["Target audience"],
+        keyMessages: strategicInsight.strategic_implications || {},
+        storyAngles: story.angles || story,
+        trends: trending || [],
+        emotionalDrivers: strategicInsight.emotional_drivers || [],
+        confidence: strategicInsight.confidence_score || 85,
+      };
+
+      return strategy;
+    } catch (error) {
+      console.error("❌ Strategy synthesis failed:", error);
+      return {
+        error: "Strategy synthesis failed",
+        fallback: "Generic campaign strategy focused on audience engagement",
+      };
+    }
   }
 
   generateCampaignId() {
@@ -1143,6 +1360,42 @@ class AgentOrchestrator {
     } catch (error) {
       console.error("Failed to save campaign to file:", error);
     }
+  }
+
+  // Add new methods to extract specific details from brief
+  extractTargetMarket(brief) {
+    const text = brief.toLowerCase();
+    const markets = [];
+
+    if (text.includes("millennial")) markets.push("Millennials");
+    if (text.includes("gen z")) markets.push("Gen Z");
+    if (text.includes("business")) markets.push("Business travelers");
+    if (text.includes("family") || text.includes("families"))
+      markets.push("Families");
+    if (text.includes("luxury")) markets.push("Luxury travelers");
+    if (text.includes("wellness")) markets.push("Wellness seekers");
+    if (text.includes("eco") || text.includes("sustainable"))
+      markets.push("Eco-conscious travelers");
+
+    return markets.length > 0 ? markets.join(" and ") : "General market";
+  }
+
+  extractFocusAreas(brief) {
+    const text = brief.toLowerCase();
+    const areas = [];
+
+    if (text.includes("sustain") || text.includes("eco"))
+      areas.push("Sustainability");
+    if (text.includes("wellness") || text.includes("spa"))
+      areas.push("Wellness");
+    if (text.includes("luxury")) areas.push("Luxury experiences");
+    if (text.includes("community")) areas.push("Community engagement");
+    if (text.includes("technology") || text.includes("digital"))
+      areas.push("Technology innovation");
+    if (text.includes("culture") || text.includes("local"))
+      areas.push("Cultural immersion");
+
+    return areas;
   }
 }
 

@@ -77,90 +77,33 @@ class StoryAnglesAgent {
         `🔄 ${this.name}: Creating story angles using Responses API...`
       );
 
+      // Simple prompt - let the centralized GPT prompt handle everything
       const prompt = `
-Campaign Brief: ${campaignBrief}
+CAMPAIGN BRIEF: ${campaignBrief}
 
-Research Insights: ${JSON.stringify(researchInsights, null, 2)}
+RESEARCH INSIGHTS: ${JSON.stringify(researchInsights, null, 2)}
 
-Trending Data: ${JSON.stringify(trendingData, null, 2)}
+TRENDING DATA: ${JSON.stringify(trendingData, null, 2)}
 
-Using your expertise in storytelling and headline creation, analyze this campaign and create:
+MESSAGE TYPE: story_development
 
-1. PRIMARY ANGLE (main narrative with emotional hook and proof points)
-2. SUPPORTING ANGLES (3-4 additional angles for different targets)
-3. HEADLINES (5-6 compelling headlines)
-4. KEY MESSAGES (4-5 core messages)
-
-Provide structured story strategy for this campaign.
+Generate the appropriate response based on your conversation scenarios in your system prompt.
 `;
 
-      // Define the response schema for structured output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          primaryAngle: {
-            type: "object",
-            properties: {
-              angle: { type: "string" },
-              narrative: { type: "string" },
-              emotionalHook: { type: "string" },
-              proofPoints: {
-                type: "array",
-                items: { type: "string" },
-              },
-            },
-            required: ["angle", "narrative", "emotionalHook", "proofPoints"],
-          },
-          supportingAngles: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                angle: { type: "string" },
-                narrative: { type: "string" },
-                target: { type: "string" },
-              },
-              required: ["angle", "narrative", "target"],
-            },
-          },
-          headlines: {
-            type: "array",
-            items: { type: "string" },
-          },
-          keyMessages: {
-            type: "array",
-            items: { type: "string" },
-          },
-          lastUpdated: { type: "string" },
-        },
-        required: [
-          "primaryAngle",
-          "supportingAngles",
-          "headlines",
-          "keyMessages",
-          "lastUpdated",
-        ],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "story_strategy",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const storyAngles = response.choices[0].message.parsed;
-      storyAngles.lastUpdated = new Date().toISOString();
+      // Return raw output - let centralized prompt handle structure
+      const storyAngles = {
+        storyStrategy: response.output_text,
+        lastUpdated: new Date().toISOString(),
+      };
 
       console.log(
         `✅ ${this.name}: Generated structured story strategy via Responses API`
@@ -173,15 +116,7 @@ Provide structured story strategy for this campaign.
       );
       // NO HARD-CODED FALLBACK - return minimal structure
       return {
-        primaryAngle: {
-          angle: "Analysis unavailable",
-          narrative: "Please retry",
-          emotionalHook: "Story generation failed",
-          proofPoints: [],
-        },
-        supportingAngles: [],
-        headlines: [],
-        keyMessages: [],
+        storyStrategy: "Story development failed - please retry",
         lastUpdated: new Date().toISOString(),
       };
     }
@@ -225,37 +160,66 @@ Provide structured story strategy for this campaign.
       };
     }
 
-    // Synthesize all inputs into final strategic recommendations
-    const topDriver = Object.entries(research.keyDrivers)[0];
-    const topTrend = trends.relevantTrends[0];
-    const primaryAngle = story.primaryAngle;
+    try {
+      console.log(
+        `🔄 ${this.name}: Generating collaborative input via Responses API...`
+      );
 
-    const contribution = `Our ${
-      primaryAngle.angle
-    } narrative perfectly bridges the ${
-      topTrend.trend
-    } trend with our audience's ${
-      topDriver[1]
-    } preference for ${topDriver[0].toLowerCase()}. The ${primaryAngle.emotionalHook.toLowerCase()} positioning creates authentic emotional connection while the proof points provide credible differentiation.`;
+      const prompt = `
+You are ${this.name} in a collaborative PR strategy session.
 
-    const finalRecommendations = [
-      `Lead with "${story.headlines[0]}" as primary campaign headline`,
-      `Focus messaging on ${primaryAngle.emotionalHook.toLowerCase()}`,
-      `Target ${trends.mediaOpportunities[0].toLowerCase()}`,
-      `Launch timing: ${trends.timingRecommendation}`,
-      `Measure success through ${topDriver[0].toLowerCase()} engagement metrics`,
-    ];
+YOUR STORY ANGLES:
+${JSON.stringify(story, null, 2)}
 
-    return {
-      agent: this.name,
-      contribution,
-      finalRecommendations,
-      campaignTheme: primaryAngle.angle,
-      emotionalCore: primaryAngle.emotionalHook,
-      strategicAlignment: `${Math.round(
-        (parseInt(topDriver[1]) + parseInt(topTrend.relevance)) / 2
-      )}% strategic alignment score`,
-    };
+OTHER AGENTS' FINDINGS:
+- Research Insights: ${JSON.stringify(research, null, 2)}
+- Trending Analysis: ${JSON.stringify(trends, null, 2)}
+
+Based on ALL the insights gathered, provide your collaborative contribution that:
+1. Shows how your story angles synthesize audience insights and trends
+2. Highlights the strategic narrative that ties everything together
+3. Provides specific recommendations for campaign execution
+4. References specific angles, headlines, and emotional hooks
+
+Be concise but strategic. Connect your creative angles to measurable outcomes.
+`;
+
+      const response = await this.openai.responses.create({
+        model: this.model,
+        input: [
+          { role: "system", content: this.systemPrompt },
+          { role: "user", content: prompt },
+        ],
+        temperature: this.temperature,
+      });
+
+      // Return the raw response text instead of trying to parse as JSON
+      console.log(`✅ ${this.name}: Generated dynamic collaborative input`);
+
+      return {
+        agent: this.name,
+        contribution: response.output_text.trim(),
+        finalRecommendations: [],
+        campaignTheme: "Campaign theme provided in contribution",
+        emotionalCore: "Emotional positioning provided in contribution",
+        strategicAlignment: "Strategic alignment provided in contribution",
+      };
+    } catch (error) {
+      console.error(
+        `❌ ${this.name}: Collaborative input generation failed:`,
+        error
+      );
+
+      // Return minimal fallback only on complete failure
+      return {
+        agent: this.name,
+        contribution: `Based on my story angle development, I've created narratives that bridge audience insights with trending opportunities.`,
+        finalRecommendations: [],
+        campaignTheme: "Campaign theme requires further synthesis.",
+        emotionalCore: "Emotional positioning needs refinement.",
+        strategicAlignment: "Strategic alignment pending full analysis.",
+      };
+    }
   }
 
   delay(ms) {
@@ -263,153 +227,44 @@ Provide structured story strategy for this campaign.
   }
 
   async generateConversationResponse(context, messageType, data = null) {
-    // This method uses the agent's system prompt to generate conversation responses
-    const { campaignType, targetMarket, focusAreas, urgency } = context;
+    // Use ONLY the centralized GPT prompt - no hardcoded logic
+    const { campaignType, targetMarket, focusAreas, urgency, originalBrief } =
+      context;
 
-    // Create a prompt that combines the system prompt with the specific context
-    const conversationPrompt = `
-${this.systemPrompt}
+    // Create simple context for the centralized prompt
+    const campaignContext = originalBrief
+      ? `CAMPAIGN BRIEF: ${originalBrief}`
+      : `Campaign Type: ${campaignType} targeting ${targetMarket} travelers.`;
 
-CONTEXT: You are participating in a collaborative PR strategy session for a ${campaignType} campaign targeting ${targetMarket} travelers.
+    // Let the centralized prompt handle ALL scenarios
+    const prompt = `
+${campaignContext}
 
-${
-  messageType === "intro"
-    ? `
-TASK: Generate a brief introduction (2-3 sentences) explaining what story angles you'll develop for this campaign. Reference your expertise in analyzing media coverage and generating creative angles as defined in your system prompt.
+MESSAGE TYPE: ${messageType}
+${data ? `DATA: ${JSON.stringify(data, null, 2)}` : ""}
 
-Campaign Focus Areas: ${focusAreas.join(", ")}
-Urgency: ${urgency}
-`
-    : `
-TASK: Generate a brief summary (2-3 sentences) of your story angle development and their strategic significance.
+Generate the appropriate response based on your conversation scenarios in your system prompt.
+`;
 
-Your Analysis Results:
-${JSON.stringify(data, null, 2)}
-
-Explain what story angles you developed and why they're important for this ${campaignType} campaign. Use your creative yet strategic tone and reference your media analysis expertise.
-`
-}
-
-RESPONSE (2-3 sentences only, stay in character):
-    `;
-
-    // Simulate what the agent would say based on their system prompt
-    return this.simulatePromptResponse(
-      conversationPrompt,
-      messageType,
-      context,
-      data
-    );
-  }
-
-  async simulatePromptResponse(fullPrompt, messageType, context, data) {
-    // Make a real OpenAI API call using the agent's system prompt with Responses API
     try {
-      // Define the response schema for structured conversation output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          conversationMessage: { type: "string" },
-          storyAngles: {
-            type: "array",
-            items: { type: "string" },
-          },
-          mediaStrategy: { type: "string" },
-        },
-        required: ["conversationMessage", "storyAngles", "mediaStrategy"],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
-          {
-            role: "system",
-            content: this.systemPrompt,
-          },
-          {
-            role: "user",
-            content: fullPrompt,
-          },
+        input: [
+          { role: "system", content: this.systemPrompt },
+          { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "conversation_response",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const result = response.choices[0].message.parsed;
-      return result.conversationMessage;
+      return response.output_text.trim();
     } catch (error) {
-      console.error(`[${this.name}] Responses API Error:`, error.message);
+      console.error(
+        `[${this.name}] Conversation generation failed:`,
+        error.message
+      );
 
-      // Fallback to contextual response if API fails
-      const { campaignType, focusAreas } = context;
-
-      if (messageType === "intro") {
-        let response =
-          "I'll develop strategic story angles and headline options for ";
-
-        if (campaignType.includes("wellness")) {
-          response += "wellness and transformative travel publications, ";
-        } else if (campaignType.includes("sustainability")) {
-          response +=
-            "sustainability-focused and environmental media outlets, ";
-        } else if (campaignType.includes("luxury")) {
-          response += "luxury lifestyle and premium hospitality publications, ";
-        } else if (campaignType.includes("business")) {
-          response += "business and corporate travel media, ";
-        } else {
-          response += "relevant travel and hospitality media, ";
-        }
-
-        response +=
-          "analyzing past Hyatt media coverage patterns and Google Trends data to identify optimal story approaches. ";
-
-        if (focusAreas.length > 0) {
-          response += `I'll ensure our angles emphasize ${focusAreas
-            .slice(0, 2)
-            .join(
-              " and "
-            )} while creating multiple headline options for each angle with specific outlet targeting.`;
-        } else {
-          response +=
-            "I'll create multiple headline options for each angle tailored to different publication styles and audience demographics.";
-        }
-
-        return response;
-      } else {
-        const primaryAngle =
-          data?.primaryAngle?.angle || "strategic positioning concept";
-        const headlines = data?.headlines || ["Strategic headline approach"];
-        const mediaTargets = data?.mediaTargets || ["targeted publications"];
-
-        let response = "I've developed targeted story angles for ";
-
-        if (campaignType.includes("wellness")) {
-          response += "wellness and health-focused media outlets, ";
-        } else if (campaignType.includes("sustainability")) {
-          response += "environmental and sustainability publications, ";
-        } else if (campaignType.includes("luxury")) {
-          response += "luxury lifestyle and premium hospitality media, ";
-        } else if (campaignType.includes("business")) {
-          response += "business and corporate travel publications, ";
-        } else {
-          response += "relevant hospitality and travel media, ";
-        }
-
-        response += `with our primary angle "${primaryAngle}" designed to capture editorial attention while authentically representing the unique value proposition. I've created ${
-          headlines.length
-        } headline variations optimized for ${mediaTargets
-          .slice(0, 2)
-          .join(" and ")} to maximize media resonance.`;
-
-        return response;
-      }
+      // Minimal fallback only
+      return `I'll be developing compelling story angles and headlines for this campaign using creative storytelling techniques.`;
     }
   }
 }

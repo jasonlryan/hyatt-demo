@@ -2,14 +2,20 @@ const axios = require("axios");
 
 class DataSourceManager {
   constructor() {
-    this.googleTrendsApiKey = process.env.GOOGLE_TRENDS_API_KEY;
-    this.newsApiKey = process.env.NEWS_API_KEY;
-    this.socialMediaApiKey = process.env.SOCIAL_MEDIA_API_KEY;
-    this.enableRealDataSources =
-      process.env.ENABLE_REAL_DATA_SOURCES === "true";
+    // Commenting out real API integrations for now
+    // this.googleTrendsApiKey = process.env.GOOGLE_TRENDS_API_KEY;
+    // this.newsApiKey = process.env.NEWS_API_KEY;
+    // this.socialMediaApiKey = process.env.SOCIAL_MEDIA_API_KEY;
+
+    // Force use of enhanced mock data for now
+    this.enableRealDataSources = false; // Always use mock data
   }
 
   async getTrendingTopics(keywords, timeframe = "7d") {
+    // Always use enhanced mock data for now
+    return this.getEnhancedMockTrendingData(keywords);
+
+    /* COMMENTED OUT - Real API integration
     if (!this.enableRealDataSources || !this.googleTrendsApiKey) {
       return this.getMockTrendingData(keywords);
     }
@@ -45,9 +51,14 @@ class DataSourceManager {
       );
       return this.getMockTrendingData(keywords);
     }
+    */
   }
 
   async getRelevantNews(keywords, category = "business", days = 7) {
+    // Always use enhanced mock data for now
+    return this.getEnhancedMockNewsData(keywords);
+
+    /* COMMENTED OUT - Real API integration
     if (!this.enableRealDataSources || !this.newsApiKey) {
       return this.getMockNewsData(keywords);
     }
@@ -74,9 +85,14 @@ class DataSourceManager {
       console.warn("🔄 News API failed, using mock data:", error.message);
       return this.getMockNewsData(keywords);
     }
+    */
   }
 
   async getSocialMediaSentiment(keywords, platform = "twitter") {
+    // Always use enhanced mock data for now
+    return this.getEnhancedMockSocialData(keywords);
+
+    /* COMMENTED OUT - Real API integration
     if (!this.enableRealDataSources || !this.socialMediaApiKey) {
       return this.getMockSocialData(keywords);
     }
@@ -106,6 +122,156 @@ class DataSourceManager {
       );
       return this.getMockSocialData(keywords);
     }
+    */
+  }
+
+  // Enhanced mock data methods that are more dynamic and campaign-specific
+  getEnhancedMockTrendingData(keywords) {
+    console.log("🔄 Using enhanced mock trending data (no external APIs)");
+
+    // Create more realistic, campaign-specific trending data
+    const trendData = keywords.map((keyword, index) => {
+      const baseInterest = 60 + (keyword.length % 30); // More deterministic
+      const seasonalBoost = keyword.toLowerCase().includes("eco")
+        ? 15
+        : keyword.toLowerCase().includes("luxury")
+        ? 10
+        : keyword.toLowerCase().includes("business")
+        ? 8
+        : 0;
+
+      return {
+        keyword,
+        interest: Math.min(100, baseInterest + seasonalBoost),
+        growth: keyword.toLowerCase().includes("sustainable")
+          ? 25
+          : keyword.toLowerCase().includes("wellness")
+          ? 20
+          : 10 + index * 3,
+        relatedQueries: this.generateRelatedQueries(keyword),
+        regions: ["United States", "United Kingdom", "Canada", "Australia"],
+        timeframe: "7d",
+        source: "enhanced_mock",
+      };
+    });
+
+    return {
+      trends: trendData,
+      timestamp: new Date().toISOString(),
+      dataQuality: "enhanced_mock",
+    };
+  }
+
+  getEnhancedMockNewsData(keywords) {
+    console.log("🔄 Using enhanced mock news data (no external APIs)");
+
+    const mockArticles = keywords.flatMap((keyword) => [
+      {
+        title: this.generateNewsTitle(keyword, "trend"),
+        description: `Industry analysis shows ${keyword} sector experiencing significant shifts in consumer behavior and market dynamics...`,
+        url: `https://example.com/${keyword
+          .toLowerCase()
+          .replace(/\s+/g, "-")}-trends`,
+        publishedAt: new Date(
+          Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        source: { name: "Travel Industry Weekly" },
+        relevanceScore: 75 + Math.floor(Math.random() * 20),
+      },
+      {
+        title: this.generateNewsTitle(keyword, "innovation"),
+        description: `New developments in ${keyword} are reshaping industry standards and customer expectations...`,
+        url: `https://example.com/${keyword
+          .toLowerCase()
+          .replace(/\s+/g, "-")}-innovation`,
+        publishedAt: new Date(
+          Date.now() - Math.random() * 5 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        source: { name: "Hospitality Business Today" },
+        relevanceScore: 70 + Math.floor(Math.random() * 25),
+      },
+    ]);
+
+    return {
+      articles: mockArticles,
+      totalResults: mockArticles.length,
+      timestamp: new Date().toISOString(),
+      dataQuality: "enhanced_mock",
+    };
+  }
+
+  getEnhancedMockSocialData(keywords) {
+    console.log("🔄 Using enhanced mock social data (no external APIs)");
+
+    // Generate more realistic sentiment based on keywords
+    const positiveBoost = keywords.some(
+      (k) =>
+        k.toLowerCase().includes("luxury") ||
+        k.toLowerCase().includes("eco") ||
+        k.toLowerCase().includes("wellness")
+    )
+      ? 15
+      : 0;
+
+    return {
+      sentiment: {
+        positive: Math.min(
+          85,
+          50 + positiveBoost + Math.floor(Math.random() * 20)
+        ),
+        neutral: 20 + Math.floor(Math.random() * 15),
+        negative: Math.max(
+          5,
+          30 - positiveBoost - Math.floor(Math.random() * 15)
+        ),
+      },
+      volume: 5000 + Math.floor(Math.random() * 8000),
+      engagement: 200 + Math.floor(Math.random() * 400),
+      topHashtags: keywords
+        .map((k) => `#${k.replace(/\s+/g, "")}`)
+        .concat(["#TravelTrends", "#HospitalityNews", "#LuxuryTravel"]),
+      influencerMentions: 10 + Math.floor(Math.random() * 40),
+      timestamp: new Date().toISOString(),
+      dataQuality: "enhanced_mock",
+    };
+  }
+
+  generateRelatedQueries(keyword) {
+    const templates = [
+      `${keyword} 2024`,
+      `best ${keyword}`,
+      `${keyword} trends`,
+      `${keyword} industry`,
+      `future of ${keyword}`,
+    ];
+
+    // Add keyword-specific queries
+    if (keyword.toLowerCase().includes("eco")) {
+      templates.push(`sustainable ${keyword}`, `green ${keyword}`);
+    }
+    if (keyword.toLowerCase().includes("luxury")) {
+      templates.push(`premium ${keyword}`, `high-end ${keyword}`);
+    }
+
+    return templates.slice(0, 5);
+  }
+
+  generateNewsTitle(keyword, type) {
+    const templates = {
+      trend: [
+        `${keyword} Market Shows 40% Growth in Consumer Interest`,
+        `Industry Report: ${keyword} Sector Leads Innovation`,
+        `${keyword} Trends Reshape Customer Expectations`,
+      ],
+      innovation: [
+        `Breaking: New ${keyword} Standards Set Industry Benchmark`,
+        `${keyword} Technology Advances Drive Market Changes`,
+        `Innovation in ${keyword} Attracts Major Investment`,
+      ],
+    };
+
+    const typeTemplates = templates[type] || templates.trend;
+    return typeTemplates[Math.floor(Math.random() * typeTemplates.length)];
   }
 
   // Mock data methods for fallback

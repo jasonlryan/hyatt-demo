@@ -336,6 +336,172 @@
             color: #666;
             margin-top: 8px;
         }
+
+        /* Side Panel for Deliverables */
+        .deliverables-panel {
+            position: fixed;
+            right: -400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .deliverables-panel.open {
+            right: 0;
+        }
+
+        .deliverables-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1001;
+        }
+
+        .deliverables-header h3 {
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .close-panel {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .deliverables-content {
+            padding: 20px;
+        }
+
+        .deliverable-item {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .deliverable-header {
+            padding: 15px;
+            cursor: pointer;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .deliverable-header:hover {
+            background: #e9ecef;
+        }
+
+        .deliverable-header.expanded {
+            background: #e3f2fd;
+            border-bottom-color: #2196f3;
+        }
+
+        .deliverable-item h4 {
+            color: #2c3e50;
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .deliverable-item .agent-name {
+            color: #666;
+            font-size: 0.9rem;
+            margin: 5px 0 0 0;
+        }
+
+        .deliverable-content {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            display: none;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .deliverable-content.expanded {
+            display: block;
+        }
+
+        .collapse-icon {
+            font-size: 1.2rem;
+            color: #666;
+            transition: transform 0.3s ease;
+        }
+
+        .collapse-icon.expanded {
+            transform: rotate(180deg);
+        }
+
+        .deliverable-toggle {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .deliverable-toggle:hover {
+            background: #5a6fd8;
+        }
+
+        .deliverable-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+
+        /* Overlay for mobile */
+        .panel-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .panel-overlay.show {
+            display: block;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .deliverables-panel {
+                width: 100%;
+                right: -100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -364,7 +530,12 @@
 
             <div id="statusSection" class="status-section" style="display: none;">
                 <h2>Campaign Progress</h2>
-                <div id="campaignId" class="campaign-meta"></div>
+                <div id="campaignId">
+                    <div class="campaign-id">No active campaign</div>
+                </div>
+                <button id="deliverablesBtn" onclick="openDeliverablesPanel()" style="display: none; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
+                    View Deliverables
+                </button>
                 
                 <!-- Conversation Flow Display -->
                 <div id="conversationFlow" class="conversation-flow">
@@ -421,9 +592,24 @@
         </div>
     </div>
 
+    <!-- Deliverables Side Panel -->
+    <div class="panel-overlay" id="panelOverlay" onclick="closeDeliverablesPanel()"></div>
+    <div class="deliverables-panel" id="deliverablesPanel">
+        <div class="deliverables-header">
+            <h3>
+                Campaign Deliverables
+                <button class="close-panel" onclick="closeDeliverablesPanel()">×</button>
+            </h3>
+        </div>
+        <div class="deliverables-content" id="deliverablesContent">
+            <p style="color: #666; text-align: center; margin-top: 50px;">No deliverables available yet. Start a campaign to see deliverables here.</p>
+        </div>
+    </div>
+
     <script>
         let currentCampaignId = null;
-        let pollInterval = null;
+        let pollingInterval = null;
+        let campaignDeliverables = {};
 
         async function createCampaign() {
             const brief = document.getElementById('campaignBrief').value.trim();
@@ -449,8 +635,8 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    // The result is the full campaign object, not just an ID
-                    currentCampaignId = result.id;
+                    // The result contains campaignId, not id
+                    currentCampaignId = result.campaignId;
                     document.getElementById('campaignId').innerHTML = `
                         <div class="campaign-id">Campaign ID: ${currentCampaignId}</div>
                         <div class="campaign-status status-active">Active</div>
@@ -480,10 +666,10 @@
         }
 
         function startPolling() {
-            if (pollInterval) clearInterval(pollInterval);
+            if (pollingInterval) clearInterval(pollingInterval);
             
             // Poll more frequently to catch state changes
-            pollInterval = setInterval(async () => {
+            pollingInterval = setInterval(async () => {
                 if (currentCampaignId) {
                     await updateCampaignStatus();
                 }
@@ -502,7 +688,7 @@
                     updateConversationFlow(campaign);
 
                     if (campaign.status === 'completed') {
-                        clearInterval(pollInterval);
+                        clearInterval(pollingInterval);
                     }
                 } else {
                     console.error('Failed to fetch campaign status:', campaign.error);
@@ -524,24 +710,23 @@
                 const speakerClass = getSpeakerClass(message.speaker);
                 const isProcessing = message.isProcessing ? 'processing' : '';
                 
-                let deliverableHtml = '';
-                if (message.deliverable && message.data) {
-                    deliverableHtml = `
-                        <div class="message-deliverable">
-                            <div class="deliverable-title">📋 DELIVERABLE: ${message.deliverable}</div>
-                            ${formatDeliverableData(message.deliverable, message.data)}
+                let messageHtml = `
+                    <div class="conversation-message ${speakerClass} ${isProcessing}">
+                        <div class="message-speaker">${message.speaker}:</div>
+                        <div class="message-content">${message.message}</div>
+                        <div class="message-timestamp">${new Date(message.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                `;
+
+                if (message.deliverable) {
+                    messageHtml += `
+                        <div class="deliverable-section">
+                            ${formatDeliverableData(message.deliverable, message.agent || message.speaker)}
                         </div>
                     `;
                 }
 
-                return `
-                    <div class="conversation-message ${speakerClass} ${isProcessing}">
-                        <div class="message-speaker">${message.speaker}:</div>
-                        <div class="message-content">${message.message}</div>
-                        ${deliverableHtml}
-                        <div class="message-timestamp">${new Date(message.timestamp).toLocaleTimeString()}</div>
-                    </div>
-                `;
+                return messageHtml;
             }).join('');
 
             // Auto-scroll to bottom
@@ -565,77 +750,172 @@
             }
         }
 
-        function formatDeliverableData(deliverableType, data) {
-            switch (deliverableType) {
-                case 'Target Audience Analysis':
-                    // Handle structured targetDemographics objects
-                    const demographicsHtml = data.targetDemographics.map(demo => {
-                        if (typeof demo === 'string') {
-                            return demo;
-                        } else if (demo.segment) {
-                            return `${demo.segment} (${demo.size || 'N/A'})`;
-                        } else {
-                            return demo.name || demo.toString();
-                        }
-                    }).join(', ');
-                    
-                    return `
-                        <h5>Target Demographics:</h5>
-                        <p>${demographicsHtml}</p>
-                        <h5>Top Key Drivers:</h5>
-                        <ul>
-                            ${Object.entries(data.keyDrivers).slice(0, 3).map(([key, value]) => 
-                                `<li><strong>${key}:</strong> ${Array.isArray(value) ? value.join(', ') : value}</li>`
-                            ).join('')}
-                        </ul>
-                        <h5>Strategic Recommendation:</h5>
-                        <p><em>${data.strategicRecommendation || 'Analysis completed successfully'}</em></p>
-                    `;
-                
-                case 'Current Trend Analysis':
-                    return `
-                        <h5>Top Relevant Trends:</h5>
-                        ${data.relevantTrends.slice(0, 2).map(trend => `
-                            <div style="margin-bottom: 10px; padding: 8px; background: #f9f9f9; border-radius: 4px;">
-                                <strong>${trend.trend}</strong> (${trend.relevance} relevance)<br>
-                                <small>${trend.description}</small>
-                            </div>
-                        `).join('')}
-                        <h5>Timing Recommendation:</h5>
-                        <p><em>${data.timingRecommendation}</em></p>
-                    `;
-                
-                case 'Media Angles & Headlines Strategy':
-                    return `
-                        <h5>Primary Story Angle:</h5>
-                        <div style="padding: 8px; background: #f9f9f9; border-radius: 4px; margin-bottom: 10px;">
-                            <strong>${data.primaryAngle.angle}</strong><br>
-                            <p>${data.primaryAngle.narrative}</p>
-                            <em>Hook: "${data.primaryAngle.emotionalHook}"</em>
-                        </div>
-                        <h5>Sample Headlines:</h5>
-                        <ul>
-                            ${data.headlines.slice(0, 3).map(headline => `<li>${headline}</li>`).join('')}
-                        </ul>
-                    `;
-                
-                case 'Integrated Campaign Plan':
-                    return `
-                        <h5>Campaign Theme:</h5>
-                        <p><strong>${data.campaignTheme}</strong></p>
-                        <h5>Primary Headline:</h5>
-                        <p style="color: #1976d2; font-weight: 600;">"${data.primaryHeadline}"</p>
-                        <h5>Target Audience:</h5>
-                        <p>${data.targetAudience}</p>
-                        <h5>Key Message:</h5>
-                        <p><em>"${data.keyMessage}"</em></p>
-                        <h5>Strategic Alignment:</h5>
-                        <p>${data.strategicAlignment}</p>
-                    `;
-                
-                default:
-                    return '<p>Deliverable data available</p>';
+        function formatDeliverableData(deliverable, agentName) {
+            // Use the agent name from the message or fall back to the passed parameter
+            const agent = agentName || "Unknown Agent";
+            
+            if (!deliverable || deliverable === "Deliverable data available") {
+                return `<div class="deliverable-placeholder">
+                    📄 <strong>DELIVERABLE:</strong> ${agent} Deliverable
+                    <span class="deliverable-badge">Available</span>
+                    <button class="deliverable-toggle" onclick="openDeliverablesPanel()">View Details</button>
+                </div>`;
             }
+
+            // Store deliverable for side panel
+            if (typeof deliverable === 'object') {
+                let content = '';
+                let title = `${agent} Deliverable`;
+
+                // Extract content based on structure
+                if (deliverable.targetDemographics) {
+                    title = "Audience Research & Insights";
+                    content = `Target Demographics:\n${deliverable.targetDemographics.map(demo => 
+                        `• ${demo.segment || demo}: ${demo.description || ''}`
+                    ).join('\n')}\n\nKey Insights:\n${deliverable.keyInsights?.join('\n• ') || 'No insights available'}`;
+                    
+                    // Add key drivers if available
+                    if (deliverable.keyDrivers) {
+                        content += `\n\nKey Drivers:\n${Object.entries(deliverable.keyDrivers).map(([key, value]) => 
+                            `• ${key}: ${value}`
+                        ).join('\n')}`;
+                    }
+                } else if (deliverable.trends || deliverable.relevantTrends) {
+                    title = "Trending News Analysis";
+                    const trends = deliverable.trends || deliverable.relevantTrends || [];
+                    content = `Trending Topics:\n${trends.map(trend => 
+                        `• ${trend.topic || trend.trend || trend}: ${trend.description || trend.relevance || ''}`
+                    ).join('\n')}\n\nOpportunities:\n${deliverable.opportunities?.join('\n• ') || 'No opportunities listed'}`;
+                } else if (deliverable.storyAngles || deliverable.primaryAngle) {
+                    title = "Story Angles & Headlines";
+                    const angles = deliverable.storyAngles || [deliverable.primaryAngle];
+                    content = `Story Angles:\n${angles.map(angle => 
+                        `• ${angle.angle || angle}: ${angle.description || ''}`
+                    ).join('\n')}\n\nHeadlines:\n${deliverable.headlines?.join('\n• ') || 'No headlines available'}`;
+                } else if (deliverable.finalStrategy || deliverable.campaignTheme || deliverable.strategicOverview) {
+                    title = "Integrated Campaign Plan";
+                    
+                    // Handle comprehensive strategy structure from synthesizeComprehensiveStrategy
+                    if (deliverable.strategicOverview) {
+                        content = `STRATEGIC OVERVIEW\n`;
+                        content += `Campaign Theme: ${deliverable.strategicOverview.campaignTheme || 'Not specified'}\n`;
+                        content += `${deliverable.strategicOverview.executiveSummary || ''}\n\n`;
+                        
+                        if (deliverable.strategicOverview.strategicPositioning) {
+                            content += `Strategic Positioning: ${deliverable.strategicOverview.strategicPositioning}\n\n`;
+                        }
+                    }
+                    
+                    if (deliverable.targetAudience) {
+                        content += `TARGET AUDIENCE\n`;
+                        if (deliverable.targetAudience.primarySegments) {
+                            content += `Primary Segments: ${deliverable.targetAudience.primarySegments.join(', ')}\n`;
+                        }
+                        if (deliverable.targetAudience.demographics) {
+                            content += `Demographics: ${deliverable.targetAudience.demographics}\n`;
+                        }
+                        if (deliverable.targetAudience.psychographics) {
+                            content += `Psychographics: ${deliverable.targetAudience.psychographics}\n`;
+                        }
+                        if (deliverable.targetAudience.motivations) {
+                            content += `Key Motivations:\n${deliverable.targetAudience.motivations.map(m => `• ${m}`).join('\n')}\n`;
+                        }
+                        content += `\n`;
+                    }
+                    
+                    if (deliverable.messagingArchitecture) {
+                        content += `MESSAGING ARCHITECTURE\n`;
+                        content += `Primary Message: ${deliverable.messagingArchitecture.primaryMessage || 'Not specified'}\n`;
+                        if (deliverable.messagingArchitecture.supportingMessages) {
+                            content += `Supporting Messages:\n${deliverable.messagingArchitecture.supportingMessages.map(m => `• ${m}`).join('\n')}\n`;
+                        }
+                        if (deliverable.messagingArchitecture.proofPoints) {
+                            content += `Proof Points:\n${deliverable.messagingArchitecture.proofPoints.map(p => `• ${p}`).join('\n')}\n`;
+                        }
+                        content += `\n`;
+                    }
+                    
+                    if (deliverable.mediaStrategy) {
+                        content += `MEDIA STRATEGY\n`;
+                        if (deliverable.mediaStrategy.primaryChannels) {
+                            content += `Primary Channels: ${deliverable.mediaStrategy.primaryChannels.join(', ')}\n`;
+                        }
+                        if (deliverable.mediaStrategy.contentTypes) {
+                            content += `Content Types: ${deliverable.mediaStrategy.contentTypes.join(', ')}\n`;
+                        }
+                        if (deliverable.mediaStrategy.timing) {
+                            content += `Timing: ${deliverable.mediaStrategy.timing}\n`;
+                        }
+                        content += `\n`;
+                    }
+                    
+                    if (deliverable.implementationTimeline) {
+                        content += `IMPLEMENTATION TIMELINE\n`;
+                        if (deliverable.implementationTimeline.phases) {
+                            content += `Phases:\n${deliverable.implementationTimeline.phases.map(p => `• ${p}`).join('\n')}\n`;
+                        }
+                        if (deliverable.implementationTimeline.keyMilestones) {
+                            content += `Key Milestones:\n${deliverable.implementationTimeline.keyMilestones.map(m => `• ${m}`).join('\n')}\n`;
+                        }
+                        content += `\n`;
+                    }
+                    
+                    if (deliverable.successMetrics) {
+                        content += `SUCCESS METRICS\n`;
+                        ['awarenessKPIs', 'engagementKPIs', 'conversionKPIs', 'businessKPIs'].forEach(kpiType => {
+                            if (deliverable.successMetrics[kpiType]) {
+                                const label = kpiType.replace('KPIs', ' KPIs').replace(/([A-Z])/g, ' $1').trim();
+                                content += `${label}:\n${deliverable.successMetrics[kpiType].map(kpi => `• ${kpi}`).join('\n')}\n`;
+                            }
+                        });
+                        content += `\n`;
+                    }
+                    
+                    if (deliverable.nextSteps) {
+                        content += `NEXT STEPS\n`;
+                        ['immediate', 'shortTerm', 'longTerm'].forEach(timeframe => {
+                            if (deliverable.nextSteps[timeframe]) {
+                                const label = timeframe.replace(/([A-Z])/g, ' $1').toLowerCase();
+                                content += `${label.charAt(0).toUpperCase() + label.slice(1)}:\n${deliverable.nextSteps[timeframe].map(step => `• ${step}`).join('\n')}\n`;
+                            }
+                        });
+                    }
+                    
+                    // If no structured content was found, show what we have
+                    if (!content || content === 'STRATEGIC OVERVIEW\nCampaign Theme: Not specified\n\n') {
+                        content = 'Comprehensive campaign strategy has been generated. Please check the deliverables panel for full details.';
+                    }
+                }
+
+                campaignDeliverables[agent] = { 
+                    title, 
+                    content,
+                    expanded: Object.keys(campaignDeliverables).length === 0 // First deliverable is expanded
+                };
+                
+                // Show deliverables button
+                document.getElementById('deliverablesBtn').style.display = 'inline-block';
+
+                return `<div class="deliverable-placeholder">
+                    📄 <strong>DELIVERABLE:</strong> ${title}
+                    <span class="deliverable-badge">Ready</span>
+                    <button class="deliverable-toggle" onclick="openDeliverablesPanel()">View Details</button>
+                </div>`;
+            }
+
+            // Handle string deliverables
+            campaignDeliverables[agent] = { 
+                title: `${agent} Deliverable`, 
+                content: deliverable,
+                expanded: Object.keys(campaignDeliverables).length === 0 // First deliverable is expanded
+            };
+            document.getElementById('deliverablesBtn').style.display = 'inline-block';
+
+            return `<div class="deliverable-placeholder">
+                📄 <strong>DELIVERABLE:</strong> ${agent} Deliverable
+                <span class="deliverable-badge">Ready</span>
+                <button class="deliverable-toggle" onclick="openDeliverablesPanel()">View Details</button>
+            </div>`;
         }
 
         function showError(message) {
@@ -703,6 +983,50 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadRecentCampaigns();
         });
+
+        // Deliverables Panel Functions
+        function openDeliverablesPanel() {
+            document.getElementById('deliverablesPanel').classList.add('open');
+            document.getElementById('panelOverlay').classList.add('show');
+            updateDeliverablesPanel();
+        }
+
+        function closeDeliverablesPanel() {
+            document.getElementById('deliverablesPanel').classList.remove('open');
+            document.getElementById('panelOverlay').classList.remove('show');
+        }
+
+        function updateDeliverablesPanel() {
+            const content = document.getElementById('deliverablesContent');
+            
+            if (Object.keys(campaignDeliverables).length === 0) {
+                content.innerHTML = '<p style="color: #666; text-align: center; margin-top: 50px;">No deliverables available yet.</p>';
+                return;
+            }
+
+            let html = '';
+            for (const [agentName, deliverable] of Object.entries(campaignDeliverables)) {
+                html += `
+                    <div class="deliverable-item">
+                        <div class="deliverable-header ${deliverable.expanded ? 'expanded' : ''}" onclick="toggleDeliverable('${agentName}')">
+                            <div>
+                                <h4>${deliverable.title || agentName}</h4>
+                                <div class="agent-name">From: ${agentName}</div>
+                            </div>
+                            <span class="collapse-icon ${deliverable.expanded ? 'expanded' : ''}">▼</span>
+                        </div>
+                        <div class="deliverable-content ${deliverable.expanded ? 'expanded' : ''}">${deliverable.content || 'No content available'}</div>
+                    </div>
+                `;
+            }
+            content.innerHTML = html;
+        }
+
+        function toggleDeliverable(agentName) {
+            const deliverable = campaignDeliverables[agentName];
+            deliverable.expanded = !deliverable.expanded;
+            updateDeliverablesPanel();
+        }
     </script>
 </body>
 </html> 

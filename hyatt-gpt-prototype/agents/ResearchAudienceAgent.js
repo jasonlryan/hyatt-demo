@@ -68,131 +68,68 @@ class ResearchAudienceAgent {
 
   async generateInsightsUsingPrompt(campaignBrief, externalData = null) {
     try {
-      console.log(`🔄 ${this.name}: Analyzing audience using Responses API...`);
+      console.log(
+        `🔄 ${this.name}: Analyzing audience using built-in knowledge + campaign brief...`
+      );
 
-      // Build enhanced prompt with external data if available
-      let dataSection = "";
-      if (externalData) {
-        dataSection = `
-REAL-TIME DATA SOURCES:
-${
-  externalData.socialSentiment
-    ? `
-Social Media Sentiment:
-${JSON.stringify(externalData.socialSentiment, null, 2)}
-`
-    : ""
-}
-${
-  externalData.recentNews
-    ? `
-Recent Industry News:
-${JSON.stringify(externalData.recentNews, null, 2)}
-`
-    : ""
-}
-Data Quality: ${externalData.dataQuality || "mixed"}
-`;
-      }
-
+      // Simple prompt - let the centralized GPT prompt handle everything
       const prompt = `
-Campaign Brief: ${campaignBrief}
-
-${dataSection}
-
-Using your expertise in audience research and demographic analysis${
-        externalData ? ", combined with the real-time data provided above," : ""
-      } analyze this campaign and provide:
-
-1. TARGET DEMOGRAPHICS (3-4 key segments with descriptions)
-2. KEY DRIVERS (what motivates each segment)
-3. STRATEGIC RECOMMENDATIONS (actionable insights)
-4. AUDIENCE ANALYSIS (summary with quantifiable insights)
+CAMPAIGN BRIEF TO ANALYZE:
+${campaignBrief}
 
 ${
   externalData
-    ? "Incorporate insights from the real-time social sentiment and news data where relevant to audience behavior and preferences."
-    : "Provide structured analysis for this campaign."
+    ? `
+SUPPLEMENTARY DATA CONTEXT:
+${JSON.stringify(externalData, null, 2)}
+`
+    : ""
 }
+
+MESSAGE TYPE: audience_analysis
+
+Generate the appropriate response based on your conversation scenarios in your system prompt.
 `;
 
-      // Define the response schema for structured output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          targetDemographics: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                segment: { type: "string" },
-                description: { type: "string" },
-                size: { type: "string" },
-                characteristics: {
-                  type: "array",
-                  items: { type: "string" },
-                },
-                dataSource: { type: "string" }, // Track real vs AI data
-              },
-              required: ["segment", "description", "size", "characteristics"],
-            },
-          },
-          keyDrivers: {
-            type: "object",
-            additionalProperties: { type: "string" },
-          },
-          strategicRecommendations: {
-            type: "array",
-            items: { type: "string" },
-          },
-          audienceAnalysis: { type: "string" },
-          dataQuality: { type: "string" }, // Track data quality
-          lastUpdated: { type: "string" },
-        },
-        required: [
-          "targetDemographics",
-          "keyDrivers",
-          "strategicRecommendations",
-          "audienceAnalysis",
-          "lastUpdated",
-        ],
-      };
+      console.log(`🔍 ATTEMPTING REAL OPENAI API CALL...`);
+      console.log(`🔍 API Key: ${this.openai.apiKey ? "SET" : "MISSING"}`);
+      console.log(`🔍 Model: ${this.model}`);
 
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "audience_analysis",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const insights = response.choices[0].message.parsed;
-      insights.lastUpdated = new Date().toISOString();
-      insights.dataQuality = externalData?.dataQuality || "ai_generated";
+      console.log(
+        `🔍 DEBUG: OpenAI Responses API call succeeded, response:`,
+        response.output_text ? "SUCCESS" : "NO_OUTPUT"
+      );
+
+      // Return the raw output - let the centralized prompt handle structure
+      const insights = {
+        analysis: response.output_text,
+        lastUpdated: new Date().toISOString(),
+        dataQuality: externalData?.dataQuality || "responses_api_based",
+      };
 
       console.log(
-        `✅ ${this.name}: Generated structured audience analysis via Responses API`
+        `✅ ${this.name}: Generated dynamic audience analysis using Responses API`
       );
       return insights;
     } catch (error) {
-      console.error(`❌ ${this.name}: Responses API analysis failed:`, error);
-      // NO HARD-CODED FALLBACK - return minimal structure
+      console.error(`❌ ${this.name}: REAL API ERROR:`, error.message);
+      console.error(`❌ ${this.name}: ERROR TYPE:`, error.constructor.name);
+      console.error(`❌ ${this.name}: FULL ERROR:`, error);
+
+      // Return OBVIOUS fallback data so we can see when it's being used
       return {
-        targetDemographics: [],
-        keyDrivers: {},
-        strategicRecommendations: [],
-        audienceAnalysis: "Analysis unavailable - please retry",
-        dataQuality: "failed",
+        analysis: "🚨 FALLBACK DATA - API FAILED 🚨",
         lastUpdated: new Date().toISOString(),
+        dataQuality: "FAILED",
       };
     }
   }
@@ -220,7 +157,7 @@ ${
   async collaborativeInput(previousPhases) {
     await this.delay(1500);
 
-    // Generate dynamic collaborative input based on the research insights
+    // Generate dynamic collaborative input using OpenAI API
     const research = previousPhases.research?.insights;
     if (!research) {
       return {
@@ -231,27 +168,72 @@ ${
       };
     }
 
-    const topDrivers = Object.entries(research.keyDrivers)
-      .sort(([, a], [, b]) => parseInt(b) - parseInt(a))
-      .slice(0, 3);
+    try {
+      console.log(
+        `🔄 ${this.name}: Generating collaborative input via Responses API...`
+      );
 
-    const contribution = `Based on my analysis, ${
-      topDrivers[0][1]
-    } of our target audience prioritizes ${topDrivers[0][0].toLowerCase()}. This validates our strategic approach. The ${
-      topDrivers[1][1]
-    } preference for ${topDrivers[1][0].toLowerCase()} and ${
-      topDrivers[2][1]
-    } interest in ${topDrivers[2][0].toLowerCase()} should be central to our messaging strategy.`;
+      const prompt = `
+You are ${this.name} in a collaborative PR strategy session.
 
-    return {
-      agent: this.name,
-      contribution,
-      dataPoints: topDrivers.map(
-        ([driver, percentage]) =>
-          `${percentage} prioritize ${driver.toLowerCase()}`
-      ),
-      strategicImplication: research.strategicRecommendation,
-    };
+YOUR PREVIOUS ANALYSIS:
+${JSON.stringify(research, null, 2)}
+
+OTHER AGENTS' FINDINGS:
+- Trending Analysis: ${JSON.stringify(
+        previousPhases.trending?.trends || "Not yet available",
+        null,
+        2
+      )}
+- Story Angles: ${JSON.stringify(
+        previousPhases.story?.storyAngles || "Not yet available",
+        null,
+        2
+      )}
+
+Based on ALL the insights gathered, provide your collaborative contribution that:
+1. Highlights the most important findings from your research
+2. Shows how your insights connect with the trending and story angles
+3. Suggests strategic implications for the final campaign
+4. Uses specific data points and percentages from your analysis
+
+Be concise but insightful. Reference specific findings and data points.
+`;
+
+      const response = await this.openai.responses.create({
+        model: this.model,
+        input: [
+          { role: "system", content: this.systemPrompt },
+          { role: "user", content: prompt },
+        ],
+        temperature: this.temperature,
+      });
+
+      // Return the raw response text instead of trying to parse as JSON
+      console.log(`✅ ${this.name}: Generated dynamic collaborative input`);
+
+      return {
+        agent: this.name,
+        contribution: response.output_text.trim(),
+        dataPoints: [],
+        strategicImplication:
+          "Strategic recommendations provided in contribution",
+      };
+    } catch (error) {
+      console.error(
+        `❌ ${this.name}: Collaborative input generation failed:`,
+        error
+      );
+
+      // Return minimal fallback only on complete failure
+      return {
+        agent: this.name,
+        contribution: `Based on my research analysis, I've identified key audience segments and their motivations that should guide our campaign strategy.`,
+        dataPoints: [],
+        strategicImplication:
+          "Further analysis needed for strategic recommendations.",
+      };
+    }
   }
 
   delay(ms) {
@@ -259,113 +241,44 @@ ${
   }
 
   async generateConversationResponse(context, messageType, data = null) {
-    // This method uses the agent's system prompt to generate conversation responses
-    const { campaignType, targetMarket, focusAreas, urgency } = context;
+    // Use ONLY the centralized GPT prompt - no hardcoded logic
+    const { campaignType, targetMarket, focusAreas, urgency, originalBrief } =
+      context;
 
-    // Create a prompt that combines the system prompt with the specific context
-    const conversationPrompt = `
-${this.systemPrompt}
+    // Create simple context for the centralized prompt
+    const campaignContext = originalBrief
+      ? `CAMPAIGN BRIEF: ${originalBrief}`
+      : `Campaign Type: ${campaignType} targeting ${targetMarket} travelers.`;
 
-CONTEXT: You are participating in a collaborative PR strategy session for a ${campaignType} campaign targeting ${targetMarket} travelers.
+    // Let the centralized prompt handle ALL scenarios
+    const prompt = `
+${campaignContext}
 
-${
-  messageType === "intro"
-    ? `
-TASK: Generate a brief introduction (2-3 sentences) explaining what you'll analyze for this campaign. Reference your data sources and expertise as defined in your system prompt.
+MESSAGE TYPE: ${messageType}
+${data ? `DATA: ${JSON.stringify(data, null, 2)}` : ""}
 
-Campaign Focus Areas: ${focusAreas.join(", ")}
-Urgency: ${urgency}
-`
-    : `
-TASK: Generate a brief summary (2-3 sentences) of your analysis findings and their strategic significance.
+Generate the appropriate response based on your conversation scenarios in your system prompt.
+`;
 
-Your Analysis Results:
-${JSON.stringify(data, null, 2)}
-
-Explain what you discovered and why it's important for this ${campaignType} campaign. Use your professional tone and reference your data sources.
-`
-}
-
-RESPONSE (2-3 sentences only, stay in character):
-    `;
-
-    // Simulate what the agent would say based on their system prompt
-    return this.simulatePromptResponse(
-      conversationPrompt,
-      messageType,
-      context,
-      data
-    );
-  }
-
-  async simulatePromptResponse(fullPrompt, messageType, context, data) {
-    // Make a real OpenAI API call using the agent's system prompt with Responses API
     try {
-      // Define the response schema for structured conversation output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          conversationMessage: { type: "string" },
-          keyPoints: {
-            type: "array",
-            items: { type: "string" },
-          },
-          strategicContext: { type: "string" },
-        },
-        required: ["conversationMessage", "keyPoints", "strategicContext"],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
-          {
-            role: "system",
-            content: this.systemPrompt,
-          },
-          {
-            role: "user",
-            content: fullPrompt,
-          },
+        input: [
+          { role: "system", content: this.systemPrompt },
+          { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "conversation_response",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const result = response.choices[0].message.parsed;
-      return result.conversationMessage;
+      return response.output_text.trim();
     } catch (error) {
-      console.error(`[${this.name}] Responses API Error:`, error.message);
+      console.error(
+        `[${this.name}] Conversation generation failed:`,
+        error.message
+      );
 
-      // Fallback to contextual response if API fails
-      const { campaignType, targetMarket } = context;
-
-      if (messageType === "intro") {
-        return `I'll analyze ${
-          campaignType.includes("sustainability")
-            ? "environmentally-conscious traveler groups and their motivations for choosing sustainable destinations"
-            : "your target traveler demographics and their key motivational factors"
-        }. Using our 2024-25 industry reports and Hyatt's proprietary audience survey data, I'll provide bullet-point insights with actionable takeaways for your business strategy.`;
-      } else {
-        const demographics =
-          data?.targetDemographics?.[0] || "target demographic";
-        const topDriver = data
-          ? Object.entries(data.keyDrivers)[0]
-          : ["key factor", "majority"];
-        return `Based on comprehensive demographic analysis, I've identified the primary motivational drivers for ${
-          campaignType.includes("sustainability")
-            ? "environmentally-minded travelers prioritizing sustainable destinations"
-            : "your target market segment"
-        }. The data shows ${
-          topDriver[1]
-        } of ${demographics} prioritize ${topDriver[0].toLowerCase()}, providing clear strategic direction for campaign positioning.`;
-      }
+      // Minimal fallback only
+      return `I'll be analyzing target audience demographics and psychographics for this campaign using industry research methodologies.`;
     }
   }
 }

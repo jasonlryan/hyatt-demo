@@ -36,50 +36,43 @@ class PRManagerAgent {
       );
 
       const prompt = `
-Campaign Brief: ${campaignBrief}
+ORIGINAL CAMPAIGN BRIEF:
+${campaignBrief}
 
-Campaign Context:
-- Type: ${campaignContext.campaignType}
-- Urgency: ${campaignContext.urgency}
-- Target Market: ${campaignContext.targetMarket}
-- Focus Areas: ${campaignContext.focusAreas.join(", ")}
+CAMPAIGN ANALYSIS:
+- Type: ${campaignContext.campaignType || "general_campaign"}
+- Urgency: ${campaignContext.urgency || "medium"}
+- Target Market: ${campaignContext.targetMarket || "general market"}
+- Focus Areas: ${
+        campaignContext.focusAreas && Array.isArray(campaignContext.focusAreas)
+          ? campaignContext.focusAreas.join(", ")
+          : "general focus"
+      }
+- Keywords: ${
+        campaignContext.keywords && Array.isArray(campaignContext.keywords)
+          ? campaignContext.keywords.join(", ")
+          : "none identified"
+      }
 
-Generate a campaign introduction that sets the strategic direction for the team and directs the Research & Audience agent to begin analysis. Be specific about what insights we need based on this campaign type and context.
+Based on the ORIGINAL CAMPAIGN BRIEF above, generate a campaign introduction that:
+1. References specific details from the campaign brief
+2. Sets the strategic direction for the team based on the brief's objectives
+3. Directs the Research & Audience agent to begin analysis of the specific target market mentioned in the brief
+4. Establishes the campaign's unique positioning and goals
+
+Be specific to THIS campaign - reference the actual campaign details, objectives, and requirements from the brief. Avoid generic language.
 `;
 
-      // Define the response schema for structured output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          introduction: { type: "string" },
-          strategicDirection: { type: "string" },
-          researchDirectives: {
-            type: "array",
-            items: { type: "string" },
-          },
-        },
-        required: ["introduction", "strategicDirection", "researchDirectives"],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "campaign_introduction",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const result = response.choices[0].message.parsed;
-      const introduction = `${result.introduction} ${result.strategicDirection}`;
+      const introduction = response.output_text.trim();
 
       console.log(
         `✅ PR Manager generated introduction via Responses API: ${introduction.substring(
@@ -104,61 +97,49 @@ Generate a campaign introduction that sets the strategic direction for the team 
       );
 
       const prompt = `
-Campaign Context:
-- Type: ${campaignContext.campaignType}
-- Urgency: ${campaignContext.urgency}
-- Target Market: ${campaignContext.targetMarket}
-- Focus Areas: ${campaignContext.focusAreas.join(", ")}
+ORIGINAL CAMPAIGN BRIEF:
+${campaignContext.originalBrief || "Campaign brief not available"}
 
-Previous Phase Data: ${JSON.stringify(previousData, null, 2)}
+CAMPAIGN ANALYSIS:
+- Type: ${campaignContext.campaignType || "general_campaign"}
+- Urgency: ${campaignContext.urgency || "medium"}
+- Target Market: ${campaignContext.targetMarket || "general market"}
+- Focus Areas: ${
+        campaignContext.focusAreas && Array.isArray(campaignContext.focusAreas)
+          ? campaignContext.focusAreas.join(", ")
+          : "general focus"
+      }
+- Keywords: ${
+        campaignContext.keywords && Array.isArray(campaignContext.keywords)
+          ? campaignContext.keywords.join(", ")
+          : "none identified"
+      }
 
-Next Phase: ${nextPhase}
+PREVIOUS PHASE DATA: 
+${JSON.stringify(previousData, null, 2)}
 
-Generate a handoff message that:
-1. Summarizes key insights from the previous phase
-2. Connects those insights to the next phase requirements
-3. Provides specific direction for the upcoming analysis
-4. Maintains strategic momentum
+NEXT PHASE: ${nextPhase}
 
-Keep it concise but strategic.
+Based on the ORIGINAL CAMPAIGN BRIEF and the insights from the previous phase, generate a handoff message that:
+1. References specific details from the original campaign brief
+2. Summarizes key insights from the previous phase
+3. Connects those insights to the next phase requirements
+4. Provides specific direction for the upcoming analysis
+5. Maintains strategic momentum
+
+Be specific to THIS campaign - avoid generic language. Reference the actual campaign details.
 `;
 
-      // Define the response schema for structured output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          handoffMessage: { type: "string" },
-          keyInsights: {
-            type: "array",
-            items: { type: "string" },
-          },
-          nextPhaseDirectives: {
-            type: "array",
-            items: { type: "string" },
-          },
-        },
-        required: ["handoffMessage", "keyInsights", "nextPhaseDirectives"],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "handoff_message",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const result = response.choices[0].message.parsed;
-      const handoff = result.handoffMessage;
+      const handoff = response.output_text.trim();
 
       console.log(
         `✅ PR Manager generated handoff via Responses API: ${handoff.substring(
@@ -183,63 +164,68 @@ Keep it concise but strategic.
       );
 
       const prompt = `
-Campaign Context:
-- Type: ${campaignContext.campaignType}
-- Urgency: ${campaignContext.urgency}
-- Target Market: ${campaignContext.targetMarket}
-- Focus Areas: ${campaignContext.focusAreas.join(", ")}
+ORIGINAL CAMPAIGN BRIEF:
+${campaignContext.originalBrief || "Campaign brief not available"}
 
-All Phase Data: ${JSON.stringify(allPhaseData, null, 2)}
+CAMPAIGN ANALYSIS:
+- Type: ${campaignContext.campaignType || "general_campaign"}
+- Urgency: ${campaignContext.urgency || "medium"}
+- Target Market: ${campaignContext.targetMarket || "general market"}
+- Focus Areas: ${
+        campaignContext.focusAreas && Array.isArray(campaignContext.focusAreas)
+          ? campaignContext.focusAreas.join(", ")
+          : "general focus"
+      }
+- Keywords: ${
+        campaignContext.keywords && Array.isArray(campaignContext.keywords)
+          ? campaignContext.keywords.join(", ")
+          : "none identified"
+      }
 
-Generate a final delivery message that:
-1. Synthesizes all agent contributions
-2. Highlights strategic alignment and opportunities
-3. Emphasizes the integrated nature of the campaign plan
-4. Sets expectations for implementation
+ALL PHASE DATA: 
+${JSON.stringify(allPhaseData, null, 2)}
 
-Keep it professional and results-focused.
+As the PR Manager, you must create a COMPREHENSIVE, PROFESSIONAL-GRADE campaign plan that synthesizes all agent contributions into a detailed strategic deliverable based on the ORIGINAL CAMPAIGN BRIEF. This is the final campaign strategy that will be presented to executives and stakeholders.
+
+CRITICAL: Base your strategy on the SPECIFIC DETAILS from the original campaign brief. Do NOT use generic templates or placeholder content. Reference the actual campaign objectives, target audience, unique selling propositions, and specific requirements mentioned in the brief.
+
+REQUIREMENTS FOR FINAL DELIVERABLE:
+1. STRATEGIC OVERVIEW (200+ words): Executive summary, campaign theme, strategic positioning SPECIFIC to this campaign
+2. TARGET AUDIENCE ANALYSIS (150+ words): Detailed segmentation based on the brief's target market
+3. MESSAGING ARCHITECTURE (100+ words): Primary/secondary messages that address the brief's objectives
+4. MEDIA STRATEGY (150+ words): Multi-channel approach tailored to this campaign's goals
+5. CONTENT STRATEGY (100+ words): Content pillars relevant to this specific campaign
+6. IMPLEMENTATION TIMELINE: Specific phases, milestones, dependencies for THIS campaign
+7. SUCCESS METRICS: Quantifiable KPIs relevant to the campaign's objectives
+8. BUDGET FRAMEWORK: Resource allocation appropriate for this campaign type
+9. RISK MANAGEMENT: Challenges specific to this campaign and industry
+10. NEXT STEPS: Immediate actions specific to this campaign's requirements
+
+The deliverable must be comprehensive, actionable, and meet professional PR industry standards. Minimum 1000+ words of substantive strategic content SPECIFIC to the original campaign brief.
+
+Generate a final delivery message that presents this comprehensive campaign plan with authority and detail.
 `;
 
-      // Define the response schema for structured output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          finalDelivery: { type: "string" },
-          strategicSynthesis: { type: "string" },
-          implementationGuidance: {
-            type: "array",
-            items: { type: "string" },
-          },
-        },
-        required: [
-          "finalDelivery",
-          "strategicSynthesis",
-          "implementationGuidance",
-        ],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "final_delivery",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const result = response.choices[0].message.parsed;
-      const delivery = result.finalDelivery;
+      const delivery = response.output_text.trim();
+
+      if (!delivery || typeof delivery !== "string") {
+        console.warn(
+          "⚠️ Final delivery is empty or not a string, using fallback"
+        );
+        return "Comprehensive campaign strategy has been generated. Please check the deliverables panel for full details.";
+      }
 
       console.log(
-        `✅ PR Manager generated final delivery via Responses API: ${delivery.substring(
+        `✅ PR Manager generated comprehensive final delivery via Responses API: ${delivery.substring(
           0,
           100
         )}...`
@@ -262,10 +248,14 @@ Keep it professional and results-focused.
 
       const prompt = `
 Campaign Context:
-- Type: ${campaignContext.campaignType}
-- Urgency: ${campaignContext.urgency}
-- Target Market: ${campaignContext.targetMarket}
-- Focus Areas: ${campaignContext.focusAreas.join(", ")}
+- Type: ${campaignContext.campaignType || "general_campaign"}
+- Urgency: ${campaignContext.urgency || "medium"}
+- Target Market: ${campaignContext.targetMarket || "general market"}
+- Focus Areas: ${
+        campaignContext.focusAreas && Array.isArray(campaignContext.focusAreas)
+          ? campaignContext.focusAreas.join(", ")
+          : "general focus"
+      }
 
 Final Strategy: ${JSON.stringify(finalStrategy, null, 2)}
 
@@ -278,48 +268,21 @@ Generate a campaign conclusion that:
 Keep it executive-level and action-oriented.
 `;
 
-      // Define the response schema for structured output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          conclusion: { type: "string" },
-          teamAcknowledgment: { type: "string" },
-          implementationTimeline: {
-            type: "array",
-            items: { type: "string" },
-          },
-          successMetrics: {
-            type: "array",
-            items: { type: "string" },
-          },
-        },
-        required: [
-          "conclusion",
-          "teamAcknowledgment",
-          "implementationTimeline",
-          "successMetrics",
-        ],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "campaign_conclusion",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const result = response.choices[0].message.parsed;
-      const conclusion = result.conclusion;
+      const conclusion = response.output_text.trim();
+
+      if (!conclusion || typeof conclusion !== "string") {
+        console.warn("⚠️ Conclusion is empty or not a string, using fallback");
+        return "Campaign strategy has been finalized. Implementation can begin immediately.";
+      }
 
       console.log(
         `✅ PR Manager generated conclusion via Responses API: ${conclusion.substring(
@@ -334,6 +297,72 @@ Keep it executive-level and action-oriented.
         error
       );
       return "Campaign conclusion unavailable - please retry";
+    }
+  }
+
+  async synthesizeComprehensiveStrategy(allPhaseData) {
+    try {
+      console.log(
+        `🔄 PR Manager synthesizing comprehensive strategy via Responses API...`
+      );
+
+      const prompt = `
+You are the PR Manager responsible for creating the final comprehensive campaign strategy. You must synthesize ALL the insights from your team into a detailed, professional-grade strategic deliverable.
+
+TEAM INSIGHTS TO SYNTHESIZE:
+
+RESEARCH INSIGHTS:
+${JSON.stringify(allPhaseData.researchInsights, null, 2)}
+
+TRENDING ANALYSIS:
+${JSON.stringify(allPhaseData.trendingAnalysis, null, 2)}
+
+STORY ANGLES:
+${JSON.stringify(allPhaseData.storyAngles, null, 2)}
+
+COLLABORATIVE INPUTS:
+${JSON.stringify(allPhaseData.collaborativeInputs, null, 2)}
+
+REQUIREMENTS:
+Create a comprehensive campaign strategy that includes:
+
+1. STRATEGIC OVERVIEW: Campaign theme, positioning, executive summary
+2. TARGET AUDIENCE: Demographics, psychographics, motivations, pain points
+3. MESSAGING ARCHITECTURE: Primary/secondary messages, proof points, tone
+4. MEDIA STRATEGY: Channels, content types, timing, reach/frequency
+5. CONTENT STRATEGY: Content pillars, deliverables, calendar framework
+6. IMPLEMENTATION TIMELINE: Phases, milestones, dependencies
+7. SUCCESS METRICS: KPIs with specific targets and benchmarks
+8. BUDGET FRAMEWORK: Resource allocation across activities
+9. RISK MANAGEMENT: Challenges, mitigation strategies, contingencies
+10. NEXT STEPS: Immediate, short-term, long-term actions
+
+CRITICAL: Base everything on the actual data provided. Do NOT use generic placeholders or templates. Extract real insights from the team's work and synthesize them into a cohesive, actionable strategy.
+
+The strategy must be comprehensive (1000+ words), specific to this campaign, and ready for executive presentation.
+`;
+
+      const response = await this.openai.responses.create({
+        model: this.model,
+        input: [
+          { role: "system", content: this.systemPrompt },
+          { role: "user", content: prompt },
+        ],
+        temperature: this.temperature,
+      });
+
+      const strategy = response.output_text.trim();
+
+      console.log(
+        `✅ PR Manager synthesized comprehensive strategy: ${strategy.strategicOverview.campaignTheme}`
+      );
+      return strategy;
+    } catch (error) {
+      console.error(
+        "❌ PR Manager comprehensive strategy synthesis failed:",
+        error
+      );
+      throw error;
     }
   }
 }

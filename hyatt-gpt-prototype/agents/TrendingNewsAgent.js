@@ -75,123 +75,41 @@ class TrendingNewsAgent {
     try {
       console.log(`🔄 ${this.name}: Analyzing trends using Responses API...`);
 
-      // Build enhanced prompt with external data if available
-      let dataSection = "";
-      if (externalData) {
-        dataSection = `
-REAL-TIME DATA SOURCES:
-${
-  externalData.googleTrends
-    ? `
-Google Trends Data:
-${JSON.stringify(externalData.googleTrends, null, 2)}
-`
-    : ""
-}
-${
-  externalData.recentNews
-    ? `
-Recent News Articles:
-${JSON.stringify(externalData.recentNews, null, 2)}
-`
-    : ""
-}
-Data Quality: ${externalData.dataQuality || "mixed"}
-`;
-      }
-
+      // Simple prompt - let the centralized GPT prompt handle everything
       const prompt = `
-Campaign Brief: ${campaignBrief}
+CAMPAIGN BRIEF: ${campaignBrief}
 
-Research Insights: ${JSON.stringify(researchInsights, null, 2)}
-
-${dataSection}
-
-Using your expertise in trend analysis and real-time monitoring${
-        externalData ? ", combined with the real-time data provided above," : ""
-      } analyze this campaign and provide:
-
-1. RELEVANT TRENDS (3-4 trends with momentum, relevance %, description, source)
-2. CULTURAL MOMENTS (4-5 timely opportunities)  
-3. MEDIA OPPORTUNITIES (4-5 strategic partnerships/pitches)
-4. TIMING RECOMMENDATION (specific timing strategy)
-5. TREND ANALYSIS (summary with quantifiable metrics)
+RESEARCH INSIGHTS: ${JSON.stringify(researchInsights, null, 2)}
 
 ${
   externalData
-    ? "Prioritize insights from the real-time data sources and reference specific trends, news articles, or social sentiment where relevant."
-    : "Provide structured trend analysis for this campaign."
+    ? `
+EXTERNAL DATA:
+${JSON.stringify(externalData, null, 2)}
+`
+    : ""
 }
+
+MESSAGE TYPE: trends_analysis
+
+Generate the appropriate response based on your conversation scenarios in your system prompt.
 `;
 
-      // Define the response schema for structured output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          relevantTrends: {
-            type: "array",
-            items: {
-              type: "object",
-              properties: {
-                trend: { type: "string" },
-                momentum: { type: "string" },
-                relevance: { type: "string" },
-                description: { type: "string" },
-                source: { type: "string" },
-                dataSource: { type: "string" }, // Added to track real vs AI data
-              },
-              required: [
-                "trend",
-                "momentum",
-                "relevance",
-                "description",
-                "source",
-              ],
-            },
-          },
-          culturalMoments: {
-            type: "array",
-            items: { type: "string" },
-          },
-          mediaOpportunities: {
-            type: "array",
-            items: { type: "string" },
-          },
-          timingRecommendation: { type: "string" },
-          trendAnalysis: { type: "string" },
-          dataQuality: { type: "string" }, // Track data quality
-          lastUpdated: { type: "string" },
-        },
-        required: [
-          "relevantTrends",
-          "culturalMoments",
-          "mediaOpportunities",
-          "timingRecommendation",
-          "trendAnalysis",
-          "lastUpdated",
-        ],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "trend_analysis",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const trends = response.choices[0].message.parsed;
-      trends.lastUpdated = new Date().toISOString();
-      trends.dataQuality = externalData?.dataQuality || "ai_generated";
+      // Return raw output - let centralized prompt handle structure
+      const trends = {
+        trendsAnalysis: response.output_text,
+        lastUpdated: new Date().toISOString(),
+        dataQuality: externalData?.dataQuality || "responses_api_based",
+      };
 
       console.log(
         `✅ ${this.name}: Generated structured trends analysis via Responses API`
@@ -204,11 +122,7 @@ ${
       );
       // NO HARD-CODED FALLBACK - return minimal structure
       return {
-        relevantTrends: [],
-        culturalMoments: [],
-        mediaOpportunities: [],
-        timingRecommendation: "Analysis unavailable - please retry",
-        trendAnalysis: "Trend analysis failed",
+        trendsAnalysis: "Analysis unavailable - please retry",
         dataQuality: "failed",
         lastUpdated: new Date().toISOString(),
       };
@@ -250,27 +164,68 @@ ${
       };
     }
 
-    // Find alignment between research insights and trending topics
-    const topTrend = trends.relevantTrends[0];
-    const topDriver = Object.entries(research.keyDrivers)[0];
+    try {
+      console.log(
+        `🔄 ${this.name}: Generating collaborative input via Responses API...`
+      );
 
-    const contribution = `The ${topTrend.trend} trend (${
-      topTrend.relevance
-    } relevance) perfectly aligns with our audience's ${
-      topDriver[1]
-    } preference for ${topDriver[0].toLowerCase()}. ${
-      trends.timingRecommendation
-    } This cultural moment provides authentic context for our messaging strategy.`;
+      const prompt = `
+You are ${this.name} in a collaborative PR strategy session.
 
-    return {
-      agent: this.name,
-      contribution,
-      trendAlignment: trends.relevantTrends.map(
-        (trend) => `${trend.trend}: ${trend.relevance} relevance`
-      ),
-      mediaRecommendation: trends.mediaOpportunities[0],
-      timingInsight: trends.timingRecommendation,
-    };
+YOUR TRENDING ANALYSIS:
+${JSON.stringify(trends, null, 2)}
+
+OTHER AGENTS' FINDINGS:
+- Research Insights: ${JSON.stringify(research, null, 2)}
+- Story Angles: ${JSON.stringify(
+        previousPhases.story?.storyAngles || "Not yet available",
+        null,
+        2
+      )}
+
+Based on ALL the insights gathered, provide your collaborative contribution that:
+1. Highlights the most relevant trends for this campaign
+2. Shows how trending topics align with audience research
+3. Identifies optimal timing and media opportunities
+4. Uses specific trend data, percentages, and momentum indicators
+
+Be concise but insightful. Reference specific trends and their relevance scores.
+`;
+
+      const response = await this.openai.responses.create({
+        model: this.model,
+        input: [
+          { role: "system", content: this.systemPrompt },
+          { role: "user", content: prompt },
+        ],
+        temperature: this.temperature,
+      });
+
+      // Return the raw response text instead of trying to parse as JSON
+      console.log(`✅ ${this.name}: Generated dynamic collaborative input`);
+
+      return {
+        agent: this.name,
+        contribution: response.output_text.trim(),
+        trendAlignment: [],
+        mediaRecommendation: "Media strategy provided in contribution",
+        timingInsight: "Timing recommendations provided in contribution",
+      };
+    } catch (error) {
+      console.error(
+        `❌ ${this.name}: Collaborative input generation failed:`,
+        error
+      );
+
+      // Return minimal fallback only on complete failure
+      return {
+        agent: this.name,
+        contribution: `Based on my trend analysis, I've identified key opportunities that align with current market movements and cultural moments.`,
+        trendAlignment: [],
+        mediaRecommendation: "Media strategy requires further analysis.",
+        timingInsight: "Timing recommendations need additional context.",
+      };
+    }
   }
 
   delay(ms) {
@@ -278,116 +233,44 @@ ${
   }
 
   async generateConversationResponse(context, messageType, data = null) {
-    // This method uses the agent's system prompt to generate conversation responses
-    const { campaignType, targetMarket, focusAreas, urgency } = context;
+    // Use ONLY the centralized GPT prompt - no hardcoded logic
+    const { campaignType, targetMarket, focusAreas, urgency, originalBrief } =
+      context;
 
-    // Create a prompt that combines the system prompt with the specific context
-    const conversationPrompt = `
-${this.systemPrompt}
+    // Create simple context for the centralized prompt
+    const campaignContext = originalBrief
+      ? `CAMPAIGN BRIEF: ${originalBrief}`
+      : `Campaign Type: ${campaignType} targeting ${targetMarket} travelers.`;
 
-CONTEXT: You are participating in a collaborative PR strategy session for a ${campaignType} campaign targeting ${targetMarket} travelers.
+    // Let the centralized prompt handle ALL scenarios
+    const prompt = `
+${campaignContext}
 
-${
-  messageType === "intro"
-    ? `
-TASK: Generate a brief introduction (2-3 sentences) explaining what trends you'll analyze for this campaign. Reference your data sources and quantifiable metrics as defined in your system prompt.
+MESSAGE TYPE: ${messageType}
+${data ? `DATA: ${JSON.stringify(data, null, 2)}` : ""}
 
-Campaign Focus Areas: ${focusAreas.join(", ")}
-Urgency: ${urgency}
-`
-    : `
-TASK: Generate a brief summary (2-3 sentences) of your trend analysis findings and their strategic significance.
+Generate the appropriate response based on your conversation scenarios in your system prompt.
+`;
 
-Your Analysis Results:
-${JSON.stringify(data, null, 2)}
-
-Explain what trending opportunities you discovered and why they're important for this ${campaignType} campaign. Use your analytical tone and reference quantifiable metrics.
-`
-}
-
-RESPONSE (2-3 sentences only, stay in character):
-    `;
-
-    // Simulate what the agent would say based on their system prompt
-    return this.simulatePromptResponse(
-      conversationPrompt,
-      messageType,
-      context,
-      data
-    );
-  }
-
-  async simulatePromptResponse(fullPrompt, messageType, context, data) {
-    // Make a real OpenAI API call using the agent's system prompt with Responses API
     try {
-      // Define the response schema for structured conversation output
-      const responseSchema = {
-        type: "object",
-        properties: {
-          conversationMessage: { type: "string" },
-          trendInsights: {
-            type: "array",
-            items: { type: "string" },
-          },
-          quantifiableMetrics: { type: "string" },
-        },
-        required: [
-          "conversationMessage",
-          "trendInsights",
-          "quantifiableMetrics",
-        ],
-      };
-
-      const response = await this.openai.beta.chat.completions.parse({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
-          { role: "user", content: fullPrompt },
+          { role: "user", content: prompt },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "conversation_response",
-            schema: responseSchema,
-          },
-        },
       });
 
-      const result = response.choices[0].message.parsed;
-      return result.conversationMessage;
+      return response.output_text.trim();
     } catch (error) {
-      console.error(`[${this.name}] Responses API Error:`, error.message);
+      console.error(
+        `[${this.name}] Conversation generation failed:`,
+        error.message
+      );
 
-      // Fallback to contextual response if API fails
-      const { campaignType, urgency } = context;
-
-      if (messageType === "intro") {
-        return `I'll analyze the latest ${
-          campaignType.includes("sustainability")
-            ? "sustainability trends and regenerative travel movements"
-            : "hospitality industry trends and travel developments"
-        } using real-time Google News analysis and social media trend monitoring with quantifiable engagement metrics. ${
-          urgency === "urgent"
-            ? "I'll identify immediate news hooks and trending opportunities with statistical confidence levels for rapid deployment."
-            : "I'll provide trend velocity data and audience engagement metrics to identify optimal timing opportunities."
-        }`;
-      } else {
-        const topTrend = data?.relevantTrends?.[0] || {
-          trend: "current market trend",
-          relevance: "high",
-        };
-        const timing =
-          data?.timingRecommendation || "optimal timing identified";
-        return `I've identified significant trending opportunities in ${
-          campaignType.includes("sustainability")
-            ? "sustainable hospitality with measurable trend velocity and audience engagement data"
-            : "the hospitality sector with measurable impact potential and trend validation"
-        }. The ${topTrend.trend} shows ${
-          topTrend.relevance
-        } relevance with strong media attention, and ${timing} provides strategic timing for campaign launch.`;
-      }
+      // Minimal fallback only
+      return `I'll be analyzing current travel industry trends and cultural moments for this campaign using real-time monitoring.`;
     }
   }
 }
