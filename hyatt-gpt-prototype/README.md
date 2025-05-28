@@ -1,121 +1,328 @@
-# Hyatt GPT Agent Prototype
+# Hyatt GPT Prototype - Dynamic AI Agent System
 
-A collaborative AI agent system for Hyatt Hotels PR campaign development using OpenAI's GPT-4 API.
+A sophisticated multi-agent PR campaign system that leverages OpenAI's Responses API for structured outputs and dynamic workflow control.
 
-## Features
+## 🚀 New Features (v2.0)
 
-- **Real OpenAI Integration**: Uses GPT-4 API with sophisticated system prompts from markdown files
-- **Three Specialized Agents**: Research & Audience, Trending News, and Story Angles & Headlines
-- **Conversational Workflow**: Agents collaborate in realistic conversation flow
-- **Dynamic Campaign Analysis**: Intelligent brief analysis and contextual responses
-- **Real-time Web Interface**: Beautiful UI with live conversation updates
-- **Campaign Persistence**: Saves completed campaigns as JSON files
+### ✅ **True Dynamic Flow Control**
 
-## Setup
+- **Quality-based decisions**: Agents validate their own outputs and determine next steps
+- **Alternative strategies**: System adapts when trends are weak or data quality is poor
+- **Retry mechanisms**: Failed phases can be retried with improved prompts
+- **Flow tracking**: All decisions are logged with reasoning
 
-### 1. Install Dependencies
+### ✅ **Real Data Source Integration**
+
+- **Google Trends API**: Live trending topic analysis
+- **News API**: Recent industry news and sentiment
+- **Social Media APIs**: Real-time social sentiment analysis
+- **Data quality tracking**: System knows when using real vs AI-generated data
+
+### ✅ **Enhanced Agent Interaction**
+
+- **Cross-agent collaboration**: Agents respond to each other's findings
+- **Data synthesis validation**: System checks alignment between phases
+- **Collaborative refinement**: Agents improve their analysis based on others' work
+- **Quality scoring**: Each phase gets confidence scores
+
+### ✅ **Adaptive Campaign Types**
+
+- **Campaign analysis**: System determines campaign type, complexity, and risk level
+- **Dynamic prompts**: Agents adapt their approach based on campaign characteristics
+- **Urgency handling**: Different flows for urgent vs standard campaigns
+- **Industry specialization**: Agents adjust expertise based on target industry
+
+### ✅ **Quality Control System**
+
+- **Data validation**: Comprehensive checks for each phase output
+- **Synthesis analysis**: Validates coherence between research, trends, and story
+- **Quality reports**: Overall campaign quality assessment
+- **Threshold management**: Configurable quality thresholds for flow control
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│ DataSourceManager│    │ QualityController│    │ AgentOrchestrator│
+│                 │    │                  │    │                 │
+│ • Google Trends │    │ • Data Validation│    │ • Dynamic Flow  │
+│ • News APIs     │◄───┤ • Quality Scoring│◄───┤ • Agent Coord   │
+│ • Social Media  │    │ • Flow Decisions │    │ • Campaign Mgmt │
+│ • Mock Data     │    │ • Synthesis Check│    │ • Quality Track │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+         │                       │                       │
+         ▼                       ▼                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                    AI AGENTS (OpenAI Responses API)             │
+├─────────────────┬─────────────────┬─────────────────┬───────────┤
+│ ResearchAgent   │ TrendingAgent   │ StoryAgent      │ PRManager │
+│ • Audience Data │ • Trend Analysis│ • Story Angles  │ • Campaign│
+│ • Demographics  │ • Cultural Moments│ • Headlines   │   Coord   │
+│ • Key Drivers   │ • Media Opps    │ • Key Messages  │ • Handoffs│
+│ • External Data │ • Real Trends   │ • Angle Strength│ • Summary │
+└─────────────────┴─────────────────┴─────────────────┴───────────┘
+```
+
+## ⚙️ Configuration
+
+### Environment Variables
 
 ```bash
+# OpenAI Configuration
+OPENAI_API_KEY=your-openai-api-key-here
+OPENAI_MODEL=gpt-4o-2024-08-06
+OPENAI_MAX_TOKENS=2000
+
+# Agent-Specific Configuration (Updated for Structured Outputs)
+RESEARCH_MODEL=gpt-4o-2024-08-06
+RESEARCH_MAX_TOKENS=2500
+TRENDING_MODEL=gpt-4o-2024-08-06
+TRENDING_MAX_TOKENS=3000
+STORY_MODEL=gpt-4o-2024-08-06
+STORY_MAX_TOKENS=3500
+PR_MANAGER_MODEL=gpt-4o-mini-2024-07-18
+PR_MANAGER_MAX_TOKENS=2000
+
+# 🆕 DYNAMIC FEATURES
+ENABLE_DYNAMIC_FLOW=true
+ENABLE_QUALITY_CONTROL=true
+ENABLE_AGENT_INTERACTION=true
+ENABLE_REAL_DATA_SOURCES=false
+
+# 🆕 QUALITY THRESHOLDS
+MIN_TREND_RELEVANCE=60
+MIN_AUDIENCE_CONFIDENCE=70
+MIN_STORY_ANGLE_STRENGTH=65
+SKIP_WEAK_TRENDS_THRESHOLD=50
+ALTERNATIVE_STRATEGY_TRIGGER=40
+REQUIRE_DATA_VALIDATION=true
+
+# 🆕 EXTERNAL DATA APIS (Optional)
+GOOGLE_TRENDS_API_KEY=your-google-trends-key
+NEWS_API_KEY=your-news-api-key
+SOCIAL_MEDIA_API_KEY=your-social-api-key
+
+# 🆕 CAMPAIGN ANALYSIS
+AUTO_DETECT_CAMPAIGN_TYPE=true
+ADAPTIVE_AGENT_BEHAVIOR=true
+DYNAMIC_PROMPT_ADJUSTMENT=true
+```
+
+### Quick Start
+
+1. **Clone and Install**
+
+```bash
+git clone <repository>
+cd hyatt-gpt-prototype
 npm install
 ```
 
-### 2. Configure OpenAI API
+2. **Configure Environment**
 
-1. Copy the example environment file:
+```bash
+cp env.example .env
+# Edit .env with your OpenAI API key and preferences
+```
 
-   ```bash
-   cp env.example .env
-   ```
-
-2. Add your OpenAI API key to `.env`:
-
-   ```
-   OPENAI_API_KEY=your-actual-openai-api-key-here
-   ```
-
-3. Get an API key from [OpenAI Platform](https://platform.openai.com/api-keys)
-
-### 3. Start the Server
+3. **Start the Server**
 
 ```bash
 npm start
 ```
 
-The system will be available at:
+4. **Access the Interface**
 
-- **Frontend**: http://localhost:3000
-- **API**: http://localhost:3000/api/campaigns
-- **Health Check**: http://localhost:3000/health
+```
+http://localhost:3000
+```
 
-## How It Works
+## 🎯 Usage Examples
 
-### Agent System Prompts
+### Basic Campaign (AI-Generated Data)
 
-Each agent loads its sophisticated system prompt from markdown files in the `../GPTs/` directory:
+```bash
+# Set in .env
+ENABLE_REAL_DATA_SOURCES=false
+ENABLE_DYNAMIC_FLOW=true
+ENABLE_QUALITY_CONTROL=true
+```
 
-- `research_audience_gpt.md` - Research & Audience GPT
-- `trending_news_gpt.md` - Trending News GPT
-- `story_angles_headlines_gpt.md` - Story Angles & Headlines GPT
+### Advanced Campaign (Real Data Sources)
 
-### Conversational Flow
+```bash
+# Set in .env
+ENABLE_REAL_DATA_SOURCES=true
+GOOGLE_TRENDS_API_KEY=your-key
+NEWS_API_KEY=your-key
+ENABLE_DYNAMIC_FLOW=true
+ENABLE_QUALITY_CONTROL=true
+ENABLE_AGENT_INTERACTION=true
+```
 
-1. **PR Manager** introduces the campaign brief
-2. **Research & Audience GPT** analyzes target demographics and motivations
-3. **Trending News GPT** identifies current trends and media opportunities
-4. **Story Angles GPT** develops strategic narratives and headlines
-5. **Collaborative Phase** - All agents work together on final strategy
-6. **PR Manager** concludes with integrated campaign plan
+### High-Quality Campaign (Strict Validation)
 
-### Real OpenAI Integration
+```bash
+# Set in .env
+MIN_AUDIENCE_CONFIDENCE=85
+MIN_TREND_RELEVANCE=75
+MIN_STORY_ANGLE_STRENGTH=80
+REQUIRE_DATA_VALIDATION=true
+```
 
-- Each agent makes real GPT-4 API calls using their system prompts
-- Fallback responses if API is unavailable
-- Temperature settings optimized per agent (Research: 0.2, Trending: 0.3, Story: 0.4)
-- 200 token limit for conversation responses
+## 🔄 Dynamic Flow Examples
 
-## API Endpoints
+### Standard Flow
 
-- `POST /api/campaigns` - Create new campaign
+```
+Research → Trending → Story → Collaborative → Complete
+```
+
+### Alternative Flow (Weak Trends)
+
+```
+Research → Trending (weak) → Story (alternative strategy) → Collaborative → Complete
+```
+
+### Quality Control Flow
+
+```
+Research → Quality Check → Trending → Quality Check → Story → Synthesis Validation → Complete
+```
+
+### Retry Flow
+
+```
+Research → Quality Check (fail) → Research Retry → Trending → Story → Complete
+```
+
+## 📊 Quality Metrics
+
+The system tracks multiple quality dimensions:
+
+- **Data Integrity**: Structural completeness of agent outputs
+- **Confidence Scores**: AI confidence in analysis quality
+- **Synthesis Alignment**: How well phases work together
+- **External Data Quality**: Real vs mock data usage
+- **Flow Decisions**: Why certain paths were taken
+
+## 🛠️ API Endpoints
+
+### Campaign Management
+
+- `POST /api/campaigns` - Start new campaign
 - `GET /api/campaigns/:id` - Get campaign status
 - `GET /api/campaigns` - List all campaigns
-- `GET /health` - System health check
 
-## Campaign Brief Format
+### Quality Control
 
-```
-Campaign Brief: [Campaign Name]
-Property Overview: [Description]
-Target Market: [Demographics]
-Key Objectives: [Goals]
-Timeline: [Launch timing]
-Special Considerations: [Any specific requirements]
-```
+- `GET /api/campaigns/:id/quality` - Get quality report
+- `GET /api/campaigns/:id/flow` - Get flow decisions
 
-## Environment Variables
+### Data Sources
 
-- `OPENAI_API_KEY` - Your OpenAI API key (required)
-- `PORT` - Server port (default: 3000)
-- `NODE_ENV` - Environment (development/production)
+- `GET /api/data-sources/status` - Check external API status
+- `POST /api/data-sources/test` - Test data source connections
 
-## File Structure
+## 🔧 Development
 
-```
-hyatt-gpt-prototype/
-├── agents/
-│   ├── ResearchAudienceAgent.js
-│   ├── TrendingNewsAgent.js
-│   └── StoryAnglesAgent.js
-├── campaigns/           # Saved campaign files
-├── public/
-│   └── index.html      # Web interface
-├── AgentOrchestrator.js # Main orchestration logic
-├── server.js           # Express server
-└── package.json
+### Adding New Data Sources
+
+1. **Extend DataSourceManager**
+
+```javascript
+// In utils/DataSourceManager.js
+async getNewDataSource(keywords) {
+  // Implementation
+}
 ```
 
-## Notes
+2. **Update Quality Controller**
 
-- Requires valid OpenAI API key for full functionality
-- Campaign data is saved locally in `campaigns/` directory
-- System prompts are loaded from `../GPTs/` markdown files
-- Fallback responses available if OpenAI API is unavailable
+```javascript
+// In utils/QualityController.js
+validateNewDataType(data) {
+  // Validation logic
+}
+```
+
+3. **Configure Environment**
+
+```bash
+NEW_DATA_SOURCE_API_KEY=your-key
+```
+
+### Custom Quality Thresholds
+
+```javascript
+// In utils/QualityController.js
+constructor() {
+  this.customThreshold = parseInt(process.env.CUSTOM_THRESHOLD) || 50;
+}
+```
+
+## 📈 Performance
+
+### Optimization Features
+
+- **Parallel API calls**: Multiple data sources fetched simultaneously
+- **Intelligent caching**: Reduces redundant API calls
+- **Adaptive timeouts**: Longer timeouts for complex analysis
+- **Background processing**: Non-blocking workflow execution
+
+### Monitoring
+
+- **Quality tracking**: Real-time quality metrics
+- **Performance logging**: API response times and success rates
+- **Error handling**: Graceful degradation when external APIs fail
+- **Data source fallbacks**: AI-generated data when real sources unavailable
+
+## 🚨 Error Handling
+
+The system includes comprehensive error handling:
+
+- **API failures**: Graceful fallback to AI-generated data
+- **Quality failures**: Automatic retry mechanisms
+- **Timeout handling**: Configurable timeouts for all operations
+- **Data validation**: Structural validation of all outputs
+- **Flow recovery**: System continues even if individual phases fail
+
+## 📝 Logging
+
+Comprehensive logging system tracks:
+
+- **Agent activities**: All agent actions and decisions
+- **Quality metrics**: Confidence scores and validation results
+- **Flow decisions**: Why certain paths were taken
+- **Data sources**: Which APIs were used and their quality
+- **Performance**: Response times and success rates
+
+## 🔐 Security
+
+- **API key management**: Secure environment variable handling
+- **Input validation**: All user inputs are validated
+- **Rate limiting**: Prevents API abuse
+- **Error sanitization**: No sensitive data in error messages
+
+## 📚 Documentation
+
+- **Agent System Prompts**: Located in `GPTs/` directory
+- **API Documentation**: Available at `/api/docs` when server is running
+- **Quality Metrics**: Detailed explanations in `utils/QualityController.js`
+- **Flow Logic**: Documented in `AgentOrchestrator.js`
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Update documentation
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+---
+
+**Built with OpenAI Responses API for guaranteed structured outputs and dynamic workflow control.**

@@ -46,7 +46,7 @@ class TrendingNewsAgent {
     }
   }
 
-  async analyzeTrends(campaignBrief, researchInsights) {
+  async analyzeTrends(campaignBrief, researchInsights, externalData = null) {
     // Simulate processing time - configurable via environment
     const delay = parseInt(process.env.TRENDING_DELAY) || 5000;
     await this.delay(delay);
@@ -54,7 +54,8 @@ class TrendingNewsAgent {
     // Use OpenAI API with system prompt to analyze trends dynamically
     const trends = await this.generateTrendsUsingPrompt(
       campaignBrief,
-      researchInsights
+      researchInsights,
+      externalData
     );
 
     return {
@@ -66,16 +67,49 @@ class TrendingNewsAgent {
     };
   }
 
-  async generateTrendsUsingPrompt(campaignBrief, researchInsights) {
+  async generateTrendsUsingPrompt(
+    campaignBrief,
+    researchInsights,
+    externalData = null
+  ) {
     try {
       console.log(`🔄 ${this.name}: Analyzing trends using Responses API...`);
+
+      // Build enhanced prompt with external data if available
+      let dataSection = "";
+      if (externalData) {
+        dataSection = `
+REAL-TIME DATA SOURCES:
+${
+  externalData.googleTrends
+    ? `
+Google Trends Data:
+${JSON.stringify(externalData.googleTrends, null, 2)}
+`
+    : ""
+}
+${
+  externalData.recentNews
+    ? `
+Recent News Articles:
+${JSON.stringify(externalData.recentNews, null, 2)}
+`
+    : ""
+}
+Data Quality: ${externalData.dataQuality || "mixed"}
+`;
+      }
 
       const prompt = `
 Campaign Brief: ${campaignBrief}
 
 Research Insights: ${JSON.stringify(researchInsights, null, 2)}
 
-Using your expertise in trend analysis and real-time monitoring, analyze this campaign and provide:
+${dataSection}
+
+Using your expertise in trend analysis and real-time monitoring${
+        externalData ? ", combined with the real-time data provided above," : ""
+      } analyze this campaign and provide:
 
 1. RELEVANT TRENDS (3-4 trends with momentum, relevance %, description, source)
 2. CULTURAL MOMENTS (4-5 timely opportunities)  
@@ -83,7 +117,11 @@ Using your expertise in trend analysis and real-time monitoring, analyze this ca
 4. TIMING RECOMMENDATION (specific timing strategy)
 5. TREND ANALYSIS (summary with quantifiable metrics)
 
-Provide structured trend analysis for this campaign.
+${
+  externalData
+    ? "Prioritize insights from the real-time data sources and reference specific trends, news articles, or social sentiment where relevant."
+    : "Provide structured trend analysis for this campaign."
+}
 `;
 
       // Define the response schema for structured output
@@ -100,6 +138,7 @@ Provide structured trend analysis for this campaign.
                 relevance: { type: "string" },
                 description: { type: "string" },
                 source: { type: "string" },
+                dataSource: { type: "string" }, // Added to track real vs AI data
               },
               required: [
                 "trend",
@@ -120,6 +159,7 @@ Provide structured trend analysis for this campaign.
           },
           timingRecommendation: { type: "string" },
           trendAnalysis: { type: "string" },
+          dataQuality: { type: "string" }, // Track data quality
           lastUpdated: { type: "string" },
         },
         required: [
@@ -151,6 +191,7 @@ Provide structured trend analysis for this campaign.
 
       const trends = response.choices[0].message.parsed;
       trends.lastUpdated = new Date().toISOString();
+      trends.dataQuality = externalData?.dataQuality || "ai_generated";
 
       console.log(
         `✅ ${this.name}: Generated structured trends analysis via Responses API`
@@ -168,6 +209,7 @@ Provide structured trend analysis for this campaign.
         mediaOpportunities: [],
         timingRecommendation: "Analysis unavailable - please retry",
         trendAnalysis: "Trend analysis failed",
+        dataQuality: "failed",
         lastUpdated: new Date().toISOString(),
       };
     }

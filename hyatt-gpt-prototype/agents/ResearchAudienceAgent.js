@@ -46,13 +46,16 @@ class ResearchAudienceAgent {
     }
   }
 
-  async analyzeAudience(campaignBrief) {
+  async analyzeAudience(campaignBrief, externalData = null) {
     // Simulate processing time - configurable via environment
     const delay = parseInt(process.env.RESEARCH_DELAY) || 4000;
     await this.delay(delay);
 
     // Use OpenAI API with system prompt to analyze audience dynamically
-    const insights = await this.generateInsightsUsingPrompt(campaignBrief);
+    const insights = await this.generateInsightsUsingPrompt(
+      campaignBrief,
+      externalData
+    );
 
     return {
       agent: this.name,
@@ -63,21 +66,54 @@ class ResearchAudienceAgent {
     };
   }
 
-  async generateInsightsUsingPrompt(campaignBrief) {
+  async generateInsightsUsingPrompt(campaignBrief, externalData = null) {
     try {
       console.log(`🔄 ${this.name}: Analyzing audience using Responses API...`);
+
+      // Build enhanced prompt with external data if available
+      let dataSection = "";
+      if (externalData) {
+        dataSection = `
+REAL-TIME DATA SOURCES:
+${
+  externalData.socialSentiment
+    ? `
+Social Media Sentiment:
+${JSON.stringify(externalData.socialSentiment, null, 2)}
+`
+    : ""
+}
+${
+  externalData.recentNews
+    ? `
+Recent Industry News:
+${JSON.stringify(externalData.recentNews, null, 2)}
+`
+    : ""
+}
+Data Quality: ${externalData.dataQuality || "mixed"}
+`;
+      }
 
       const prompt = `
 Campaign Brief: ${campaignBrief}
 
-Using your expertise in audience research and demographic analysis, analyze this campaign and provide:
+${dataSection}
+
+Using your expertise in audience research and demographic analysis${
+        externalData ? ", combined with the real-time data provided above," : ""
+      } analyze this campaign and provide:
 
 1. TARGET DEMOGRAPHICS (3-4 key segments with descriptions)
 2. KEY DRIVERS (what motivates each segment)
 3. STRATEGIC RECOMMENDATIONS (actionable insights)
 4. AUDIENCE ANALYSIS (summary with quantifiable insights)
 
-Provide structured analysis for this campaign.
+${
+  externalData
+    ? "Incorporate insights from the real-time social sentiment and news data where relevant to audience behavior and preferences."
+    : "Provide structured analysis for this campaign."
+}
 `;
 
       // Define the response schema for structured output
@@ -96,6 +132,7 @@ Provide structured analysis for this campaign.
                   type: "array",
                   items: { type: "string" },
                 },
+                dataSource: { type: "string" }, // Track real vs AI data
               },
               required: ["segment", "description", "size", "characteristics"],
             },
@@ -109,6 +146,7 @@ Provide structured analysis for this campaign.
             items: { type: "string" },
           },
           audienceAnalysis: { type: "string" },
+          dataQuality: { type: "string" }, // Track data quality
           lastUpdated: { type: "string" },
         },
         required: [
@@ -139,6 +177,7 @@ Provide structured analysis for this campaign.
 
       const insights = response.choices[0].message.parsed;
       insights.lastUpdated = new Date().toISOString();
+      insights.dataQuality = externalData?.dataQuality || "ai_generated";
 
       console.log(
         `✅ ${this.name}: Generated structured audience analysis via Responses API`
@@ -152,6 +191,7 @@ Provide structured analysis for this campaign.
         keyDrivers: {},
         strategicRecommendations: [],
         audienceAnalysis: "Analysis unavailable - please retry",
+        dataQuality: "failed",
         lastUpdated: new Date().toISOString(),
       };
     }

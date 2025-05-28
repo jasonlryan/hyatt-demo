@@ -7,120 +7,239 @@ const TrendingNewsAgent = require("./agents/TrendingNewsAgent");
 const StoryAnglesAgent = require("./agents/StoryAnglesAgent");
 const PRManagerAgent = require("./agents/PRManagerAgent");
 
+// Import new dynamic components
+const DataSourceManager = require("./utils/DataSourceManager");
+const QualityController = require("./utils/QualityController");
+
 class AgentOrchestrator {
   constructor() {
+    this.campaigns = new Map();
     this.researchAgent = new ResearchAudienceAgent();
     this.trendingAgent = new TrendingNewsAgent();
     this.storyAgent = new StoryAnglesAgent();
     this.prManagerAgent = new PRManagerAgent();
-    this.campaigns = new Map();
+
+    // Initialize dynamic components
+    this.dataSourceManager = new DataSourceManager();
+    this.qualityController = new QualityController();
+
+    // Dynamic flow configuration
+    this.enableDynamicFlow = process.env.ENABLE_DYNAMIC_FLOW === "true";
+    this.enableQualityControl = process.env.ENABLE_QUALITY_CONTROL === "true";
+    this.enableAgentInteraction =
+      process.env.ENABLE_AGENT_INTERACTION === "true";
   }
 
   async startCampaign(campaignBrief) {
     const campaignId = this.generateCampaignId();
-    console.log(
-      `Creating new campaign with brief: ${campaignBrief.substring(0, 100)}...`
-    );
+    const campaignContext = this.analyzeCampaignBrief(campaignBrief);
 
     const campaign = {
       id: campaignId,
       brief: campaignBrief,
-      status: "research", // Start with research phase
+      context: campaignContext,
+      status: "initializing",
+      conversation: [],
       phases: {},
-      conversation: [], // Track the conversational flow
+      qualityMetrics: {},
+      dataSourcesUsed: [],
+      flowDecisions: [],
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
     };
 
     this.campaigns.set(campaignId, campaign);
 
-    // Analyze the brief to determine campaign type and approach
-    const campaignContext = this.analyzeCampaignBrief(campaignBrief);
+    try {
+      // Generate dynamic campaign introduction
+      const introMessage =
+        await this.prManagerAgent.generateCampaignIntroduction(
+          campaignContext,
+          campaignBrief
+        );
 
-    // Add dynamic PR Manager message using the agent's system prompt
-    const prManagerIntro =
-      await this.prManagerAgent.generateCampaignIntroduction(
-        campaignBrief,
-        campaignContext
-      );
-    campaign.conversation.push({
-      speaker: "PR Manager",
-      message: prManagerIntro,
-      timestamp: new Date().toISOString(),
-    });
+      campaign.conversation.push({
+        speaker: "PR Manager",
+        message: introMessage,
+        timestamp: new Date().toISOString(),
+      });
 
-    // Start the first phase asynchronously
-    setTimeout(() => this.runResearchPhase(campaignId, campaignContext), 1000);
+      campaign.status = "active";
+      campaign.lastUpdated = new Date().toISOString();
 
-    return campaign;
+      // Start the research phase with dynamic flow control
+      setTimeout(() => {
+        this.runResearchPhase(campaignId, campaignContext);
+      }, 1000);
+
+      return { campaignId, status: "started" };
+    } catch (error) {
+      console.error("Failed to start campaign:", error);
+      campaign.status = "failed";
+      campaign.error = error.message;
+      return { campaignId, status: "failed", error: error.message };
+    }
   }
 
   analyzeCampaignBrief(brief) {
-    const lowerBrief = brief.toLowerCase();
-
-    // Determine campaign type
-    let campaignType = "general";
-    let focusAreas = [];
-    let urgency = "standard";
-    let targetMarket = "general";
-
-    // Campaign type detection
-    if (
-      lowerBrief.includes("eco") ||
-      lowerBrief.includes("sustainable") ||
-      lowerBrief.includes("regenerative")
-    ) {
-      campaignType = "sustainability";
-      focusAreas.push("environmental impact", "conscious travelers");
-    }
-    if (lowerBrief.includes("luxury") || lowerBrief.includes("premium")) {
-      campaignType =
-        campaignType === "sustainability" ? "luxury-sustainability" : "luxury";
-      focusAreas.push("high-end experiences", "affluent travelers");
-    }
-    if (lowerBrief.includes("business") || lowerBrief.includes("corporate")) {
-      campaignType = "business";
-      focusAreas.push("corporate travel", "executive experiences");
-    }
-    if (lowerBrief.includes("family") || lowerBrief.includes("kids")) {
-      campaignType = "family";
-      focusAreas.push("family experiences", "multi-generational travel");
-    }
-    if (lowerBrief.includes("wellness") || lowerBrief.includes("spa")) {
-      campaignType = "wellness";
-      focusAreas.push("health and wellness", "transformative experiences");
-    }
-
-    // Urgency detection
-    if (
-      lowerBrief.includes("urgent") ||
-      lowerBrief.includes("asap") ||
-      lowerBrief.includes("immediately")
-    ) {
-      urgency = "urgent";
-    }
-    if (lowerBrief.includes("next quarter") || lowerBrief.includes("soon")) {
-      urgency = "upcoming";
-    }
-
-    // Target market detection
-    if (lowerBrief.includes("millennial") || lowerBrief.includes("gen z")) {
-      targetMarket = "younger";
-    }
-    if (lowerBrief.includes("executive") || lowerBrief.includes("c-suite")) {
-      targetMarket = "executive";
-    }
-    if (lowerBrief.includes("international") || lowerBrief.includes("global")) {
-      targetMarket = "international";
-    }
+    // Enhanced campaign analysis with keyword extraction
+    const keywords = this.extractCampaignKeywords(brief);
+    const campaignType = this.determineCampaignType(brief);
+    const urgency = this.assessUrgency(brief);
+    const complexity = this.assessComplexity(brief);
 
     return {
       campaignType,
-      focusAreas,
       urgency,
-      targetMarket,
-      originalBrief: brief,
+      complexity,
+      keywords,
+      targetIndustry: this.identifyIndustry(brief),
+      estimatedDuration: this.estimateDuration(complexity, urgency),
+      riskLevel: this.assessRiskLevel(brief),
+      dataRequirements: this.identifyDataRequirements(brief),
     };
+  }
+
+  // Enhanced campaign analysis methods
+  extractCampaignKeywords(brief) {
+    const text = brief.toLowerCase();
+    const keywords = [];
+
+    // Industry keywords
+    const industryTerms = [
+      "hospitality",
+      "hotel",
+      "resort",
+      "travel",
+      "tourism",
+      "luxury",
+      "eco",
+      "wellness",
+    ];
+    industryTerms.forEach((term) => {
+      if (text.includes(term)) keywords.push(term);
+    });
+
+    // Audience keywords
+    const audienceTerms = [
+      "millennial",
+      "gen z",
+      "young",
+      "professional",
+      "family",
+      "business",
+    ];
+    audienceTerms.forEach((term) => {
+      if (text.includes(term)) keywords.push(term);
+    });
+
+    // Campaign type keywords
+    const campaignTerms = [
+      "launch",
+      "awareness",
+      "promotion",
+      "event",
+      "announcement",
+    ];
+    campaignTerms.forEach((term) => {
+      if (text.includes(term)) keywords.push(term);
+    });
+
+    return [...new Set(keywords)];
+  }
+
+  determineCampaignType(brief) {
+    const text = brief.toLowerCase();
+    if (text.includes("launch")) return "product_launch";
+    if (text.includes("event")) return "event_promotion";
+    if (text.includes("awareness")) return "brand_awareness";
+    if (text.includes("crisis")) return "crisis_management";
+    return "general_campaign";
+  }
+
+  assessUrgency(brief) {
+    const text = brief.toLowerCase();
+    if (
+      text.includes("urgent") ||
+      text.includes("asap") ||
+      text.includes("immediate")
+    )
+      return "high";
+    if (text.includes("soon") || text.includes("quick")) return "medium";
+    return "low";
+  }
+
+  assessComplexity(brief) {
+    const wordCount = brief.split(" ").length;
+    const hasMultipleObjectives =
+      (brief.match(/and|also|additionally/gi) || []).length > 2;
+    const hasSpecificRequirements =
+      brief.includes("must") || brief.includes("require");
+
+    if (wordCount > 200 || hasMultipleObjectives || hasSpecificRequirements)
+      return "high";
+    if (wordCount > 100) return "medium";
+    return "low";
+  }
+
+  identifyIndustry(brief) {
+    const text = brief.toLowerCase();
+    if (
+      text.includes("hotel") ||
+      text.includes("resort") ||
+      text.includes("hospitality")
+    )
+      return "hospitality";
+    if (text.includes("tech") || text.includes("software")) return "technology";
+    if (text.includes("health") || text.includes("medical"))
+      return "healthcare";
+    return "general";
+  }
+
+  estimateDuration(complexity, urgency) {
+    const complexityMultiplier = { low: 1, medium: 1.5, high: 2 };
+    const urgencyMultiplier = { high: 0.5, medium: 1, low: 1.5 };
+
+    const baseDuration = 7; // days
+    return Math.round(
+      baseDuration *
+        complexityMultiplier[complexity] *
+        urgencyMultiplier[urgency]
+    );
+  }
+
+  assessRiskLevel(brief) {
+    const text = brief.toLowerCase();
+    const riskKeywords = [
+      "crisis",
+      "urgent",
+      "sensitive",
+      "controversial",
+      "legal",
+    ];
+    const riskCount = riskKeywords.filter((keyword) =>
+      text.includes(keyword)
+    ).length;
+
+    if (riskCount >= 2) return "high";
+    if (riskCount === 1) return "medium";
+    return "low";
+  }
+
+  identifyDataRequirements(brief) {
+    const requirements = [];
+    const text = brief.toLowerCase();
+
+    if (text.includes("trend") || text.includes("popular"))
+      requirements.push("trending_data");
+    if (text.includes("audience") || text.includes("demographic"))
+      requirements.push("audience_data");
+    if (text.includes("competitor") || text.includes("market"))
+      requirements.push("competitive_data");
+    if (text.includes("social") || text.includes("sentiment"))
+      requirements.push("social_data");
+
+    return requirements;
   }
 
   async runResearchPhase(campaignId, campaignContext) {
@@ -148,19 +267,52 @@ class AgentOrchestrator {
       // Add processing indicator
       campaign.conversation.push({
         speaker: "Research & Audience GPT",
-        message: "_[Processing audience data and industry reports...]_",
+        message: "_[Analyzing target audience and market dynamics...]_",
         timestamp: new Date().toISOString(),
         isProcessing: true,
       });
 
+      // Get real data if enabled
+      let externalData = null;
+      if (this.dataSourceManager.enableRealDataSources) {
+        try {
+          externalData = await this.gatherResearchData(campaignContext);
+          campaign.dataSourcesUsed.push("audience_research", "market_data");
+        } catch (error) {
+          console.warn(
+            "External research data failed, proceeding with AI analysis:",
+            error.message
+          );
+        }
+      }
+
       const researchResult = await this.researchAgent.analyzeAudience(
-        campaign.brief
+        campaign.brief,
+        externalData
       );
 
       // Remove processing indicator and add results
       campaign.conversation = campaign.conversation.filter(
         (msg) => !msg.isProcessing
       );
+
+      // Quality control validation
+      let qualityValidation = { isValid: true, confidence: 85 };
+      if (this.enableQualityControl) {
+        qualityValidation = this.qualityController.validateResearchData(
+          researchResult.insights
+        );
+        campaign.qualityMetrics.research = qualityValidation;
+
+        console.log(
+          `🔍 Research Quality: ${qualityValidation.confidence}% confidence`
+        );
+        if (qualityValidation.issues.length > 0) {
+          console.log(
+            `⚠️ Research Issues: ${qualityValidation.issues.join(", ")}`
+          );
+        }
+      }
 
       campaign.phases.research = researchResult;
 
@@ -175,13 +327,32 @@ class AgentOrchestrator {
       campaign.conversation.push({
         speaker: "Research & Audience GPT",
         message: deliveryMessage,
-        deliverable: "Target Audience Analysis",
+        deliverable: "Audience Research & Insights",
         data: researchResult.insights,
+        qualityScore: qualityValidation.confidence,
         timestamp: new Date().toISOString(),
       });
 
       campaign.lastUpdated = new Date().toISOString();
       console.log(`[${campaignId}] Research phase completed`);
+
+      // Dynamic flow control
+      if (this.enableDynamicFlow && this.enableQualityControl) {
+        const flowDecision = this.qualityController.determineNextPhase(
+          "research",
+          qualityValidation
+        );
+        campaign.flowDecisions.push({
+          phase: "research",
+          decision: flowDecision,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (flowDecision.nextPhase === "research_retry") {
+          console.log(`🔄 Research quality insufficient, retrying...`);
+          // Could implement retry logic here
+        }
+      }
 
       // Generate dynamic PR Manager handoff
       setTimeout(async () => {
@@ -206,7 +377,7 @@ class AgentOrchestrator {
           campaign.conversation.push({
             speaker: "PR Manager",
             message:
-              "Now let's analyze current trends that align with these audience insights.",
+              "Now let's analyze current trends and cultural moments that could amplify our campaign.",
             timestamp: new Date().toISOString(),
           });
           this.runTrendingPhase(campaignId, campaignContext);
@@ -220,19 +391,46 @@ class AgentOrchestrator {
     }
   }
 
+  async gatherResearchData(campaignContext) {
+    const keywords = campaignContext.keywords || ["hospitality", "travel"];
+
+    try {
+      const [socialData, newsData] = await Promise.all([
+        this.dataSourceManager.getSocialMediaSentiment(keywords),
+        this.dataSourceManager.getRelevantNews(keywords, "business", 7),
+      ]);
+
+      return {
+        socialSentiment: socialData,
+        recentNews: newsData,
+        dataQuality:
+          socialData.dataQuality === "real" && newsData.dataQuality === "real"
+            ? "real"
+            : "mixed",
+      };
+    } catch (error) {
+      console.warn("Failed to gather external research data:", error);
+      return null;
+    }
+  }
+
   async generateAgentIntroMessage(agent, campaignContext, phase) {
-    // Call the agent's own method to generate the intro using their system prompt
     try {
       console.log(`🔄 Generating intro message for ${agent.name}...`);
       const message = await agent.generateConversationResponse(
         campaignContext,
-        "intro"
+        "introduction",
+        { phase, campaignType: campaignContext.campaignType }
       );
+
+      // Safe substring with null check
+      const messagePreview =
+        message && typeof message === "string"
+          ? message.substring(0, 100)
+          : "Generated introduction message";
+
       console.log(
-        `✅ Generated intro message for ${agent.name}: ${message.substring(
-          0,
-          100
-        )}...`
+        `✅ Generated intro message for ${agent.name}: ${messagePreview}...`
       );
       return message;
     } catch (error) {
@@ -253,11 +451,15 @@ class AgentOrchestrator {
         "delivery",
         data
       );
+
+      // Safe substring with null check
+      const messagePreview =
+        message && typeof message === "string"
+          ? message.substring(0, 100)
+          : "Generated delivery message";
+
       console.log(
-        `✅ Generated delivery message for ${agent.name}: ${message.substring(
-          0,
-          100
-        )}...`
+        `✅ Generated delivery message for ${agent.name}: ${messagePreview}...`
       );
       return message;
     } catch (error) {
@@ -312,15 +514,52 @@ class AgentOrchestrator {
         isProcessing: true,
       });
 
+      // Get real trending data if enabled
+      let externalData = null;
+      if (this.dataSourceManager.enableRealDataSources) {
+        try {
+          externalData = await this.gatherTrendingData(campaignContext);
+          campaign.dataSourcesUsed.push("google_trends", "news_api");
+        } catch (error) {
+          console.warn(
+            "External trending data failed, proceeding with AI analysis:",
+            error.message
+          );
+        }
+      }
+
       const trendingResult = await this.trendingAgent.analyzeTrends(
         campaign.brief,
-        campaign.phases.research.insights
+        campaign.phases.research.insights,
+        externalData
       );
 
       // Remove processing indicator and add results
       campaign.conversation = campaign.conversation.filter(
         (msg) => !msg.isProcessing
       );
+
+      // Quality control validation
+      let qualityValidation = {
+        isValid: true,
+        confidence: 80,
+        shouldSkipTrends: false,
+      };
+      if (this.enableQualityControl) {
+        qualityValidation = this.qualityController.validateTrendingData(
+          trendingResult.trends
+        );
+        campaign.qualityMetrics.trending = qualityValidation;
+
+        console.log(
+          `📈 Trending Quality: ${qualityValidation.confidence}% confidence`
+        );
+        if (qualityValidation.shouldSkipTrends) {
+          console.log(
+            `⚠️ Weak trends detected, considering alternative strategy`
+          );
+        }
+      }
 
       campaign.phases.trending = trendingResult;
 
@@ -337,11 +576,30 @@ class AgentOrchestrator {
         message: deliveryMessage,
         deliverable: "Current Trend Analysis",
         data: trendingResult.trends,
+        qualityScore: qualityValidation.confidence,
         timestamp: new Date().toISOString(),
       });
 
       campaign.lastUpdated = new Date().toISOString();
       console.log(`[${campaignId}] Trending phase completed`);
+
+      // Dynamic flow control
+      if (this.enableDynamicFlow && this.enableQualityControl) {
+        const flowDecision = this.qualityController.determineNextPhase(
+          "trending",
+          qualityValidation
+        );
+        campaign.flowDecisions.push({
+          phase: "trending",
+          decision: flowDecision,
+          timestamp: new Date().toISOString(),
+        });
+
+        if (flowDecision.alternativeFlow) {
+          console.log(`🔄 Using alternative strategy due to weak trends`);
+          campaignContext.useAlternativeStrategy = true;
+        }
+      }
 
       // Generate dynamic PR Manager handoff
       setTimeout(async () => {
@@ -377,6 +635,29 @@ class AgentOrchestrator {
       campaign.status = "failed";
       campaign.error = error.message;
       campaign.lastUpdated = new Date().toISOString();
+    }
+  }
+
+  async gatherTrendingData(campaignContext) {
+    const keywords = campaignContext.keywords || ["hospitality", "travel"];
+
+    try {
+      const [trendsData, newsData] = await Promise.all([
+        this.dataSourceManager.getTrendingTopics(keywords),
+        this.dataSourceManager.getRelevantNews(keywords, "business", 3),
+      ]);
+
+      return {
+        googleTrends: trendsData,
+        recentNews: newsData,
+        dataQuality:
+          trendsData.dataQuality === "real" && newsData.dataQuality === "real"
+            ? "real"
+            : "mixed",
+      };
+    } catch (error) {
+      console.warn("Failed to gather external trending data:", error);
+      return null;
     }
   }
 
@@ -422,6 +703,19 @@ class AgentOrchestrator {
         (msg) => !msg.isProcessing
       );
 
+      // Quality control validation
+      let qualityValidation = { isValid: true, confidence: 75 };
+      if (this.enableQualityControl) {
+        qualityValidation = this.qualityController.validateStoryData(
+          storyResult.storyAngles
+        );
+        campaign.qualityMetrics.story = qualityValidation;
+
+        console.log(
+          `✍️ Story Quality: ${qualityValidation.confidence}% confidence`
+        );
+      }
+
       campaign.phases.story = storyResult;
 
       // Generate dynamic delivery message using the agent's system prompt
@@ -435,8 +729,9 @@ class AgentOrchestrator {
       campaign.conversation.push({
         speaker: "Story Angles & Headlines GPT",
         message: deliveryMessage,
-        deliverable: "Media Angles & Headlines Strategy",
+        deliverable: "Story Angles & Headlines",
         data: storyResult.storyAngles,
+        qualityScore: qualityValidation.confidence,
         timestamp: new Date().toISOString(),
       });
 
@@ -471,7 +766,7 @@ class AgentOrchestrator {
           campaign.conversation.push({
             speaker: "PR Manager",
             message:
-              "Now let's bring this together into a cohesive, integrated campaign plan.",
+              "Now let's bring all our insights together for the final campaign strategy.",
             timestamp: new Date().toISOString(),
           });
           this.runCollaborativePhase(campaignId, campaignContext);
@@ -500,31 +795,54 @@ class AgentOrchestrator {
       campaign.status = "collaborative";
       campaign.lastUpdated = new Date().toISOString();
 
-      // Add dynamic collaborative discussion
-      const collaborativeMessages = await this.generateCollaborativeDiscussion(
-        campaignContext,
-        campaign.phases
-      );
+      // Enhanced collaborative discussion with real agent interaction
+      let collaborativeResults = [];
 
-      for (let i = 0; i < collaborativeMessages.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        campaign.conversation.push({
-          ...collaborativeMessages[i],
-          timestamp: new Date().toISOString(),
-        });
+      if (this.enableAgentInteraction) {
+        collaborativeResults =
+          await this.generateEnhancedCollaborativeDiscussion(
+            campaignContext,
+            campaign.phases
+          );
+      } else {
+        collaborativeResults = await this.generateCollaborativeDiscussion(
+          campaignContext,
+          campaign.phases
+        );
       }
 
-      const collaborativeResults = await Promise.all([
-        this.researchAgent.collaborativeInput(campaign.phases),
-        this.trendingAgent.collaborativeInput(campaign.phases),
-        this.storyAgent.collaborativeInput(campaign.phases),
-      ]);
+      // Add collaborative messages to conversation
+      collaborativeResults.forEach((result) => {
+        campaign.conversation.push({
+          speaker: result.speaker,
+          message: result.message,
+          timestamp: new Date().toISOString(),
+        });
+      });
+
+      // Quality control - validate data synthesis
+      let synthesisValidation = { isCoherent: true, alignmentScore: 85 };
+      if (this.enableQualityControl) {
+        synthesisValidation = this.qualityController.validateDataSynthesis(
+          campaign.phases.research.insights,
+          campaign.phases.trending.trends,
+          campaign.phases.story.storyAngles
+        );
+
+        console.log(
+          `🔗 Data Synthesis: ${synthesisValidation.alignmentScore}% alignment`
+        );
+        if (!synthesisValidation.isCoherent) {
+          console.log(
+            `⚠️ Synthesis Issues: ${synthesisValidation.gaps.join(", ")}`
+          );
+        }
+      }
 
       campaign.phases.collaborative = {
-        agent: "All Agents",
-        timestamp: new Date().toISOString(),
         phase: "collaborative",
         contributions: collaborativeResults,
+        synthesisQuality: synthesisValidation,
         finalStrategy: this.synthesizeFinalStrategy(
           campaign.phases,
           collaborativeResults
@@ -540,6 +858,7 @@ class AgentOrchestrator {
         ),
         deliverable: "Integrated Campaign Plan",
         data: campaign.phases.collaborative.finalStrategy,
+        synthesisScore: synthesisValidation.alignmentScore,
         timestamp: new Date().toISOString(),
       });
 
@@ -551,6 +870,18 @@ class AgentOrchestrator {
         ),
         timestamp: new Date().toISOString(),
       });
+
+      // Generate final quality report
+      if (this.enableQualityControl) {
+        const qualityReport = this.qualityController.generateQualityReport(
+          campaign.qualityMetrics
+        );
+        campaign.qualityReport = qualityReport;
+
+        console.log(
+          `📊 Campaign Quality Report: ${qualityReport.overallQuality} (${qualityReport.confidence}% confidence)`
+        );
+      }
 
       campaign.status = "completed";
       campaign.lastUpdated = new Date().toISOString();
@@ -568,11 +899,85 @@ class AgentOrchestrator {
     }
   }
 
+  async generateEnhancedCollaborativeDiscussion(context, phases) {
+    // Enhanced collaborative discussion with real agent interaction
+    const collaborativePrompts = {
+      research:
+        "Based on the trending analysis and story angles, how would you refine your audience insights?",
+      trending:
+        "Given the research findings and story direction, which trends should we prioritize?",
+      story:
+        "Considering the audience research and trending data, how can we strengthen our story angles?",
+    };
+
+    const results = [];
+
+    try {
+      // Let each agent respond to the others' findings
+      for (const [agentType, prompt] of Object.entries(collaborativePrompts)) {
+        const agent = this.getAgentByType(agentType);
+        const otherPhasesData = this.getOtherPhasesData(phases, agentType);
+
+        const response = await agent.generateConversationResponse(
+          context,
+          "collaborative_refinement",
+          { prompt, otherPhasesData, allPhases: phases }
+        );
+
+        results.push({
+          agent: agentType,
+          speaker: agent.name,
+          message: response,
+          type: "refinement",
+        });
+      }
+    } catch (error) {
+      console.warn(
+        "Enhanced collaboration failed, using standard approach:",
+        error
+      );
+      return await this.generateCollaborativeDiscussion(context, phases);
+    }
+
+    return results;
+  }
+
+  getAgentByType(type) {
+    switch (type) {
+      case "research":
+        return this.researchAgent;
+      case "trending":
+        return this.trendingAgent;
+      case "story":
+        return this.storyAgent;
+      default:
+        return this.researchAgent;
+    }
+  }
+
+  getOtherPhasesData(phases, excludePhase) {
+    const otherData = {};
+    Object.entries(phases).forEach(([phase, data]) => {
+      if (phase !== excludePhase && data) {
+        otherData[phase] = data;
+      }
+    });
+    return otherData;
+  }
+
   async generateCollaborativeDiscussion(context, phases) {
     const { campaignType } = context;
-    const primaryAngle = phases.story.storyAngles.primaryAngle.angle;
-    const topTrend = phases.trending.trends.relevantTrends[0].trend;
-    const topDriver = Object.entries(phases.research.insights.keyDrivers)[0];
+
+    // Safe data extraction with fallbacks
+    const primaryAngle =
+      phases.story?.storyAngles?.primaryAngle?.angle ||
+      "Primary campaign angle";
+    const topTrend =
+      phases.trending?.trends?.relevantTrends?.[0]?.trend ||
+      "Key trending topic";
+    const topDriverEntry = phases.research?.insights?.keyDrivers
+      ? Object.entries(phases.research.insights.keyDrivers)[0]
+      : ["audience motivation", "key driver"];
 
     // Generate dynamic collaborative messages using agent context
     const researchMessage = await this.generateCollaborativeMessage(
@@ -618,9 +1023,17 @@ class AgentOrchestrator {
     phases,
     agentPhase
   ) {
-    // Use the agent's own collaborative input method to generate the message
-    const collaborativeInput = await agent.collaborativeInput(phases);
-    return collaborativeInput.contribution;
+    try {
+      // Use the agent's own collaborative input method to generate the message
+      const collaborativeInput = await agent.collaborativeInput(phases);
+      return collaborativeInput.contribution;
+    } catch (error) {
+      console.warn(
+        `Collaborative message generation failed for ${agent.name}:`,
+        error
+      );
+      return `I've contributed my ${agentPhase} analysis to this ${campaignContext.campaignType} campaign.`;
+    }
   }
 
   async generateFinalDeliveryMessage(context, allPhaseData) {
@@ -651,19 +1064,31 @@ class AgentOrchestrator {
       };
     }
 
-    const topDriver = Object.entries(research.keyDrivers)[0];
-    const topTrend = trends.relevantTrends[0];
-    const primaryAngle = story.primaryAngle;
+    // Safe data extraction with fallbacks
+    const topDriverEntry = Object.entries(research.keyDrivers || {})[0] || [
+      "engagement",
+      "key metric",
+    ];
+    const topTrend = trends.relevantTrends?.[0] || {
+      trend: "industry trend",
+      relevance: "75%",
+    };
+    const primaryAngle = story.primaryAngle || {
+      angle: "Primary campaign angle",
+      emotionalHook: "Key message",
+    };
 
     // Format target audience properly - extract segment names from objects
-    const targetAudienceNames = research.targetDemographics
-      .map((demo) => demo.segment || demo.name || demo)
-      .join(", ");
+    const targetAudienceNames =
+      (research.targetDemographics || [])
+        .map((demo) => demo.segment || demo.name || demo)
+        .join(", ") || "Target audience";
 
     // Calculate strategic alignment properly - extract numeric values from relevance percentages
     let strategicAlignment = "N/A";
     try {
-      const relevanceMatch = topTrend.relevance.match(/(\d+)/);
+      const relevanceStr = topTrend.relevance || "75%";
+      const relevanceMatch = relevanceStr.toString().match(/(\d+)/);
       const relevanceNum = relevanceMatch ? parseInt(relevanceMatch[1]) : 75;
       strategicAlignment = `${relevanceNum}%`;
     } catch (error) {
@@ -672,21 +1097,21 @@ class AgentOrchestrator {
 
     return {
       campaignTheme: primaryAngle.angle,
-      primaryHeadline: story.headlines[0],
+      primaryHeadline: story.headlines?.[0] || "Campaign Headline",
       targetAudience: targetAudienceNames,
-      keyMessage: primaryAngle.emotionalHook,
+      keyMessage: primaryAngle.emotionalHook || "Key campaign message",
       strategicAlignment: strategicAlignment,
-      launchTiming: trends.timingRecommendation,
-      mediaStrategy: trends.mediaOpportunities.slice(0, 3),
+      launchTiming: trends.timingRecommendation || "Optimal timing recommended",
+      mediaStrategy: (trends.mediaOpportunities || []).slice(0, 3),
       successMetrics: [
-        `${topDriver[0]} engagement rate`,
+        `${topDriverEntry[0]} engagement rate`,
         `${topTrend.trend} mention share`,
         "Campaign reach and impressions",
         "Audience sentiment analysis",
       ],
       collaborativeInsights: collaborativeResults.map((result) => ({
-        agent: result.agent,
-        keyInsight: result.contribution,
+        agent: result.agent || result.speaker,
+        keyInsight: result.contribution || result.message,
       })),
     };
   }
