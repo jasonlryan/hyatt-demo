@@ -54,6 +54,14 @@ class AgentOrchestrator {
     this.campaigns.set(campaignId, campaign);
 
     try {
+      // Add the original campaign brief as the first conversation entry
+      campaign.conversation.push({
+        speaker: "Campaign Brief",
+        message: campaignBrief,
+        timestamp: new Date().toISOString(),
+        isBrief: true, // Flag to identify this as the original brief
+      });
+
       // Generate dynamic campaign introduction
       const introMessage =
         await this.prManagerAgent.generateCampaignIntroduction(
@@ -75,7 +83,13 @@ class AgentOrchestrator {
         this.runResearchPhase(campaignId, campaignContext);
       }, 1000);
 
-      return { campaignId, status: "started" };
+      return {
+        campaignId,
+        status: "started",
+        conversation: campaign.conversation, // Include initial conversation
+        brief: campaignBrief,
+        createdAt: campaign.createdAt,
+      };
     } catch (error) {
       console.error("Failed to start campaign:", error);
       campaign.status = "failed";

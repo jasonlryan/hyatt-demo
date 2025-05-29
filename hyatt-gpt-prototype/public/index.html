@@ -13,9 +13,39 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000000;
             min-height: 100vh;
-            padding: 20px;
+            margin: 0;
+            padding: 0;
+            padding-top: 90px; /* Reduced space for smaller header */
+        }
+
+        /* Fixed full-width header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #f8f9fa;
+            color: #2c3e50;
+            padding: 15px 30px;
+            text-align: left;
+            z-index: 1003;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .header p {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            margin: 0;
+            color: #495057;
         }
 
         .container {
@@ -25,23 +55,22 @@
             border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
+            transition: margin-left 0.3s ease, margin-right 0.3s ease;
+            margin-top: 20px;
+            margin-bottom: 20px;
         }
 
-        .header {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 30px;
-            text-align: center;
+        .container.progress-open {
+            margin-left: 400px;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+        .container.deliverables-open {
+            margin-right: 400px;
         }
 
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
+        .container.both-open {
+            margin-left: 400px;
+            margin-right: 400px;
         }
 
         .main-content {
@@ -206,6 +235,12 @@
             100% { transform: rotate(360deg); }
         }
 
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7); }
+            50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(102, 126, 234, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102, 126, 234, 0); }
+        }
+
         .error {
             background: #ffe6e6;
             color: #d63031;
@@ -216,6 +251,37 @@
 
         .campaigns-list {
             margin-top: 30px;
+        }
+
+        .campaigns-list h2 {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: background-color 0.3s ease;
+        }
+
+        .campaigns-list h2:hover {
+            background: #e9ecef;
+        }
+
+        .campaigns-toggle {
+            font-size: 1.2rem;
+            transition: transform 0.3s ease;
+        }
+
+        .campaigns-content {
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            max-height: 0;
+        }
+
+        .campaigns-content.open {
+            max-height: 1000px;
         }
 
         .campaign-item {
@@ -280,6 +346,13 @@
             border-left-color: #2196f3;
         }
 
+        .conversation-message.campaign-brief {
+            background: #f3e5f5;
+            border-left-color: #9c27b0;
+            border: 2px solid #9c27b0;
+            font-weight: 500;
+        }
+
         .conversation-message.research-agent {
             background: #f3e5f5;
             border-left-color: #9c27b0;
@@ -337,30 +410,63 @@
             margin-top: 8px;
         }
 
-        /* Side Panel for Deliverables */
+        /* Side Panel for Progress Updates - LEFT SIDE */
+        .progress-panel {
+            position: fixed;
+            left: -400px;
+            top: 90px; /* Start below smaller header */
+            width: 400px;
+            height: calc(100vh - 90px); /* Full height minus smaller header */
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+            z-index: 1001;
+            overflow-y: auto;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .progress-panel.open {
+            left: 0;
+        }
+
+        /* Side Panel for Deliverables - RIGHT SIDE */
         .deliverables-panel {
             position: fixed;
             right: -400px;
-            top: 0;
+            top: 90px; /* Start below smaller header */
             width: 400px;
-            height: 100vh;
+            height: calc(100vh - 90px); /* Full height minus smaller header */
             background: white;
             box-shadow: -2px 0 10px rgba(0,0,0,0.1);
             transition: right 0.3s ease;
             z-index: 1000;
             overflow-y: auto;
+            border-left: 1px solid #e9ecef;
         }
 
         .deliverables-panel.open {
             right: 0;
         }
 
+        .panel-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+            z-index: 1002;
+        }
+
+        .panel-header h3 {
+            margin: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1rem;
+        }
+
         .deliverables-header {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
             padding: 20px;
-            position: sticky;
-            top: 0;
             z-index: 1001;
         }
 
@@ -369,6 +475,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            font-size: 1.1rem;
         }
 
         .close-panel {
@@ -389,6 +496,11 @@
             padding: 20px;
         }
 
+        .progress-content {
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
         .deliverable-item {
             background: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -398,7 +510,7 @@
         }
 
         .deliverable-header {
-            padding: 15px;
+            padding: 12px 15px;
             cursor: pointer;
             background: #f8f9fa;
             border-bottom: 1px solid #e9ecef;
@@ -420,12 +532,12 @@
         .deliverable-item h4 {
             color: #2c3e50;
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 0.95rem;
         }
 
         .deliverable-item .agent-name {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             margin: 5px 0 0 0;
         }
 
@@ -438,10 +550,150 @@
             line-height: 1.6;
             max-height: 400px;
             overflow-y: auto;
+            font-size: 0.85rem;
         }
 
         .deliverable-content.expanded {
             display: block;
+        }
+
+        /* Markdown styling for deliverables - smaller fonts */
+        .deliverable-content h1,
+        .deliverable-content h2,
+        .deliverable-content h3,
+        .deliverable-content h4,
+        .deliverable-content h5,
+        .deliverable-content h6 {
+            color: #2c3e50;
+            margin: 12px 0 6px 0;
+            font-weight: 600;
+        }
+
+        .deliverable-content h1 { font-size: 1.2rem; border-bottom: 2px solid #3498db; padding-bottom: 3px; }
+        .deliverable-content h2 { font-size: 1.1rem; border-bottom: 1px solid #bdc3c7; padding-bottom: 2px; }
+        .deliverable-content h3 { font-size: 1.0rem; color: #34495e; }
+        .deliverable-content h4 { font-size: 0.9rem; color: #7f8c8d; }
+
+        .deliverable-content p {
+            margin: 6px 0;
+            line-height: 1.4;
+            font-size: 0.8rem;
+        }
+
+        .deliverable-content ul,
+        .deliverable-content ol {
+            margin: 6px 0 6px 12px;
+            padding-left: 12px;
+        }
+
+        .deliverable-content li {
+            margin: 3px 0;
+            line-height: 1.3;
+            font-size: 0.8rem;
+        }
+
+        .deliverable-content strong,
+        .deliverable-content b {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .deliverable-content em,
+        .deliverable-content i {
+            color: #7f8c8d;
+            font-style: italic;
+        }
+
+        .deliverable-content code {
+            background: #f8f9fa;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75em;
+            color: #e74c3c;
+        }
+
+        .deliverable-content blockquote {
+            border-left: 3px solid #3498db;
+            margin: 10px 0;
+            padding: 6px 10px;
+            background: #f8f9fa;
+            font-style: italic;
+            color: #555;
+            font-size: 0.8rem;
+        }
+
+        /* Progress Updates Section - now for side panel */
+        .progress-updates {
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin: 20px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .progress-header {
+            background: #495057;
+            color: white;
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .progress-messages {
+            padding: 12px;
+            background: #ffffff;
+        }
+
+        .progress-message {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            margin: 3px 0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            line-height: 1.4;
+            border-left: 3px solid;
+        }
+
+        .progress-message.info {
+            color: #1a365d;
+            background: #e6f3ff;
+            border-left-color: #3182ce;
+        }
+
+        .progress-message.success {
+            color: #1a202c;
+            background: #d4edda;
+            border-left-color: #38a169;
+        }
+
+        .progress-message.warning {
+            color: #744210;
+            background: #fff3cd;
+            border-left-color: #d69e2e;
+        }
+
+        .progress-message.error {
+            color: #742a2a;
+            background: #fed7d7;
+            border-left-color: #e53e3e;
+        }
+
+        .progress-message.phase {
+            color: #44337a;
+            background: #e9d8fd;
+            border-left-color: #805ad5;
+            font-weight: 600;
+        }
+
+        .progress-timestamp {
+            color: #4a5568;
+            font-size: 0.7rem;
+            margin-right: 8px;
+            font-weight: 500;
         }
 
         .collapse-icon {
@@ -482,10 +734,10 @@
         /* Overlay for mobile */
         .panel-overlay {
             position: fixed;
-            top: 0;
+            top: 120px; /* Start below fixed header */
             left: 0;
             width: 100%;
-            height: 100%;
+            height: calc(100vh - 120px); /* Full height minus header */
             background: rgba(0,0,0,0.5);
             z-index: 999;
             display: none;
@@ -497,9 +749,56 @@
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
+            body {
+                padding-top: 140px; /* More space for header on mobile */
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
             .deliverables-panel {
                 width: 100%;
                 right: -100%;
+                top: 140px; /* Account for mobile header height */
+                height: calc(100vh - 140px);
+            }
+            
+            .progress-panel {
+                width: 100%;
+                left: -100%;
+                top: 140px; /* Account for mobile header height */
+                height: calc(100vh - 140px);
+            }
+            
+            .deliverables-panel.open {
+                right: 0;
+            }
+            
+            .progress-panel.open {
+                left: 0;
+            }
+            
+            .container.progress-open,
+            .container.deliverables-open,
+            .container.both-open {
+                margin-left: 20px;
+                margin-right: 20px;
+            }
+            
+            /* Show overlay on mobile only */
+            .panel-overlay {
+                display: none;
+                top: 140px; /* Start below header */
+                height: calc(100vh - 140px);
+            }
+            
+            .panel-overlay.show {
+                display: block;
             }
         }
     </style>
@@ -533,9 +832,23 @@
                 <div id="campaignId">
                     <div class="campaign-id">No active campaign</div>
                 </div>
-                <button id="deliverablesBtn" onclick="openDeliverablesPanel()" style="display: none; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
+                <button id="progressBtn" onclick="openProgressPanel()" style="display: none; background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
+                    View Progress
+                </button>
+                
+                <button id="deliverablesBtn" onclick="openDeliverablesPanel()" style="display: none; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
                     View Deliverables
                 </button>
+                
+                <!-- Progress Updates Section (Hidden - now in side panel) -->
+                <div id="progressUpdates" class="progress-updates" style="display: none;">
+                    <div class="progress-header">
+                        🔄 Campaign Progress Updates
+                    </div>
+                    <div class="progress-messages" id="progressMessages">
+                        <!-- Progress messages will be added here -->
+                    </div>
+                </div>
                 
                 <!-- Conversation Flow Display -->
                 <div id="conversationFlow" class="conversation-flow">
@@ -586,14 +899,17 @@
             <div id="errorSection" style="display: none;"></div>
 
             <div class="campaigns-list">
-                <h2>Recent Campaigns</h2>
-                <div id="campaignsList"></div>
+                <h2 onclick="toggleCampaignsList()">
+                    Recent Campaigns
+                    <span id="campaignsToggle" class="campaigns-toggle">▼</span>
+                </h2>
+                <div id="campaignsList" class="campaigns-content"></div>
             </div>
         </div>
     </div>
 
     <!-- Deliverables Side Panel -->
-    <div class="panel-overlay" id="panelOverlay" onclick="closeDeliverablesPanel()"></div>
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanelsOnMobile()"></div>
     <div class="deliverables-panel" id="deliverablesPanel">
         <div class="deliverables-header">
             <h3>
@@ -606,12 +922,38 @@
         </div>
     </div>
 
+    <!-- Progress Side Panel -->
+    <div class="progress-panel" id="progressPanel">
+        <div class="panel-header">
+            <h3>
+                🔄 Campaign Progress
+                <button class="close-panel" onclick="closeProgressPanel()">×</button>
+            </h3>
+        </div>
+        <div class="progress-content" id="progressPanelContent">
+            <div class="progress-messages" id="progressPanelMessages">
+                <p style="color: #666; text-align: center; margin-top: 50px; font-size: 0.85rem;">No progress updates yet. Start a campaign to see real-time progress here.</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentCampaignId = null;
         let pollingInterval = null;
         let campaignDeliverables = {};
+        let progressMessages = [];
+        let lastProgressCount = 0;
+        let isCreatingCampaign = false; // Prevent duplicate submissions
+        let currentPhase = null; // Track current phase
+        let phaseStartTime = null; // Track phase timing
 
         async function createCampaign() {
+            // Prevent multiple submissions
+            if (isCreatingCampaign) {
+                console.log('Campaign creation already in progress, ignoring duplicate request');
+                return;
+            }
+
             const brief = document.getElementById('campaignBrief').value.trim();
             
             if (!brief) {
@@ -619,9 +961,23 @@
                 return;
             }
 
+            // Set flag to prevent duplicates
+            isCreatingCampaign = true;
+            
             const createBtn = document.getElementById('createBtn');
             createBtn.disabled = true;
             createBtn.textContent = 'Creating Campaign...';
+
+            // Reset progress and phase tracking
+            progressMessages = [];
+            lastProgressCount = 0;
+            currentPhase = null;
+            phaseStartTime = new Date();
+            document.getElementById('progressUpdates').style.display = 'none'; // Hide center progress
+            document.getElementById('progressBtn').style.display = 'inline-block'; // Show progress button
+            document.getElementById('progressPanelMessages').innerHTML = ''; // Clear side panel
+            addProgressMessage('🚀 Initializing campaign creation...', 'info');
+            addProgressMessage('📝 Processing campaign brief and requirements', 'info');
 
             try {
                 const response = await fetch('/api/campaigns', {
@@ -643,37 +999,223 @@
                     `;
                     document.getElementById('statusSection').style.display = 'block';
                     
-                    // Show conversation flow immediately
+                    addProgressMessage('✅ Campaign created successfully', 'success');
+                    addProgressMessage('🤖 AI agents are now collaborating on your campaign', 'info');
+                    addProgressMessage('⏱️ Estimated completion time: 2-3 minutes', 'info');
+                    
+                    // Show conversation flow immediately with initial data
                     updateConversationFlow(result);
                     
                     // Start polling for updates immediately
                     startPolling();
                     
                     // Also do an immediate poll
-                    setTimeout(updateCampaignStatus, 500);
+                    setTimeout(updateCampaignStatus, 2000); // Increased delay
                     
-                    // Don't clear the form so user can see what they submitted
-                    // document.getElementById('campaignBrief').value = '';
+                    // Clear the form after successful creation and conversation display
+                    setTimeout(() => {
+                        document.getElementById('campaignBrief').value = '';
+                    }, 1000); // Delay clearing to ensure conversation is displayed
                 } else {
                     showError(result.error || 'Failed to create campaign');
+                    addProgressMessage('❌ Campaign creation failed', 'error');
                 }
             } catch (error) {
                 showError('Network error: ' + error.message);
+                addProgressMessage('❌ Network error occurred', 'error');
             } finally {
+                // Reset flag and button state
+                isCreatingCampaign = false;
                 createBtn.disabled = false;
                 createBtn.textContent = 'Create Campaign';
             }
         }
 
+        function trackPhaseChange(newPhase) {
+            if (currentPhase !== newPhase) {
+                if (currentPhase && phaseStartTime) {
+                    const duration = Math.round((new Date() - phaseStartTime) / 1000);
+                    addProgressMessage(`⏱️ ${currentPhase} phase completed in ${duration}s`, 'info', `${currentPhase}-timing`);
+                }
+                currentPhase = newPhase;
+                phaseStartTime = new Date();
+                
+                // Add phase-specific timing estimates
+                const estimates = {
+                    'Research': '30-45 seconds',
+                    'Strategic Insight': '20-30 seconds', 
+                    'Trending': '25-35 seconds',
+                    'Story': '30-40 seconds',
+                    'Collaborative': '40-60 seconds'
+                };
+                
+                if (estimates[newPhase]) {
+                    addProgressMessage(`⏳ ${newPhase} phase starting (est. ${estimates[newPhase]})`, 'info', `${newPhase}-estimate`);
+                }
+            }
+        }
+
+        function simulateProgressFromConversation(campaign) {
+            if (!campaign.conversation) return;
+            
+            // Only add new messages since last check
+            const newMessages = campaign.conversation.slice(lastProgressCount);
+            
+            newMessages.forEach((message, index) => {
+                const speaker = message.speaker;
+                const timestamp = new Date(message.timestamp).toLocaleTimeString();
+                
+                // Avoid duplicate progress messages by checking if we already logged this message
+                const messageKey = `${speaker}-${message.timestamp}`;
+                if (progressMessages.some(p => p.key === messageKey)) {
+                    return; // Skip if already processed
+                }
+                
+                // More detailed progress tracking based on actual conversation flow
+                if (speaker === 'Campaign Brief') {
+                    addProgressMessage(`📝 Original campaign brief recorded: "${message.message.substring(0, 50)}..."`, 'info', messageKey);
+                } else if (speaker === 'PR Manager') {
+                    if (message.message.includes('campaign introduction') || index === 0) {
+                        addProgressMessage(`🚀 Campaign initiated - PR Manager setting strategic direction`, 'phase', messageKey);
+                    } else if (message.message.includes('research') || message.message.includes('Research')) {
+                        trackPhaseChange('Research');
+                        addProgressMessage(`🔄 Transitioning to Research & Audience Analysis phase`, 'info', messageKey);
+                    } else if (message.message.includes('trending') || message.message.includes('trends')) {
+                        trackPhaseChange('Trending');
+                        addProgressMessage(`🔄 Transitioning to Trending News Analysis phase`, 'info', messageKey);
+                    } else if (message.message.includes('story') || message.message.includes('Story')) {
+                        trackPhaseChange('Story');
+                        addProgressMessage(`🔄 Transitioning to Story Development phase`, 'info', messageKey);
+                    } else if (message.message.includes('collaborative') || message.message.includes('final')) {
+                        trackPhaseChange('Collaborative');
+                        addProgressMessage(`🔄 Transitioning to Collaborative Synthesis phase`, 'info', messageKey);
+                    } else {
+                        addProgressMessage(`🤖 PR Manager: ${message.message.substring(0, 60)}...`, 'phase', messageKey);
+                    }
+                } else if (speaker.includes('Research')) {
+                    trackPhaseChange('Research');
+                    addProgressMessage(`🔍 Research Agent: Analyzing target audience and market insights`, 'info', messageKey);
+                } else if (speaker.includes('Strategic Insight')) {
+                    trackPhaseChange('Strategic Insight');
+                    addProgressMessage(`🧠 Strategic Insight Agent: Converting insights to emotional truths`, 'info', messageKey);
+                } else if (speaker.includes('Trending')) {
+                    trackPhaseChange('Trending');
+                    addProgressMessage(`📈 Trending Agent: Analyzing current market trends and cultural moments`, 'info', messageKey);
+                } else if (speaker.includes('Story')) {
+                    trackPhaseChange('Story');
+                    addProgressMessage(`✍️ Story Agent: Developing compelling narratives and headlines`, 'info', messageKey);
+                } else if (speaker === 'All Agents') {
+                    trackPhaseChange('Collaborative');
+                    addProgressMessage(`🎯 Collaborative Phase: All agents synthesizing final strategy`, 'phase', messageKey);
+                }
+                
+                // Enhanced deliverable tracking
+                if (message.deliverable) {
+                    const deliverableType = getDeliverableType(message.deliverable);
+                    addProgressMessage(`📄 ${deliverableType} deliverable completed by ${speaker}`, 'success', `${messageKey}-deliverable`);
+                    
+                    // Show quality metrics if available
+                    if (message.qualityScore !== undefined) {
+                        const qualityLevel = message.qualityScore > 0 ? 'high' : 'needs improvement';
+                        addProgressMessage(`📊 Quality assessment: ${qualityLevel} confidence`, 'warning', `${messageKey}-quality`);
+                    }
+                }
+            });
+            
+            lastProgressCount = campaign.conversation.length;
+            
+            // Enhanced completion tracking
+            if (campaign.status === 'completed' && !progressMessages.some(m => m.message.includes('Campaign completed'))) {
+                addProgressMessage('🎉 Campaign strategy completed successfully!', 'success', 'completion');
+                addProgressMessage('💾 Campaign saved and ready for implementation', 'success', 'saved');
+            }
+        }
+
+        function getDeliverableType(deliverable) {
+            if (typeof deliverable === 'object') {
+                if (deliverable.analysis) return 'Audience Research';
+                if (deliverable.humanTruthAnalysis) return 'Strategic Insight';
+                if (deliverable.trendsAnalysis) return 'Trends Analysis';
+                if (deliverable.storyStrategy) return 'Story Strategy';
+                if (deliverable.theme || deliverable.humanTruth) return 'Integrated Campaign Plan';
+            }
+            return 'Strategy';
+        }
+
+        function addProgressMessage(message, type = 'info', key = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const messageObj = { 
+                message, 
+                type, 
+                timestamp, 
+                key: key || `${timestamp}-${message.substring(0, 20)}` 
+            };
+            
+            // Check for duplicates
+            if (progressMessages.some(p => p.key === messageObj.key)) {
+                return; // Skip duplicate
+            }
+            
+            progressMessages.push(messageObj);
+            
+            // Add to side panel instead of center
+            const progressContainer = document.getElementById('progressPanelMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `progress-message ${type}`;
+            messageDiv.innerHTML = `<span class="progress-timestamp">${timestamp}</span>${message}`;
+            
+            progressContainer.appendChild(messageDiv);
+            progressContainer.scrollTop = progressContainer.scrollHeight;
+            
+            // Show progress button if not already visible
+            document.getElementById('progressBtn').style.display = 'inline-block';
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return '';
+            
+            // Convert markdown to HTML
+            return text
+                // Headers
+                .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                .replace(/^\*\*(.*)\*\*$/gm, '<h4>$1</h4>')
+                
+                // Bold and italic
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                
+                // Lists
+                .replace(/^- (.*$)/gm, '<li>$1</li>')
+                .replace(/^(\d+)\. (.*$)/gm, '<li>$2</li>')
+                
+                // Line breaks
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                
+                // Wrap in paragraphs
+                .replace(/^(?!<[h|l|p])/gm, '<p>')
+                .replace(/(?<!>)$/gm, '</p>')
+                
+                // Clean up empty paragraphs
+                .replace(/<p><\/p>/g, '')
+                .replace(/<p><br><\/p>/g, '')
+                
+                // Wrap lists
+                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+                .replace(/<\/ul>\s*<ul>/g, '');
+        }
+
         function startPolling() {
             if (pollingInterval) clearInterval(pollingInterval);
             
-            // Poll more frequently to catch state changes
+            // Reduced polling frequency to prevent overwhelming the server
             pollingInterval = setInterval(async () => {
-                if (currentCampaignId) {
+                if (currentCampaignId && !isCreatingCampaign) {
                     await updateCampaignStatus();
                 }
-            }, 1000); // Reduced from 2000ms to 1000ms
+            }, 3000); // Increased from 1000ms to 3000ms
         }
 
         async function updateCampaignStatus() {
@@ -686,6 +1228,7 @@
 
                 if (response.ok) {
                     updateConversationFlow(campaign);
+                    simulateProgressFromConversation(campaign);
 
                     if (campaign.status === 'completed') {
                         clearInterval(pollingInterval);
@@ -735,6 +1278,8 @@
 
         function getSpeakerClass(speaker) {
             switch (speaker) {
+                case 'Campaign Brief':
+                    return 'campaign-brief';
                 case 'PR Manager':
                     return 'pr-manager';
                 case 'Research & Audience GPT':
@@ -750,140 +1295,72 @@
             }
         }
 
-        function formatDeliverableData(deliverable, agentName) {
-            // Use the agent name from the message or fall back to the passed parameter
-            const agent = agentName || "Unknown Agent";
-            
-            if (!deliverable || deliverable === "Deliverable data available") {
-                return `<div class="deliverable-placeholder">
-                    📄 <strong>DELIVERABLE:</strong> ${agent} Deliverable
-                    <span class="deliverable-badge">Available</span>
-                    <button class="deliverable-toggle" onclick="openDeliverablesPanel()">View Details</button>
-                </div>`;
-            }
-
-            // Store deliverable for side panel
+        function formatDeliverableData(deliverable, agent) {
             if (typeof deliverable === 'object') {
                 let content = '';
                 let title = `${agent} Deliverable`;
 
-                // Extract content based on structure
-                if (deliverable.targetDemographics) {
+                // Handle Research & Audience deliverables
+                if (deliverable.analysis) {
                     title = "Audience Research & Insights";
-                    content = `Target Demographics:\n${deliverable.targetDemographics.map(demo => 
-                        `• ${demo.segment || demo}: ${demo.description || ''}`
-                    ).join('\n')}\n\nKey Insights:\n${deliverable.keyInsights?.join('\n• ') || 'No insights available'}`;
-                    
-                    // Add key drivers if available
-                    if (deliverable.keyDrivers) {
-                        content += `\n\nKey Drivers:\n${Object.entries(deliverable.keyDrivers).map(([key, value]) => 
-                            `• ${key}: ${value}`
-                        ).join('\n')}`;
-                    }
-                } else if (deliverable.trends || deliverable.relevantTrends) {
+                    content = deliverable.analysis;
+                } 
+                // Handle Trending News deliverables
+                else if (deliverable.trendsAnalysis) {
                     title = "Trending News Analysis";
-                    const trends = deliverable.trends || deliverable.relevantTrends || [];
-                    content = `Trending Topics:\n${trends.map(trend => 
-                        `• ${trend.topic || trend.trend || trend}: ${trend.description || trend.relevance || ''}`
-                    ).join('\n')}\n\nOpportunities:\n${deliverable.opportunities?.join('\n• ') || 'No opportunities listed'}`;
-                } else if (deliverable.storyAngles || deliverable.primaryAngle) {
+                    content = deliverable.trendsAnalysis;
+                } 
+                // Handle Story Angles deliverables
+                else if (deliverable.storyStrategy) {
                     title = "Story Angles & Headlines";
-                    const angles = deliverable.storyAngles || [deliverable.primaryAngle];
-                    content = `Story Angles:\n${angles.map(angle => 
-                        `• ${angle.angle || angle}: ${angle.description || ''}`
-                    ).join('\n')}\n\nHeadlines:\n${deliverable.headlines?.join('\n• ') || 'No headlines available'}`;
-                } else if (deliverable.finalStrategy || deliverable.campaignTheme || deliverable.strategicOverview) {
+                    content = deliverable.storyStrategy;
+                }
+                // Handle Strategic Insight deliverables
+                else if (deliverable.humanTruthAnalysis) {
+                    title = "Strategic Insight & Human Truth";
+                    content = deliverable.humanTruthAnalysis;
+                }
+                // Handle comprehensive final strategy deliverables
+                else if (deliverable.theme || deliverable.humanTruth || deliverable.storyAngles || deliverable.trends) {
                     title = "Integrated Campaign Plan";
                     
-                    // Handle comprehensive strategy structure from synthesizeComprehensiveStrategy
-                    if (deliverable.strategicOverview) {
-                        content = `STRATEGIC OVERVIEW\n`;
-                        content += `Campaign Theme: ${deliverable.strategicOverview.campaignTheme || 'Not specified'}\n`;
-                        content += `${deliverable.strategicOverview.executiveSummary || ''}\n\n`;
-                        
-                        if (deliverable.strategicOverview.strategicPositioning) {
-                            content += `Strategic Positioning: ${deliverable.strategicOverview.strategicPositioning}\n\n`;
-                        }
+                    if (deliverable.theme) {
+                        content += `CAMPAIGN THEME\n${deliverable.theme}\n\n`;
                     }
                     
-                    if (deliverable.targetAudience) {
-                        content += `TARGET AUDIENCE\n`;
-                        if (deliverable.targetAudience.primarySegments) {
-                            content += `Primary Segments: ${deliverable.targetAudience.primarySegments.join(', ')}\n`;
-                        }
-                        if (deliverable.targetAudience.demographics) {
-                            content += `Demographics: ${deliverable.targetAudience.demographics}\n`;
-                        }
-                        if (deliverable.targetAudience.psychographics) {
-                            content += `Psychographics: ${deliverable.targetAudience.psychographics}\n`;
-                        }
-                        if (deliverable.targetAudience.motivations) {
-                            content += `Key Motivations:\n${deliverable.targetAudience.motivations.map(m => `• ${m}`).join('\n')}\n`;
-                        }
-                        content += `\n`;
+                    if (deliverable.humanTruth) {
+                        content += `HUMAN TRUTH\n${deliverable.humanTruth}\n\n`;
                     }
                     
-                    if (deliverable.messagingArchitecture) {
-                        content += `MESSAGING ARCHITECTURE\n`;
-                        content += `Primary Message: ${deliverable.messagingArchitecture.primaryMessage || 'Not specified'}\n`;
-                        if (deliverable.messagingArchitecture.supportingMessages) {
-                            content += `Supporting Messages:\n${deliverable.messagingArchitecture.supportingMessages.map(m => `• ${m}`).join('\n')}\n`;
-                        }
-                        if (deliverable.messagingArchitecture.proofPoints) {
-                            content += `Proof Points:\n${deliverable.messagingArchitecture.proofPoints.map(p => `• ${p}`).join('\n')}\n`;
-                        }
-                        content += `\n`;
+                    if (deliverable.storyAngles && deliverable.storyAngles.storyStrategy) {
+                        content += `STORY STRATEGY\n${deliverable.storyAngles.storyStrategy}\n\n`;
                     }
                     
-                    if (deliverable.mediaStrategy) {
-                        content += `MEDIA STRATEGY\n`;
-                        if (deliverable.mediaStrategy.primaryChannels) {
-                            content += `Primary Channels: ${deliverable.mediaStrategy.primaryChannels.join(', ')}\n`;
-                        }
-                        if (deliverable.mediaStrategy.contentTypes) {
-                            content += `Content Types: ${deliverable.mediaStrategy.contentTypes.join(', ')}\n`;
-                        }
-                        if (deliverable.mediaStrategy.timing) {
-                            content += `Timing: ${deliverable.mediaStrategy.timing}\n`;
-                        }
-                        content += `\n`;
-                    }
-                    
-                    if (deliverable.implementationTimeline) {
-                        content += `IMPLEMENTATION TIMELINE\n`;
-                        if (deliverable.implementationTimeline.phases) {
-                            content += `Phases:\n${deliverable.implementationTimeline.phases.map(p => `• ${p}`).join('\n')}\n`;
-                        }
-                        if (deliverable.implementationTimeline.keyMilestones) {
-                            content += `Key Milestones:\n${deliverable.implementationTimeline.keyMilestones.map(m => `• ${m}`).join('\n')}\n`;
-                        }
-                        content += `\n`;
-                    }
-                    
-                    if (deliverable.successMetrics) {
-                        content += `SUCCESS METRICS\n`;
-                        ['awarenessKPIs', 'engagementKPIs', 'conversionKPIs', 'businessKPIs'].forEach(kpiType => {
-                            if (deliverable.successMetrics[kpiType]) {
-                                const label = kpiType.replace('KPIs', ' KPIs').replace(/([A-Z])/g, ' $1').trim();
-                                content += `${label}:\n${deliverable.successMetrics[kpiType].map(kpi => `• ${kpi}`).join('\n')}\n`;
-                            }
-                        });
-                        content += `\n`;
-                    }
-                    
-                    if (deliverable.nextSteps) {
-                        content += `NEXT STEPS\n`;
-                        ['immediate', 'shortTerm', 'longTerm'].forEach(timeframe => {
-                            if (deliverable.nextSteps[timeframe]) {
-                                const label = timeframe.replace(/([A-Z])/g, ' $1').toLowerCase();
-                                content += `${label.charAt(0).toUpperCase() + label.slice(1)}:\n${deliverable.nextSteps[timeframe].map(step => `• ${step}`).join('\n')}\n`;
-                            }
-                        });
+                    if (deliverable.trends && deliverable.trends.trendsAnalysis) {
+                        content += `TRENDS ANALYSIS\n${deliverable.trends.trendsAnalysis}\n\n`;
                     }
                     
                     // If no structured content was found, show what we have
-                    if (!content || content === 'STRATEGIC OVERVIEW\nCampaign Theme: Not specified\n\n') {
+                    if (!content) {
                         content = 'Comprehensive campaign strategy has been generated. Please check the deliverables panel for full details.';
+                    }
+                }
+                // Fallback for any other object structure
+                else {
+                    // Try to extract any meaningful content from the object
+                    const keys = Object.keys(deliverable);
+                    if (keys.length > 0) {
+                        content = keys.map(key => {
+                            const value = deliverable[key];
+                            if (typeof value === 'string' && value.length > 50) {
+                                return `${key.toUpperCase()}\n${value}\n`;
+                            } else if (typeof value === 'object') {
+                                return `${key.toUpperCase()}\n${JSON.stringify(value, null, 2)}\n`;
+                            }
+                            return `${key}: ${value}`;
+                        }).join('\n');
+                    } else {
+                        content = 'Deliverable content is available but in an unexpected format.';
                     }
                 }
 
@@ -893,8 +1370,16 @@
                     expanded: Object.keys(campaignDeliverables).length === 0 // First deliverable is expanded
                 };
                 
-                // Show deliverables button
+                // Show deliverables button and auto-update panel
                 document.getElementById('deliverablesBtn').style.display = 'inline-block';
+                
+                // Auto-update deliverables panel if it exists
+                if (document.getElementById('deliverablesContent')) {
+                    updateDeliverablesPanel();
+                }
+                
+                // Add visual notification for new deliverable
+                addDeliverableNotification(title);
 
                 return `<div class="deliverable-placeholder">
                     📄 <strong>DELIVERABLE:</strong> ${title}
@@ -910,6 +1395,14 @@
                 expanded: Object.keys(campaignDeliverables).length === 0 // First deliverable is expanded
             };
             document.getElementById('deliverablesBtn').style.display = 'inline-block';
+            
+            // Auto-update deliverables panel if it exists
+            if (document.getElementById('deliverablesContent')) {
+                updateDeliverablesPanel();
+            }
+            
+            // Add visual notification for new deliverable
+            addDeliverableNotification(`${agent} Deliverable`);
 
             return `<div class="deliverable-placeholder">
                 📄 <strong>DELIVERABLE:</strong> ${agent} Deliverable
@@ -941,7 +1434,10 @@
                     return;
                 }
                 
-                campaignsList.innerHTML = campaigns.map(campaign => `
+                // Reverse the order to show most recent first
+                const sortedCampaigns = campaigns.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                
+                campaignsList.innerHTML = sortedCampaigns.map(campaign => `
                     <div class="campaign-item" onclick="loadCampaign('${campaign.id}')">
                         <div class="campaign-meta">
                             <span class="campaign-id">${campaign.id}</span>
@@ -958,11 +1454,28 @@
 
         function loadCampaign(campaignId) {
             currentCampaignId = campaignId;
+            
+            // Reset all tracking variables
+            progressMessages = [];
+            lastProgressCount = 0;
+            isCreatingCampaign = false; // Reset the creation flag
+            campaignDeliverables = {}; // Reset deliverables
+            
+            document.getElementById('progressMessages').innerHTML = '';
+            document.getElementById('progressPanelMessages').innerHTML = '';
+            document.getElementById('progressUpdates').style.display = 'none';
+            document.getElementById('progressBtn').style.display = 'inline-block';
+            addProgressMessage('🔄 Loading existing campaign...', 'info', 'loading-start');
+            
             document.getElementById('campaignId').innerHTML = `
                 <div class="campaign-id">Campaign ID: ${campaignId}</div>
                 <div class="campaign-status status-active">Loading...</div>
             `;
             document.getElementById('statusSection').style.display = 'block';
+            
+            // Reset deliverables button
+            document.getElementById('deliverablesBtn').style.display = 'none';
+            document.getElementById('deliverablesBtn').innerHTML = 'View Deliverables';
             
             // Reset all phases
             ['research', 'trending', 'story', 'collaborative'].forEach(phase => {
@@ -970,10 +1483,12 @@
                 const status = document.getElementById(`${phase}Status`);
                 const results = document.getElementById(`${phase}Results`);
                 
-                card.className = 'status-card';
-                status.textContent = 'Pending';
-                status.className = 'phase-status status-pending';
-                results.style.display = 'none';
+                if (card && status && results) {
+                    card.className = 'status-card';
+                    status.textContent = 'Pending';
+                    status.className = 'phase-status status-pending';
+                    results.style.display = 'none';
+                }
             });
             
             startPolling();
@@ -984,16 +1499,61 @@
             loadRecentCampaigns();
         });
 
-        // Deliverables Panel Functions
+        // Progress Panel Functions - LEFT SIDE
+        function openProgressPanel() {
+            document.getElementById('progressPanel').classList.add('open');
+            updateContainerClasses();
+        }
+
+        function closeProgressPanel() {
+            document.getElementById('progressPanel').classList.remove('open');
+            updateContainerClasses();
+        }
+
+        // Deliverables Panel Functions - RIGHT SIDE
         function openDeliverablesPanel() {
             document.getElementById('deliverablesPanel').classList.add('open');
-            document.getElementById('panelOverlay').classList.add('show');
+            updateContainerClasses();
             updateDeliverablesPanel();
         }
 
         function closeDeliverablesPanel() {
             document.getElementById('deliverablesPanel').classList.remove('open');
-            document.getElementById('panelOverlay').classList.remove('show');
+            updateContainerClasses();
+        }
+
+        // Update container classes based on panel states
+        function updateContainerClasses() {
+            const container = document.querySelector('.container');
+            const progressOpen = document.getElementById('progressPanel').classList.contains('open');
+            const deliverablesOpen = document.getElementById('deliverablesPanel').classList.contains('open');
+            
+            // Remove all panel classes
+            container.classList.remove('progress-open', 'deliverables-open', 'both-open');
+            
+            // Add appropriate class based on which panels are open
+            if (progressOpen && deliverablesOpen) {
+                container.classList.add('both-open');
+            } else if (progressOpen) {
+                container.classList.add('progress-open');
+            } else if (deliverablesOpen) {
+                container.classList.add('deliverables-open');
+            }
+            
+            // Handle overlay for mobile
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile && (progressOpen || deliverablesOpen)) {
+                document.getElementById('panelOverlay').classList.add('show');
+            } else {
+                document.getElementById('panelOverlay').classList.remove('show');
+            }
+        }
+
+        // Close all panels
+        function closePanels() {
+            document.getElementById('deliverablesPanel').classList.remove('open');
+            document.getElementById('progressPanel').classList.remove('open');
+            updateContainerClasses();
         }
 
         function updateDeliverablesPanel() {
@@ -1006,6 +1566,7 @@
 
             let html = '';
             for (const [agentName, deliverable] of Object.entries(campaignDeliverables)) {
+                const formattedContent = formatMarkdown(deliverable.content || 'No content available');
                 html += `
                     <div class="deliverable-item">
                         <div class="deliverable-header ${deliverable.expanded ? 'expanded' : ''}" onclick="toggleDeliverable('${agentName}')">
@@ -1015,7 +1576,7 @@
                             </div>
                             <span class="collapse-icon ${deliverable.expanded ? 'expanded' : ''}">▼</span>
                         </div>
-                        <div class="deliverable-content ${deliverable.expanded ? 'expanded' : ''}">${deliverable.content || 'No content available'}</div>
+                        <div class="deliverable-content ${deliverable.expanded ? 'expanded' : ''}">${formattedContent}</div>
                     </div>
                 `;
             }
@@ -1026,6 +1587,44 @@
             const deliverable = campaignDeliverables[agentName];
             deliverable.expanded = !deliverable.expanded;
             updateDeliverablesPanel();
+        }
+
+        function closePanelsOnMobile() {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                closePanels();
+            }
+        }
+
+        function addDeliverableNotification(title) {
+            // Update deliverables button with count
+            const deliverableCount = Object.keys(campaignDeliverables).length;
+            const deliverablesBtn = document.getElementById('deliverablesBtn');
+            
+            // Add count badge to button
+            deliverablesBtn.innerHTML = `View Deliverables <span style="background: #dc3545; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; margin-left: 5px;">${deliverableCount}</span>`;
+            
+            // Add progress message about new deliverable
+            addProgressMessage(`📄 New deliverable available: ${title}`, 'success', `deliverable-${title}-${Date.now()}`);
+            
+            // Briefly highlight the deliverables button
+            deliverablesBtn.style.animation = 'pulse 2s ease-in-out';
+            setTimeout(() => {
+                deliverablesBtn.style.animation = '';
+            }, 2000);
+        }
+
+        function toggleCampaignsList() {
+            const campaignsList = document.getElementById('campaignsList');
+            const toggleIcon = document.getElementById('campaignsToggle');
+            
+            if (campaignsList.classList.contains('open')) {
+                campaignsList.classList.remove('open');
+                toggleIcon.style.transform = 'rotate(0deg)';
+            } else {
+                campaignsList.classList.add('open');
+                toggleIcon.style.transform = 'rotate(180deg)';
+            }
         }
     </script>
 </body>
