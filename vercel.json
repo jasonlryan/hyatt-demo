@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "name": "hyatt-gpt-agents-system",
+  "builds": [
+    {
+      "src": "hyatt-gpt-prototype/server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "hyatt-gpt-prototype/public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "hyatt-gpt-prototype/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "hyatt-gpt-prototype/public/$1"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+} 
