@@ -16,6 +16,7 @@ The agents are currently using **MOCK DATA ONLY** - no real web searches are hap
 
 1. **Missing API Keys**: External data sources need valid API keys
 2. **Feature Disabled**: `ENABLE_REAL_DATA_SOURCES=false` (default)
+   - `DataSourceManager` reads this flag and the API keys at runtime
 3. **Mock Fallback**: System falls back to hardcoded mock data
 
 ## To Enable Real Web Searches:
@@ -24,7 +25,7 @@ The agents are currently using **MOCK DATA ONLY** - no real web searches are hap
 
 ```bash
 # Enable real data sources
-ENABLE_REAL_DATA_SOURCES=true
+ENABLE_REAL_DATA_SOURCES=true  # Default is false
 
 # API Keys for real web searches
 GOOGLE_TRENDS_API_KEY=your-google-trends-api-key
