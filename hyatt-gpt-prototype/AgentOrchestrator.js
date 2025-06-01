@@ -30,6 +30,9 @@ class AgentOrchestrator {
     this.enableQualityControl = process.env.ENABLE_QUALITY_CONTROL === "true";
     this.enableAgentInteraction =
       process.env.ENABLE_AGENT_INTERACTION === "true";
+
+    // Load existing campaigns from files on startup
+    this.loadCampaignsFromFiles();
   }
 
   async startCampaign(campaignBrief) {
@@ -1410,6 +1413,48 @@ class AgentOrchestrator {
       areas.push("Cultural immersion");
 
     return areas;
+  }
+
+  // Load existing campaigns from files on startup
+  loadCampaignsFromFiles() {
+    try {
+      const campaignsDir = path.join(__dirname, "campaigns");
+
+      // Check if campaigns directory exists
+      if (!fs.existsSync(campaignsDir)) {
+        console.log("📁 No campaigns directory found, starting fresh");
+        return;
+      }
+
+      const files = fs
+        .readdirSync(campaignsDir)
+        .filter((file) => file.endsWith(".json"));
+
+      if (files.length === 0) {
+        console.log("📁 No campaign files found");
+        return;
+      }
+
+      let loadedCount = 0;
+      files.forEach((file) => {
+        try {
+          const filepath = path.join(campaignsDir, file);
+          const campaignData = fs.readFileSync(filepath, "utf-8");
+          const campaign = JSON.parse(campaignData);
+          this.campaigns.set(campaign.id, campaign);
+          loadedCount++;
+        } catch (error) {
+          console.error(
+            `❌ Failed to load campaign from ${file}:`,
+            error.message
+          );
+        }
+      });
+
+      console.log(`📚 Loaded ${loadedCount} existing campaigns from files`);
+    } catch (error) {
+      console.error("❌ Failed to load campaigns from files:", error.message);
+    }
   }
 }
 

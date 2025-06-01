@@ -358,6 +358,11 @@
             border-left-color: #9c27b0;
         }
 
+        .conversation-message.strategic-agent {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+        }
+
         .conversation-message.trending-agent {
             background: #fff3e0;
             border-left-color: #ff9800;
@@ -510,14 +515,14 @@
         }
 
         .deliverable-header {
-            padding: 12px 15px;
-            cursor: pointer;
-            background: #f8f9fa;
-            border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background-color 0.3s ease;
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            transition: background-color 0.2s;
         }
 
         .deliverable-header:hover {
@@ -526,19 +531,51 @@
 
         .deliverable-header.expanded {
             background: #e3f2fd;
-            border-bottom-color: #2196f3;
         }
 
-        .deliverable-item h4 {
-            color: #2c3e50;
-            margin: 0;
-            font-size: 0.95rem;
+        .deliverable-header h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+            font-size: 1.1rem;
         }
 
-        .deliverable-item .agent-name {
+        .agent-name {
             color: #666;
-            font-size: 0.8rem;
-            margin: 5px 0 0 0;
+            font-size: 0.9rem;
+        }
+
+        .deliverable-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .download-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .download-btn:hover {
+            background: #0056b3;
+        }
+
+        .collapse-icon {
+            font-size: 1.2rem;
+            color: #666;
+            transition: transform 0.3s ease;
+        }
+
+        .collapse-icon.expanded {
+            transform: rotate(180deg);
         }
 
         .deliverable-content {
@@ -696,16 +733,6 @@
             font-weight: 500;
         }
 
-        .collapse-icon {
-            font-size: 1.2rem;
-            color: #666;
-            transition: transform 0.3s ease;
-        }
-
-        .collapse-icon.expanded {
-            transform: rotate(180deg);
-        }
-
         .deliverable-toggle {
             background: #667eea;
             color: white;
@@ -812,7 +839,7 @@
 
         <div class="main-content">
             <div class="campaign-form">
-                <h2>Create New Campaign</h2>
+                <h2 style="font-size: 1.4rem;">Create New Campaign</h2>
                 <div class="form-group">
                     <label for="campaignBrief">Campaign Brief</label>
                     <textarea 
@@ -899,7 +926,7 @@
             <div id="errorSection" style="display: none;"></div>
 
             <div class="campaigns-list">
-                <h2 onclick="toggleCampaignsList()">
+                <h2 onclick="toggleCampaignsList()" style="font-size: 1.4rem; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb;">
                     Recent Campaigns
                     <span id="campaignsToggle" class="campaigns-toggle">▼</span>
                 </h2>
@@ -1076,7 +1103,7 @@
                     addProgressMessage(`📝 Original campaign brief recorded: "${message.message.substring(0, 50)}..."`, 'info', messageKey);
                 } else if (speaker === 'PR Manager') {
                     if (message.message.includes('campaign introduction') || index === 0) {
-                        addProgressMessage(`🚀 Campaign initiated - PR Manager setting strategic direction`, 'phase', messageKey);
+                        addProgressMessage(`👔 Campaign initiated - PR Manager setting strategic direction`, 'phase', messageKey);
                     } else if (message.message.includes('research') || message.message.includes('Research')) {
                         trackPhaseChange('Research');
                         addProgressMessage(`🔄 Transitioning to Research & Audience Analysis phase`, 'info', messageKey);
@@ -1090,7 +1117,7 @@
                         trackPhaseChange('Collaborative');
                         addProgressMessage(`🔄 Transitioning to Collaborative Synthesis phase`, 'info', messageKey);
                     } else {
-                        addProgressMessage(`🤖 PR Manager: ${message.message.substring(0, 60)}...`, 'phase', messageKey);
+                        addProgressMessage(`👔 PR Manager: ${message.message.substring(0, 60)}...`, 'phase', messageKey);
                     }
                 } else if (speaker.includes('Research')) {
                     trackPhaseChange('Research');
@@ -1106,13 +1133,14 @@
                     addProgressMessage(`✍️ Story Agent: Developing compelling narratives and headlines`, 'info', messageKey);
                 } else if (speaker === 'All Agents') {
                     trackPhaseChange('Collaborative');
-                    addProgressMessage(`🎯 Collaborative Phase: All agents synthesizing final strategy`, 'phase', messageKey);
+                    addProgressMessage(`🤝 Collaborative Phase: All agents synthesizing final strategy`, 'phase', messageKey);
                 }
                 
                 // Enhanced deliverable tracking
                 if (message.deliverable) {
                     const deliverableType = getDeliverableType(message.deliverable);
-                    addProgressMessage(`📄 ${deliverableType} deliverable completed by ${speaker}`, 'success', `${messageKey}-deliverable`);
+                    const speakerIcon = getSpeakerIcon(speaker);
+                    addProgressMessage(`${speakerIcon} ${deliverableType} deliverable completed by ${speaker}`, 'success', `${messageKey}-deliverable`);
                     
                     // Show quality metrics if available
                     if (message.qualityScore !== undefined) {
@@ -1251,11 +1279,12 @@
 
             conversationMessages.innerHTML = campaign.conversation.map(message => {
                 const speakerClass = getSpeakerClass(message.speaker);
+                const speakerIcon = getSpeakerIcon(message.speaker);
                 const isProcessing = message.isProcessing ? 'processing' : '';
                 
                 let messageHtml = `
                     <div class="conversation-message ${speakerClass} ${isProcessing}">
-                        <div class="message-speaker">${message.speaker}:</div>
+                        <div class="message-speaker">${speakerIcon} ${message.speaker}:</div>
                         <div class="message-content">${message.message}</div>
                         <div class="message-timestamp">${new Date(message.timestamp).toLocaleTimeString()}</div>
                     </div>
@@ -1284,6 +1313,8 @@
                     return 'pr-manager';
                 case 'Research & Audience GPT':
                     return 'research-agent';
+                case 'Strategic Insight GPT':
+                    return 'strategic-agent';
                 case 'Trending News GPT':
                     return 'trending-agent';
                 case 'Story Angles & Headlines GPT':
@@ -1292,6 +1323,27 @@
                     return 'all-agents';
                 default:
                     return '';
+            }
+        }
+
+        function getSpeakerIcon(speaker) {
+            switch (speaker) {
+                case 'Campaign Brief':
+                    return '📝';
+                case 'PR Manager':
+                    return '👔';
+                case 'Research & Audience GPT':
+                    return '🔍';
+                case 'Strategic Insight GPT':
+                    return '🧠';
+                case 'Trending News GPT':
+                    return '📈';
+                case 'Story Angles & Headlines GPT':
+                    return '✍️';
+                case 'All Agents':
+                    return '🤝';
+                default:
+                    return '🤖';
             }
         }
 
@@ -1424,13 +1476,20 @@
         // Load recent campaigns on page load
         async function loadRecentCampaigns() {
             try {
+                console.log('🔄 Loading recent campaigns...');
                 const response = await fetch('/api/campaigns');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const campaigns = await response.json();
+                console.log(`📚 Loaded ${campaigns.length} campaigns`);
                 
                 const campaignsList = document.getElementById('campaignsList');
                 
                 if (campaigns.length === 0) {
-                    campaignsList.innerHTML = '<p>No campaigns yet. Create your first campaign above!</p>';
+                    campaignsList.innerHTML = '<p style="color: #666; text-align: center; padding: 20px;">No campaigns yet. Create your first campaign above!</p>';
                     return;
                 }
                 
@@ -1448,7 +1507,9 @@
                     </div>
                 `).join('');
             } catch (error) {
-                console.error('Failed to load campaigns:', error);
+                console.error('❌ Failed to load campaigns:', error);
+                const campaignsList = document.getElementById('campaignsList');
+                campaignsList.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 20px;">Failed to load campaigns. Please refresh the page.</p>';
             }
         }
 
@@ -1567,14 +1628,20 @@
             let html = '';
             for (const [agentName, deliverable] of Object.entries(campaignDeliverables)) {
                 const formattedContent = formatMarkdown(deliverable.content || 'No content available');
+                const agentIcon = getSpeakerIcon(agentName);
                 html += `
                     <div class="deliverable-item">
                         <div class="deliverable-header ${deliverable.expanded ? 'expanded' : ''}" onclick="toggleDeliverable('${agentName}')">
                             <div>
                                 <h4>${deliverable.title || agentName}</h4>
-                                <div class="agent-name">From: ${agentName}</div>
+                                <div class="agent-name">${agentIcon} From: ${agentName}</div>
                             </div>
-                            <span class="collapse-icon ${deliverable.expanded ? 'expanded' : ''}">▼</span>
+                            <div class="deliverable-actions">
+                                <button class="download-btn" onclick="downloadDeliverable('${agentName}', event)" title="Download as markdown file">
+                                    📥
+                                </button>
+                                <span class="collapse-icon ${deliverable.expanded ? 'expanded' : ''}">▼</span>
+                            </div>
                         </div>
                         <div class="deliverable-content ${deliverable.expanded ? 'expanded' : ''}">${formattedContent}</div>
                     </div>
@@ -1625,6 +1692,33 @@
                 campaignsList.classList.add('open');
                 toggleIcon.style.transform = 'rotate(180deg)';
             }
+        }
+
+        function downloadDeliverable(agentName, event) {
+            event.preventDefault();
+            event.stopPropagation(); // Prevent triggering the collapse/expand
+            
+            const deliverable = campaignDeliverables[agentName];
+            if (!deliverable || !deliverable.content) {
+                alert('No content available to download');
+                return;
+            }
+            
+            const content = deliverable.content;
+            // Create a clean filename
+            const cleanAgentName = agentName.replace(/[^a-zA-Z0-9]/g, '_');
+            const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+            const filename = `${cleanAgentName}_deliverable_${timestamp}.md`;
+
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
