@@ -6,6 +6,7 @@ The system is currently using **MOCK DATA** instead of real web searches because
 
 1. **Missing API Keys**: The external data sources are not configured
 2. **Feature Flag**: `ENABLE_REAL_DATA_SOURCES` is set to `false`
+   - `DataSourceManager` checks this flag and your API keys on startup
 
 This causes:
 
@@ -22,7 +23,7 @@ This causes:
 OPENAI_API_KEY=your-openai-api-key-here
 
 # External Data Sources (OPTIONAL but recommended for dynamic content)
-ENABLE_REAL_DATA_SOURCES=true  # Set to true when you have API keys
+ENABLE_REAL_DATA_SOURCES=true  # Default is false; set to true when you have API keys
 GOOGLE_TRENDS_API_KEY=your-google-trends-api-key-here
 NEWS_API_KEY=your-newsapi-org-key-here  # Get from https://newsapi.org
 SOCIAL_MEDIA_API_KEY=your-twitter-api-key-here
@@ -63,7 +64,7 @@ These indicate missing or invalid API keys.
 
 1. At minimum, set up your OpenAI API key
 2. For trending data, add a News API key (free)
-3. Set `ENABLE_REAL_DATA_SOURCES=true`
+3. Set `ENABLE_REAL_DATA_SOURCES=true`  # Default is false
 4. Restart the server
 
 ## Why The Integrated Plan Shows "No content available"

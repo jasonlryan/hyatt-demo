@@ -2,22 +2,16 @@ const axios = require("axios");
 
 class DataSourceManager {
   constructor() {
-    // Commenting out real API integrations for now
-    // this.googleTrendsApiKey = process.env.GOOGLE_TRENDS_API_KEY;
-    // this.newsApiKey = process.env.NEWS_API_KEY;
-    // this.socialMediaApiKey = process.env.SOCIAL_MEDIA_API_KEY;
-
-    // Force use of enhanced mock data for now
-    this.enableRealDataSources = false; // Always use mock data
+    this.enableRealDataSources =
+      process.env.ENABLE_REAL_DATA_SOURCES === "true";
+    this.googleTrendsApiKey = process.env.GOOGLE_TRENDS_API_KEY;
+    this.newsApiKey = process.env.NEWS_API_KEY;
+    this.socialMediaApiKey = process.env.SOCIAL_MEDIA_API_KEY;
   }
 
   async getTrendingTopics(keywords, timeframe = "7d") {
-    // Always use enhanced mock data for now
-    return this.getEnhancedMockTrendingData(keywords);
-
-    /* COMMENTED OUT - Real API integration
     if (!this.enableRealDataSources || !this.googleTrendsApiKey) {
-      return this.getMockTrendingData(keywords);
+      return this.getEnhancedMockTrendingData(keywords);
     }
 
     try {
@@ -49,18 +43,13 @@ class DataSourceManager {
         "🔄 Google Trends API failed, using mock data:",
         error.message
       );
-      return this.getMockTrendingData(keywords);
+      return this.getEnhancedMockTrendingData(keywords);
     }
-    */
   }
 
   async getRelevantNews(keywords, category = "business", days = 7) {
-    // Always use enhanced mock data for now
-    return this.getEnhancedMockNewsData(keywords);
-
-    /* COMMENTED OUT - Real API integration
     if (!this.enableRealDataSources || !this.newsApiKey) {
-      return this.getMockNewsData(keywords);
+      return this.getEnhancedMockNewsData(keywords);
     }
 
     try {
@@ -83,18 +72,13 @@ class DataSourceManager {
       return this.parseNewsData(response.data.articles);
     } catch (error) {
       console.warn("🔄 News API failed, using mock data:", error.message);
-      return this.getMockNewsData(keywords);
+      return this.getEnhancedMockNewsData(keywords);
     }
-    */
   }
 
   async getSocialMediaSentiment(keywords, platform = "twitter") {
-    // Always use enhanced mock data for now
-    return this.getEnhancedMockSocialData(keywords);
-
-    /* COMMENTED OUT - Real API integration
     if (!this.enableRealDataSources || !this.socialMediaApiKey) {
-      return this.getMockSocialData(keywords);
+      return this.getEnhancedMockSocialData(keywords);
     }
 
     try {
@@ -120,9 +104,8 @@ class DataSourceManager {
         "🔄 Social Media API failed, using mock data:",
         error.message
       );
-      return this.getMockSocialData(keywords);
+      return this.getEnhancedMockSocialData(keywords);
     }
-    */
   }
 
   // Enhanced mock data methods that are more dynamic and campaign-specific
