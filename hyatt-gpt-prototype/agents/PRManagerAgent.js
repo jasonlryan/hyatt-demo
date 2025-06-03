@@ -19,10 +19,35 @@ class PRManagerAgent {
 
   loadSystemPrompt() {
     try {
-      const promptPath = path.join(__dirname, "../../GPTs/pr_manager_gpt.md");
-      const prompt = fs.readFileSync(promptPath, "utf8");
-      console.log(`✅ Loaded PR Manager system prompt from ${promptPath}`);
-      return prompt;
+      // Try multiple possible paths for different environments
+      const possiblePaths = [
+        path.join(__dirname, "../../GPTs/pr_manager_gpt.md"), // Local development
+        path.join(process.cwd(), "GPTs/pr_manager_gpt.md"), // Vercel deployment
+        path.join(__dirname, "../../../GPTs/pr_manager_gpt.md"), // Alternative path
+      ];
+
+      let prompt = null;
+      let successPath = null;
+
+      for (const promptPath of possiblePaths) {
+        try {
+          if (fs.existsSync(promptPath)) {
+            prompt = fs.readFileSync(promptPath, "utf8");
+            successPath = promptPath;
+            break;
+          }
+        } catch (err) {
+          // Continue to next path
+          continue;
+        }
+      }
+
+      if (prompt) {
+        console.log(`✅ Loaded PR Manager system prompt from ${successPath}`);
+        return prompt;
+      } else {
+        throw new Error("No valid prompt file found in any expected location");
+      }
     } catch (error) {
       console.error("❌ Failed to load PR Manager system prompt:", error);
       return "You are an expert PR Manager specializing in hospitality campaigns.";

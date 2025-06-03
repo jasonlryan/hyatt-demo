@@ -224,12 +224,14 @@ app.use((req, res) => {
   });
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`🚀 Hyatt GPT Agent system running on port ${port}`);
-  console.log(`📊 Health check: http://localhost:${port}/health`);
-  console.log(`🌐 Frontend: http://localhost:${port}`);
-  console.log(`📡 API: http://localhost:${port}/api/campaigns`);
-});
+// Only start server if not in Vercel environment
+if (process.env.NODE_ENV !== "production") {
+  app.listen(port, () => {
+    console.log(`🚀 Hyatt GPT Agent system running on port ${port}`);
+    console.log(`📊 Health check: http://localhost:${port}/health`);
+    console.log(`🌐 Frontend: http://localhost:${port}`);
+    console.log(`📡 API: http://localhost:${port}/api/campaigns`);
+  });
+}
 
 module.exports = app;

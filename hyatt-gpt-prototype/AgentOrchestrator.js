@@ -1363,6 +1363,15 @@ class AgentOrchestrator {
   }
 
   saveCampaignToFile(campaign) {
+    // On Vercel, we can't write to the file system, so we'll just log
+    // In production, you'd want to use a database or external storage
+    if (process.env.NODE_ENV === "production") {
+      console.log(
+        `💾 Campaign ${campaign.id} saved to memory (Vercel environment)`
+      );
+      return;
+    }
+
     try {
       const campaignsDir = path.join(__dirname, "campaigns");
       if (!fs.existsSync(campaignsDir)) {
@@ -1417,6 +1426,14 @@ class AgentOrchestrator {
 
   // Load existing campaigns from files on startup
   loadCampaignsFromFiles() {
+    // On Vercel, file system operations are limited, so we'll skip loading
+    if (process.env.NODE_ENV === "production") {
+      console.log(
+        "📁 Vercel environment detected - starting with empty campaign store"
+      );
+      return;
+    }
+
     try {
       const campaignsDir = path.join(__dirname, "campaigns");
 

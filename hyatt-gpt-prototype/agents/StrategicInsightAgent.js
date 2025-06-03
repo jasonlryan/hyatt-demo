@@ -27,14 +27,43 @@ class StrategicInsightAgent {
 
   loadSystemPrompt() {
     try {
-      const promptPath = path.join(
-        __dirname,
-        "../../GPTs/strategic_insight_gpt.md"
-      );
-      return fs.readFileSync(promptPath, "utf8");
+      // Try multiple possible paths for different environments
+      const possiblePaths = [
+        path.join(__dirname, "../../GPTs/strategic_insight_gpt.md"), // Local development
+        path.join(process.cwd(), "GPTs/strategic_insight_gpt.md"), // Vercel deployment
+        path.join(__dirname, "../../../GPTs/strategic_insight_gpt.md"), // Alternative path
+      ];
+
+      let prompt = null;
+      let successPath = null;
+
+      for (const promptPath of possiblePaths) {
+        try {
+          if (fs.existsSync(promptPath)) {
+            prompt = fs.readFileSync(promptPath, "utf8");
+            successPath = promptPath;
+            break;
+          }
+        } catch (err) {
+          // Continue to next path
+          continue;
+        }
+      }
+
+      if (prompt) {
+        console.log(
+          `✅ ${this.name}: Loaded system prompt from ${successPath}`
+        );
+        return prompt;
+      } else {
+        throw new Error("No valid prompt file found in any expected location");
+      }
     } catch (error) {
-      console.error(`❌ Failed to load system prompt: ${error.message}`);
-      return "You are a strategic insight specialist focused on discovering human truths that drive emotional connection.";
+      console.warn(
+        `⚠️ ${this.name}: Could not load system prompt from file, using fallback:`,
+        error.message
+      );
+      return `You are Strategic Insight & Human Truth GPT, a specialized AI assistant for Hyatt Hotels that uncovers deeper emotional drivers and human truths that transform campaigns from functional to transformational.`;
     }
   }
 

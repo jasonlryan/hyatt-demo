@@ -30,19 +30,43 @@ class TrendingNewsAgent {
 
   loadSystemPrompt() {
     try {
-      const promptPath = path.join(
-        __dirname,
-        "../../GPTs/trending_news_gpt.md"
-      );
-      const prompt = fs.readFileSync(promptPath, "utf8");
-      console.log(`✅ ${this.name}: Loaded system prompt from ${promptPath}`);
-      return prompt;
+      // Try multiple possible paths for different environments
+      const possiblePaths = [
+        path.join(__dirname, "../../GPTs/trending_news_gpt.md"), // Local development
+        path.join(process.cwd(), "GPTs/trending_news_gpt.md"), // Vercel deployment
+        path.join(__dirname, "../../../GPTs/trending_news_gpt.md"), // Alternative path
+      ];
+
+      let prompt = null;
+      let successPath = null;
+
+      for (const promptPath of possiblePaths) {
+        try {
+          if (fs.existsSync(promptPath)) {
+            prompt = fs.readFileSync(promptPath, "utf8");
+            successPath = promptPath;
+            break;
+          }
+        } catch (err) {
+          // Continue to next path
+          continue;
+        }
+      }
+
+      if (prompt) {
+        console.log(
+          `✅ ${this.name}: Loaded system prompt from ${successPath}`
+        );
+        return prompt;
+      } else {
+        throw new Error("No valid prompt file found in any expected location");
+      }
     } catch (error) {
       console.warn(
         `⚠️ ${this.name}: Could not load system prompt from file, using fallback:`,
         error.message
       );
-      return `You are Trending News GPT, a specialized AI assistant for Hyatt Hotels that identifies and analyzes current trends, news, and cultural moments relevant to hospitality and travel. You excel at finding timely opportunities for brand engagement.`;
+      return `You are Trending News GPT, a specialized AI assistant for Hyatt Hotels that analyzes current trends and cultural moments for hospitality campaigns.`;
     }
   }
 
