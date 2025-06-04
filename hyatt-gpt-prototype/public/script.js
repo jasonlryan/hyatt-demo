@@ -945,14 +945,53 @@
             };
 
             document.getElementById('refineBtnFlow').onclick = () => {
-                startNewCampaign();
                 removeReviewPrompt();
+                showRefinePrompt(campaign.id);
             };
         }
 
         function removeReviewPrompt() {
             const prompt = document.getElementById('reviewPrompt');
             if (prompt) prompt.remove();
+        }
+
+        function showRefinePrompt(campaignId) {
+            const container = document.getElementById('conversationMessages');
+            if (!container || document.getElementById('refinePrompt')) return;
+
+            const prompt = document.createElement('div');
+            prompt.id = 'refinePrompt';
+            prompt.className = 'review-prompt';
+            prompt.innerHTML = `
+                <div class="review-prompt-text">Enter refinement instructions:</div>
+                <textarea id="refineText" rows="3" style="width:100%; margin-top:10px;"></textarea>
+                <div class="review-prompt-actions">
+                    <button id="submitRefine" class="btn btn-refine">Submit</button>
+                    <button id="cancelRefine" class="btn">Cancel</button>
+                </div>
+            `;
+
+            container.appendChild(prompt);
+            scrollToConversationBottom();
+
+            document.getElementById('submitRefine').onclick = async () => {
+                const text = document.getElementById('refineText').value.trim();
+                if (!text) return;
+                try {
+                    await fetch(`/api/campaigns/${campaignId}/refine`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ instructions: text })
+                    });
+                } catch (err) {
+                    alert('Failed to submit refinement');
+                }
+                prompt.remove();
+            };
+
+            document.getElementById('cancelRefine').onclick = () => {
+                prompt.remove();
+            };
         }
 
         function toggleCampaignsList() {

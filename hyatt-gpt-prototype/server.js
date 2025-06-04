@@ -264,6 +264,17 @@ app.post("/api/campaigns/:id/resume", (req, res) => {
   res.json({ status: "resumed", campaignId: id });
 });
 
+// Apply refinement and rerun the current phase
+app.post("/api/campaigns/:id/refine", (req, res) => {
+  const { id } = req.params;
+  const { instructions } = req.body;
+  const refined = orchestrator.refineCampaign(id, instructions || "");
+  if (!refined) {
+    return res.status(400).json({ error: "Unable to refine campaign" });
+  }
+  res.json({ status: "refining", campaignId: id });
+});
+
 // Serve the frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));

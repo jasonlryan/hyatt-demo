@@ -180,7 +180,9 @@ ENABLE_MANUAL_REVIEW=true  # default (set to false to disable)
 When manual review is enabled the orchestrator pauses after each phase.
 The conversation flow now displays a prompt describing which phase is awaiting
 approval. Use **Resume** (or **Finalize** for the last step) to continue or
-select **Refine** to restart the campaign with updated instructions.
+select **Refine** to provide new instructions. The system will ask how you
+want to adjust the deliverable and then rerun the current phase with your
+updates.
 
 ## 🔄 Dynamic Flow Examples
 
