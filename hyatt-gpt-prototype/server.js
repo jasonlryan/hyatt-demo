@@ -48,6 +48,17 @@ const orchestrator = new AgentOrchestrator();
 
 // Routes
 
+// Manual review status
+app.get("/api/manual-review", (req, res) => {
+  res.json({ enabled: orchestrator.enableManualReview });
+});
+
+app.post("/api/manual-review", (req, res) => {
+  const { enabled } = req.body;
+  orchestrator.enableManualReview = !!enabled;
+  res.json({ enabled: orchestrator.enableManualReview });
+});
+
 // Health check
 app.get("/health", (req, res) => {
   res.json({

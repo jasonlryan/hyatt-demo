@@ -41,6 +41,31 @@
             color: #495057;
         }
 
+        .settings-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .settings-popup {
+            position: absolute;
+            right: 20px;
+            top: 70px;
+            background: #ffffff;
+            border: 1px solid #e9ecef;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+            z-index: 1005;
+        }
+
+        .settings-popup.show {
+            display: block;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
