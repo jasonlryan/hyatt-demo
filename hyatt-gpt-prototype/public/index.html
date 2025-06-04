@@ -25,6 +25,8 @@
             border-radius: 15px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
             overflow: hidden;
+            margin-right: 400px; /* leave space for deliverables panel */
+            transition: margin-right 0.3s ease;
         }
 
         .header {
@@ -355,6 +357,25 @@
             right: 0;
         }
 
+        /* Side Panel for Progress */
+        .progress-panel {
+            position: fixed;
+            right: 400px;
+            top: 0;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+            transform: translateX(100%);
+        }
+
+        .progress-panel.open {
+            transform: translateX(0);
+        }
+
         .deliverables-header {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
@@ -501,11 +522,16 @@
                 width: 100%;
                 right: -100%;
             }
+            .progress-panel {
+                width: 100%;
+                right: 0;
+                transform: translateX(100%);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="mainContainer">
         <div class="header">
             <h1>🏨 Hyatt GPT Agents System</h1>
             <p>Collaborative AI agents for PR campaign development</p>
@@ -533,6 +559,9 @@
                 <div id="campaignId">
                     <div class="campaign-id">No active campaign</div>
                 </div>
+                <button id="progressBtn" onclick="openProgressPanel()" style="background: #2c3e50; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
+                    View Progress
+                </button>
                 <button id="deliverablesBtn" onclick="openDeliverablesPanel()" style="display: none; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; cursor: pointer;">
                     View Deliverables
                 </button>
@@ -593,8 +622,8 @@
     </div>
 
     <!-- Deliverables Side Panel -->
-    <div class="panel-overlay" id="panelOverlay" onclick="closeDeliverablesPanel()"></div>
-    <div class="deliverables-panel" id="deliverablesPanel">
+    <div class="panel-overlay" id="panelOverlay" onclick="closeOverlay()"></div>
+    <div class="deliverables-panel open" id="deliverablesPanel">
         <div class="deliverables-header">
             <h3>
                 Campaign Deliverables
@@ -603,6 +632,19 @@
         </div>
         <div class="deliverables-content" id="deliverablesContent">
             <p style="color: #666; text-align: center; margin-top: 50px;">No deliverables available yet. Start a campaign to see deliverables here.</p>
+        </div>
+    </div>
+
+    <!-- Progress Side Panel -->
+    <div class="progress-panel" id="progressPanel">
+        <div class="deliverables-header">
+            <h3>
+                Campaign Progress
+                <button class="close-panel" onclick="closeProgressPanel()">×</button>
+            </h3>
+        </div>
+        <div class="deliverables-content" id="progressContent">
+            <p style="color: #666; text-align: center; margin-top: 50px;">No progress yet.</p>
         </div>
     </div>
 
@@ -988,12 +1030,38 @@
         function openDeliverablesPanel() {
             document.getElementById('deliverablesPanel').classList.add('open');
             document.getElementById('panelOverlay').classList.add('show');
+            const margin = document.getElementById('progressPanel').classList.contains('open') ? '800px' : '400px';
+            document.getElementById('mainContainer').style.marginRight = margin;
             updateDeliverablesPanel();
         }
 
         function closeDeliverablesPanel() {
             document.getElementById('deliverablesPanel').classList.remove('open');
+            const margin = document.getElementById('progressPanel').classList.contains('open') ? '400px' : '0';
+            document.getElementById('mainContainer').style.marginRight = margin;
             document.getElementById('panelOverlay').classList.remove('show');
+        }
+
+        // Progress Panel Functions
+        function openProgressPanel() {
+            document.getElementById('progressPanel').classList.add('open');
+            document.getElementById('panelOverlay').classList.add('show');
+            document.getElementById('progressContent').innerHTML = document.getElementById('conversationFlow').innerHTML;
+            document.getElementById('mainContainer').style.marginRight = '800px';
+        }
+
+        function closeProgressPanel() {
+            document.getElementById('progressPanel').classList.remove('open');
+            document.getElementById('panelOverlay').classList.remove('show');
+            document.getElementById('mainContainer').style.marginRight = '400px';
+        }
+
+        function closeOverlay() {
+            if (document.getElementById('progressPanel').classList.contains('open')) {
+                closeProgressPanel();
+            } else if (document.getElementById('deliverablesPanel').classList.contains('open')) {
+                closeDeliverablesPanel();
+            }
         }
 
         function updateDeliverablesPanel() {
