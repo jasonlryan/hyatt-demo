@@ -784,8 +784,19 @@
 
         // Progress Panel Functions - LEFT SIDE
         function openProgressPanel() {
-            document.getElementById('progressPanel').classList.add('open');
+            const panel = document.getElementById('progressPanel');
+            panel.classList.add('open');
             updateContainerClasses();
+
+            // When opening the panel, ensure the latest messages are rendered
+            // and automatically scroll to the bottom so the newest updates are
+            // visible. This mirrors the behaviour when new messages arrive but
+            // still allows the user to scroll up manually afterwards.
+            renderProgressPanel();
+            const container = document.getElementById('progressPanelMessages');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
         }
 
         function closeProgressPanel() {
