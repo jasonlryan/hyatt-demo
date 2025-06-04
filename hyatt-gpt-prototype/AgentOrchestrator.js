@@ -31,8 +31,25 @@ class AgentOrchestrator {
     this.enableAgentInteraction =
       process.env.ENABLE_AGENT_INTERACTION === "true";
 
-    // Load existing campaigns from files on startup
+    // Synchronous part of setup
     this.loadCampaignsFromFiles();
+  }
+
+  async initializeAgents() {
+    try {
+      console.log("Initializing agents and loading system prompts...");
+      await this.researchAgent.loadSystemPrompt();
+      await this.trendingAgent.loadSystemPrompt();
+      await this.storyAgent.loadSystemPrompt();
+      await this.prManagerAgent.loadSystemPrompt();
+      await this.strategicInsightAgent.loadSystemPrompt();
+      console.log("All agent system prompts loaded successfully.");
+    } catch (error) {
+      console.error("FATAL: Failed to initialize one or more agents:", error);
+      // Depending on desired behavior, you might want to re-throw or handle this
+      // For Vercel, a crash here would likely prevent the server from starting properly.
+      throw new Error(`Agent initialization failed: ${error.message}`);
+    }
   }
 
   async startCampaign(campaignBrief) {

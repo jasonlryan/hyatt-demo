@@ -15,6 +15,37 @@ app.use(express.static("public"));
 // Initialize orchestrator
 const orchestrator = new AgentOrchestrator();
 
+// ASYNCHRONOUS IIFE (Immediately Invoked Function Expression) to initialize agents
+(async () => {
+  try {
+    await orchestrator.initializeAgents();
+    console.log("✅ Orchestrator and agents initialized successfully.");
+
+    // Only start server if not in Vercel environment AND after successful initialization
+    if (process.env.NODE_ENV !== "production") {
+      app.listen(port, () => {
+        console.log(`🚀 Hyatt GPT Agent system running on port ${port}`);
+        console.log(`📊 Health check: http://localhost:${port}/health`);
+        console.log(`🌐 Frontend: http://localhost:${port}`);
+        console.log(`📡 API: http://localhost:${port}/api/campaigns`);
+      });
+    }
+  } catch (error) {
+    console.error(
+      "❌ Server failed to start due to agent initialization error:",
+      error
+    );
+    // Prevent server from starting or Vercel function from becoming healthy if agents fail to init
+    // For Vercel, this error should appear in the runtime logs if it occurs during deployment initialization.
+    if (process.env.NODE_ENV === "production") {
+      // In a Vercel environment, re-throwing will cause the function to fail deployment/startup
+      throw error;
+    }
+    // For local, you might choose to exit or let it run without agents (though it would be broken)
+    // process.exit(1); // Optionally exit if local startup fails critically
+  }
+})();
+
 // Routes
 
 // Health check
@@ -224,14 +255,5 @@ app.use((req, res) => {
   });
 });
 
-// Only start server if not in Vercel environment
-if (process.env.NODE_ENV !== "production") {
-  app.listen(port, () => {
-    console.log(`🚀 Hyatt GPT Agent system running on port ${port}`);
-    console.log(`📊 Health check: http://localhost:${port}/health`);
-    console.log(`🌐 Frontend: http://localhost:${port}`);
-    console.log(`📡 API: http://localhost:${port}/api/campaigns`);
-  });
-}
-
+// Make sure module.exports = app; is at the very end, outside the IIFE.
 module.exports = app;

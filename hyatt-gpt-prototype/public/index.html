@@ -415,6 +415,26 @@
             margin-top: 8px;
         }
 
+        #newMessagesIndicator {
+            display: block;
+            margin-top: 10px;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 10px 20px;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: background-color 0.3s ease;
+        }
+
+        #newMessagesIndicator:hover {
+            background-color: #e68a00;
+        }
+
         /* Side Panel for Progress Updates - LEFT SIDE */
         .progress-panel {
             position: fixed;
@@ -437,20 +457,15 @@
         /* Side Panel for Deliverables - RIGHT SIDE */
         .deliverables-panel {
             position: fixed;
-            right: -400px;
+            right: 0;
             top: 90px; /* Start below smaller header */
             width: 400px;
             height: calc(100vh - 90px); /* Full height minus smaller header */
             background: white;
             box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-            transition: right 0.3s ease;
             z-index: 1000;
             overflow-y: auto;
             border-left: 1px solid #e9ecef;
-        }
-
-        .deliverables-panel.open {
-            right: 0;
         }
 
         .panel-header {
@@ -881,6 +896,9 @@
                 <div id="conversationFlow" class="conversation-flow">
                     <h3>Agent Collaboration</h3>
                     <div id="conversationMessages" class="conversation-messages"></div>
+                    <button id="newMessagesIndicator" style="display: none;" onclick="scrollToConversationBottom()">
+                        ↓ New Messages Below ↓
+                    </button>
                 </div>
 
                 <!-- Traditional Phase Cards (Hidden by default) -->
@@ -941,7 +959,6 @@
         <div class="deliverables-header">
             <h3>
                 Campaign Deliverables
-                <button class="close-panel" onclick="closeDeliverablesPanel()">×</button>
             </h3>
         </div>
         <div class="deliverables-content" id="deliverablesContent">
@@ -979,6 +996,12 @@
             if (isCreatingCampaign) {
                 console.log('Campaign creation already in progress, ignoring duplicate request');
                 return;
+            }
+
+            // Clear previous campaign deliverables
+            campaignDeliverables = {};
+            if (document.getElementById('deliverablesContent')) {
+                updateDeliverablesPanel();
             }
 
             const brief = document.getElementById('campaignBrief').value.trim();
@@ -1179,24 +1202,50 @@
                 key: key || `${timestamp}-${message.substring(0, 20)}` 
             };
             
-            // Check for duplicates
-            if (progressMessages.some(p => p.key === messageObj.key)) {
-                return; // Skip duplicate
+            // Check for duplicates by finding the index of an existing message with the same key
+            const existingMessageIndex = progressMessages.findIndex(p => p.key === messageObj.key);
+
+            if (existingMessageIndex > -1) {
+                // Replace existing message to update timestamp/content
+                progressMessages[existingMessageIndex] = messageObj;
+                console.log(`[Progress Debug] Updated existing message with key: "${messageObj.key}"`);
+            } else {
+                // Add new message
+                progressMessages.push(messageObj);
+                console.log(`[Progress Debug] Added new message with key: "${messageObj.key}"`);
             }
             
-            progressMessages.push(messageObj);
-            
-            // Add to side panel instead of center
-            const progressContainer = document.getElementById('progressPanelMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `progress-message ${type}`;
-            messageDiv.innerHTML = `<span class="progress-timestamp">${timestamp}</span>${message}`;
-            
-            progressContainer.appendChild(messageDiv);
-            progressContainer.scrollTop = progressContainer.scrollHeight;
+            // Re-render the entire progress panel to reflect changes
+            renderProgressPanel();
             
             // Show progress button if not already visible
             document.getElementById('progressBtn').style.display = 'inline-block';
+        }
+
+        function renderProgressPanel() {
+            const progressContainer = document.getElementById('progressPanelMessages');
+            if (!progressContainer) return;
+
+            // Check if user is scrolled to the bottom before clearing and re-rendering
+            const scrollThreshold = 5; 
+            const userWasAtBottom = progressContainer.scrollHeight - progressContainer.clientHeight <= progressContainer.scrollTop + scrollThreshold;
+
+            progressContainer.innerHTML = ''; // Clear existing messages
+
+            if (progressMessages.length === 0) {
+                progressContainer.innerHTML = '<p style="color: #666; text-align: center; margin-top: 50px; font-size: 0.85rem;">No progress updates yet. Start a campaign to see real-time progress here.</p>';
+            } else {
+                progressMessages.forEach(msgObj => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `progress-message ${msgObj.type}`;
+                    messageDiv.innerHTML = `<span class="progress-timestamp">${msgObj.timestamp}</span>${msgObj.message}`;
+                    progressContainer.appendChild(messageDiv);
+                });
+            }
+
+            if (userWasAtBottom) {
+                progressContainer.scrollTop = progressContainer.scrollHeight;
+            }
         }
 
         function formatMarkdown(text) {
@@ -1204,6 +1253,9 @@
             
             // Convert markdown to HTML
             return text
+                // ADDED: First, replace literal '\\n' with actual newlines '\n'
+                .replace(/\\n/g, '\n')
+
                 // Headers
                 .replace(/^### (.*$)/gm, '<h3>$1</h3>')
                 .replace(/^## (.*$)/gm, '<h2>$1</h2>')
@@ -1271,11 +1323,22 @@
 
         function updateConversationFlow(campaign) {
             const conversationMessages = document.getElementById('conversationMessages');
+            const newMessagesBtn = document.getElementById('newMessagesIndicator');
             
             if (!campaign.conversation) {
                 conversationMessages.innerHTML = '<p>No conversation data available</p>';
+                if (newMessagesBtn) newMessagesBtn.style.display = 'none';
                 return;
             }
+
+            // Check if user is scrolled to the bottom BEFORE adding new messages
+            const scrollThreshold = 10;
+            const userWasAtBottom = conversationMessages.scrollHeight - conversationMessages.clientHeight <= conversationMessages.scrollTop + scrollThreshold;
+
+            // Determine if there are actually new messages being added compared to what's currently rendered
+            const currentMessageCount = conversationMessages.children.length;
+            const newMessageCount = campaign.conversation.length;
+            const hasNewMessages = newMessageCount > currentMessageCount;
 
             conversationMessages.innerHTML = campaign.conversation.map(message => {
                 const speakerClass = getSpeakerClass(message.speaker);
@@ -1301,8 +1364,25 @@
                 return messageHtml;
             }).join('');
 
-            // Auto-scroll to bottom
-            conversationMessages.scrollTop = conversationMessages.scrollHeight;
+            if (userWasAtBottom) {
+                conversationMessages.scrollTop = conversationMessages.scrollHeight;
+                if (newMessagesBtn) newMessagesBtn.style.display = 'none';
+            } else {
+                if (hasNewMessages && newMessagesBtn) {
+                    newMessagesBtn.style.display = 'block';
+                }
+            }
+        }
+
+        function scrollToConversationBottom() {
+            const conversationMessages = document.getElementById('conversationMessages');
+            const newMessagesBtn = document.getElementById('newMessagesIndicator');
+            if (conversationMessages) {
+                conversationMessages.scrollTop = conversationMessages.scrollHeight;
+            }
+            if (newMessagesBtn) {
+                newMessagesBtn.style.display = 'none';
+            }
         }
 
         function getSpeakerClass(speaker) {
@@ -1375,23 +1455,61 @@
                 // Handle comprehensive final strategy deliverables
                 else if (deliverable.theme || deliverable.humanTruth || deliverable.storyAngles || deliverable.trends) {
                     title = "Integrated Campaign Plan";
-                    
+                    content = ''; // Initialize content
+
                     if (deliverable.theme) {
-                        content += `CAMPAIGN THEME\n${deliverable.theme}\n\n`;
+                        content += `CAMPAIGN THEME\\n${deliverable.theme}\\n\\n`;
                     }
-                    
+
                     if (deliverable.humanTruth) {
-                        content += `HUMAN TRUTH\n${deliverable.humanTruth}\n\n`;
+                        content += `HUMAN TRUTH\\n${deliverable.humanTruth}\\n\\n`;
                     }
-                    
-                    if (deliverable.storyAngles && deliverable.storyAngles.storyStrategy) {
-                        content += `STORY STRATEGY\n${deliverable.storyAngles.storyStrategy}\n\n`;
+
+                    // For storyAngles
+                    if (deliverable.storyAngles) {
+                        content += 'STORY STRATEGY\\n';
+                        if (typeof deliverable.storyAngles === 'string') {
+                            content += `${deliverable.storyAngles}\\n\\n`;
+                        } else if (typeof deliverable.storyAngles === 'object') {
+                            // If the object has a 'storyStrategy' property, use it
+                            if (deliverable.storyAngles.storyStrategy && typeof deliverable.storyAngles.storyStrategy === 'string') {
+                                content += `${deliverable.storyAngles.storyStrategy}\\n\\n`;
+                            }
+                            // If it has an 'angles' property (as seen in backend story.angles)
+                            else if (deliverable.storyAngles.angles && typeof deliverable.storyAngles.angles === 'string') {
+                                content += `${deliverable.storyAngles.angles}\\n\\n`;
+                            }
+                            // Fallback: stringify the object, assuming it contains the details directly
+                            else {
+                                content += `${JSON.stringify(deliverable.storyAngles, null, 2)}\\n\\n`;
+                            }
+                        }
                     }
-                    
-                    if (deliverable.trends && deliverable.trends.trendsAnalysis) {
-                        content += `TRENDS ANALYSIS\n${deliverable.trends.trendsAnalysis}\n\n`;
+
+                    // For trends
+                    if (deliverable.trends) {
+                        content += 'TRENDS ANALYSIS\\n';
+                        if (typeof deliverable.trends === 'string') {
+                            content += `${deliverable.trends}\\n\\n`;
+                        } else if (Array.isArray(deliverable.trends)) {
+                            // If it's an array of strings or simple objects
+                            content += deliverable.trends.map(trend => {
+                                if (typeof trend === 'string') return `- ${trend}`;
+                                if (typeof trend === 'object' && trend.trendName) return `- ${trend.trendName}: ${trend.description || ''}`; // Example structure
+                                return `- ${JSON.stringify(trend)}`;
+                            }).join('\\n') + '\\n\\n';
+                        } else if (typeof deliverable.trends === 'object') {
+                            // If the object has a 'trendsAnalysis' property, use it
+                            if (deliverable.trends.trendsAnalysis && typeof deliverable.trends.trendsAnalysis === 'string') {
+                                content += `${deliverable.trends.trendsAnalysis}\\n\\n`;
+                            }
+                            // Fallback: stringify the object
+                            else {
+                                content += `${JSON.stringify(deliverable.trends, null, 2)}\\n\\n`;
+                            }
+                        }
                     }
-                    
+
                     // If no structured content was found, show what we have
                     if (!content) {
                         content = 'Comprehensive campaign strategy has been generated. Please check the deliverables panel for full details.';
@@ -1416,10 +1534,12 @@
                     }
                 }
 
+                const existingDeliverable = campaignDeliverables[agent];
                 campaignDeliverables[agent] = { 
                     title, 
                     content,
-                    expanded: Object.keys(campaignDeliverables).length === 0 // First deliverable is expanded
+                    // Preserve existing expanded state, or default for new deliverables
+                    expanded: existingDeliverable ? existingDeliverable.expanded : (Object.keys(campaignDeliverables).length === 0)
                 };
                 
                 // Show deliverables button and auto-update panel
@@ -1520,7 +1640,12 @@
             progressMessages = [];
             lastProgressCount = 0;
             isCreatingCampaign = false; // Reset the creation flag
-            campaignDeliverables = {}; // Reset deliverables
+            
+            // Clear previous campaign deliverables
+            campaignDeliverables = {};
+            if (document.getElementById('deliverablesContent')) {
+                updateDeliverablesPanel();
+            }
             
             document.getElementById('progressMessages').innerHTML = '';
             document.getElementById('progressPanelMessages').innerHTML = '';
@@ -1558,6 +1683,29 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', () => {
             loadRecentCampaigns();
+            updateContainerClasses();
+            if (document.getElementById('deliverablesContent')) {
+                updateDeliverablesPanel();
+            }
+            // ADDED: Initial render of the progress panel if it exists, to show placeholder or existing messages
+            if (document.getElementById('progressPanelMessages')) {
+                renderProgressPanel();
+            }
+
+            // ADDED: Event listener for conversation scroll
+            const conversationMessages = document.getElementById('conversationMessages');
+            if (conversationMessages) {
+                conversationMessages.addEventListener('scroll', () => {
+                    const newMessagesBtn = document.getElementById('newMessagesIndicator');
+                    if (newMessagesBtn && newMessagesBtn.style.display === 'block') {
+                        // If user scrolls to the bottom manually, hide the button
+                        const scrollThreshold = 10;
+                        if (conversationMessages.scrollHeight - conversationMessages.clientHeight <= conversationMessages.scrollTop + scrollThreshold) {
+                            newMessagesBtn.style.display = 'none';
+                        }
+                    }
+                });
+            }
         });
 
         // Progress Panel Functions - LEFT SIDE
@@ -1573,46 +1721,34 @@
 
         // Deliverables Panel Functions - RIGHT SIDE
         function openDeliverablesPanel() {
-            document.getElementById('deliverablesPanel').classList.add('open');
             updateContainerClasses();
             updateDeliverablesPanel();
-        }
-
-        function closeDeliverablesPanel() {
-            document.getElementById('deliverablesPanel').classList.remove('open');
-            updateContainerClasses();
         }
 
         // Update container classes based on panel states
         function updateContainerClasses() {
             const container = document.querySelector('.container');
-            const progressOpen = document.getElementById('progressPanel').classList.contains('open');
-            const deliverablesOpen = document.getElementById('deliverablesPanel').classList.contains('open');
-            
-            // Remove all panel classes
+            const progressPanel = document.getElementById('progressPanel');
+
             container.classList.remove('progress-open', 'deliverables-open', 'both-open');
-            
-            // Add appropriate class based on which panels are open
-            if (progressOpen && deliverablesOpen) {
+
+            if (progressPanel.classList.contains('open')) {
                 container.classList.add('both-open');
-            } else if (progressOpen) {
-                container.classList.add('progress-open');
-            } else if (deliverablesOpen) {
+            } else {
                 container.classList.add('deliverables-open');
             }
             
-            // Handle overlay for mobile
+            // Handle overlay for mobile (progress panel only now)
             const isMobile = window.innerWidth <= 768;
-            if (isMobile && (progressOpen || deliverablesOpen)) {
+            if (isMobile && progressPanel.classList.contains('open')) {
                 document.getElementById('panelOverlay').classList.add('show');
             } else {
                 document.getElementById('panelOverlay').classList.remove('show');
             }
         }
 
-        // Close all panels
+        // Close all panels (now only effectively closes progress panel if mobile overlay is clicked)
         function closePanels() {
-            document.getElementById('deliverablesPanel').classList.remove('open');
             document.getElementById('progressPanel').classList.remove('open');
             updateContainerClasses();
         }
@@ -1672,7 +1808,7 @@
             deliverablesBtn.innerHTML = `View Deliverables <span style="background: #dc3545; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.75rem; margin-left: 5px;">${deliverableCount}</span>`;
             
             // Add progress message about new deliverable
-            addProgressMessage(`📄 New deliverable available: ${title}`, 'success', `deliverable-${title}-${Date.now()}`);
+            addProgressMessage(`📄 New deliverable available: ${title}`, 'success', `deliverable-${currentCampaignId}-${title}`);
             
             // Briefly highlight the deliverables button
             deliverablesBtn.style.animation = 'pulse 2s ease-in-out';

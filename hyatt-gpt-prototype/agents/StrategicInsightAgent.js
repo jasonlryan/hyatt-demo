@@ -1,72 +1,56 @@
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 const OpenAI = require("openai");
 
 class StrategicInsightAgent {
   constructor() {
     this.name = "Strategic Insight & Human Truth GPT";
+    this.promptFile = "strategic_insight_gpt.md"; // Ensure this is set
     this.emoji = "🧠";
     this.model = "gpt-4o-2024-08-06";
     this.temperature = 0.1; // Lower temperature for more focused insights
 
     // Load system prompt from GPT file
-    this.systemPrompt = this.loadSystemPrompt();
+    // this.systemPrompt = this.loadSystemPrompt(); // Will be called by orchestrator
+    this.systemPrompt = null; // Initialize as null
 
     // Initialize OpenAI client
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
 
+    // console.log(
+    //   `✅ ${this.name}: Loaded system prompt from /Users/jasonryan/Documents/DEMO/GPTs/strategic_insight_gpt.md`
+    // ); // This log is problematic / will be handled by loadSystemPrompt
     console.log(
-      `✅ ${this.name}: Loaded system prompt from /Users/jasonryan/Documents/DEMO/GPTs/strategic_insight_gpt.md`
-    );
-    console.log(
-      `🧠 ${this.name}: Using model ${this.model} with temperature ${this.temperature}`
+      `🧠 ${this.name}: Initialized with model ${this.model} and temperature ${this.temperature}. System prompt will be loaded on demand.`
     );
   }
 
-  loadSystemPrompt() {
-    try {
-      // Try multiple possible paths for different environments
-      // Prioritize local GPTs directory for Vercel deployment
-      const possiblePaths = [
-        path.join(__dirname, "../GPTs/strategic_insight_gpt.md"), // Local GPTs in app folder (Vercel)
-        path.join(process.cwd(), "GPTs/strategic_insight_gpt.md"), // Vercel deployment alternative
-        path.join(__dirname, "../../GPTs/strategic_insight_gpt.md"), // Local development (parent dir)
-        path.join(__dirname, "../../../GPTs/strategic_insight_gpt.md"), // Alternative path
-      ];
-
-      let prompt = null;
-      let successPath = null;
-
-      for (const promptPath of possiblePaths) {
-        try {
-          if (fs.existsSync(promptPath)) {
-            prompt = fs.readFileSync(promptPath, "utf8");
-            successPath = promptPath;
-            break;
-          }
-        } catch (err) {
-          // Continue to next path
-          continue;
-        }
-      }
-
-      if (prompt) {
-        console.log(
-          `✅ ${this.name}: Loaded system prompt from ${successPath}`
-        );
-        return prompt;
-      } else {
-        throw new Error("No valid prompt file found in any expected location");
-      }
-    } catch (error) {
-      console.warn(
-        `⚠️ ${this.name}: Could not load system prompt from file, using fallback:`,
-        error.message
-      );
-      return `You are Strategic Insight & Human Truth GPT, a specialized AI assistant for Hyatt Hotels that uncovers deeper emotional drivers and human truths that transform campaigns from functional to transformational.`;
+  async loadSystemPrompt(attempt = 1) {
+    if (this.systemPrompt) {
+      console.log("System prompt already loaded.");
+      return;
     }
+    const potentialPaths = [
+      path.join(__dirname, "../GPTs", this.promptFile), // Preferred path
+    ];
+
+    for (const p of potentialPaths) {
+      try {
+        const content = await fs.readFile(p, "utf8");
+        this.systemPrompt = content;
+        console.log(`Loaded system prompt from ${p}`);
+        return;
+      } catch (error) {
+        // console.warn(`Failed to load prompt from ${p}: ${error.message}`); // Debug log
+      }
+    }
+
+    console.error(
+      `Failed to load system prompt after trying all paths: ${this.promptFile}`
+    );
+    throw new Error(`Failed to load system prompt: ${this.promptFile}`);
   }
 
   // Response schema for structured human truth validation

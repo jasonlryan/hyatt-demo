@@ -1,11 +1,12 @@
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 const OpenAI = require("openai");
 
 class PRManagerAgent {
   constructor() {
     this.name = "PR Manager";
-    this.systemPrompt = this.loadSystemPrompt();
+    this.promptFile = "pr_manager_gpt.md";
+    this.systemPrompt = null;
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
@@ -17,43 +18,30 @@ class PRManagerAgent {
     console.log(`🤖 PR Manager Agent initialized with model: ${this.model}`);
   }
 
-  loadSystemPrompt() {
-    try {
-      // Try multiple possible paths for different environments
-      // Prioritize local GPTs directory for Vercel deployment
-      const possiblePaths = [
-        path.join(__dirname, "../GPTs/pr_manager_gpt.md"), // Local GPTs in app folder (Vercel)
-        path.join(process.cwd(), "GPTs/pr_manager_gpt.md"), // Vercel deployment alternative
-        path.join(__dirname, "../../GPTs/pr_manager_gpt.md"), // Local development (parent dir)
-        path.join(__dirname, "../../../GPTs/pr_manager_gpt.md"), // Alternative path
-      ];
+  async loadSystemPrompt(attempt = 1) {
+    const potentialPaths = [
+      path.join(__dirname, "../GPTs", this.promptFile), // Preferred path
+      // Fallback paths (can be removed if the above is robust)
+      // path.join(process.cwd(), 'GPTs', this.promptFile),
+      // path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile),
+      // path.join(__dirname, '../../GPTs', this.promptFile) // If agents are nested deeper
+    ];
 
-      let prompt = null;
-      let successPath = null;
-
-      for (const promptPath of possiblePaths) {
-        try {
-          if (fs.existsSync(promptPath)) {
-            prompt = fs.readFileSync(promptPath, "utf8");
-            successPath = promptPath;
-            break;
-          }
-        } catch (err) {
-          // Continue to next path
-          continue;
-        }
+    for (const p of potentialPaths) {
+      try {
+        const content = await fs.readFile(p, "utf8");
+        this.systemPrompt = content;
+        console.log(`Loaded system prompt from ${p}`);
+        return;
+      } catch (error) {
+        // console.warn(`Failed to load prompt from ${p}: ${error.message}`); // Debug log
       }
-
-      if (prompt) {
-        console.log(`✅ Loaded PR Manager system prompt from ${successPath}`);
-        return prompt;
-      } else {
-        throw new Error("No valid prompt file found in any expected location");
-      }
-    } catch (error) {
-      console.error("❌ Failed to load PR Manager system prompt:", error);
-      return "You are an expert PR Manager specializing in hospitality campaigns.";
     }
+
+    console.error(
+      `Failed to load system prompt after trying all paths: ${this.promptFile}`
+    );
+    throw new Error(`Failed to load system prompt: ${this.promptFile}`);
   }
 
   async generateCampaignIntroduction(campaignBrief, campaignContext) {

@@ -4,6 +4,10 @@ const { spawn } = require("child_process");
 const net = require("net");
 
 // Function to check if a port is available
+// This function is no longer strictly needed for finding an alternative port,
+// but can be kept if a simple check before starting is desired.
+// For now, we'll simplify and remove its direct usage in the main flow.
+/*
 function isPortAvailable(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
@@ -20,8 +24,11 @@ function isPortAvailable(port) {
     });
   });
 }
+*/
 
 // Function to find an available port starting from a given port
+// REMOVING THIS FUNCTION
+/*
 async function findAvailablePort(startPort = 3000) {
   let port = startPort;
   while (port < startPort + 10) {
@@ -32,6 +39,7 @@ async function findAvailablePort(startPort = 3000) {
   }
   throw new Error("No available ports found");
 }
+*/
 
 // Function to kill process on port 3000
 function killPort3000() {
@@ -47,19 +55,26 @@ function killPort3000() {
       if (pids.trim()) {
         const pidList = pids.trim().split("\n");
         pidList.forEach((pid) => {
-          try {
-            process.kill(parseInt(pid), "SIGKILL");
-            console.log(`🔪 Killed process ${pid} on port 3000`);
-          } catch (err) {
-            // Process might already be dead
+          if (pid.trim()) {
+            // Ensure pid is not an empty string
+            try {
+              process.kill(parseInt(pid), "SIGKILL");
+              console.log(`🔪 Killed process ${pid} on port 3000`);
+            } catch (err) {
+              // Process might already be dead or permission issue
+              console.warn(`⚠️  Failed to kill process ${pid}: ${err.message}`);
+            }
           }
         });
       }
-      resolve();
+      resolve(); // Resolve even if lsof fails or no processes found
     });
 
-    killProcess.on("error", () => {
-      // lsof command failed, probably no process on port 3000
+    killProcess.on("error", (err) => {
+      // lsof command failed (e.g., not installed, or other errors)
+      console.warn(
+        `⚠️  lsof command failed: ${err.message}. Assuming port 3000 is clear or unable to check.`
+      );
       resolve();
     });
   });
@@ -67,44 +82,53 @@ function killPort3000() {
 
 async function startServer() {
   try {
-    console.log("🔍 Checking for processes on port 3000...");
+    console.log("🔍 Attempting to clear port 3000...");
 
     // Try to kill any existing process on port 3000
     await killPort3000();
 
     // Wait a moment for the port to be freed
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log("⏳ Waiting for port to clear...");
+    await new Promise((resolve) => setTimeout(resolve, 1500)); // Increased wait time slightly
 
-    // Find an available port
-    const port = await findAvailablePort(3000);
-
-    if (port === 3000) {
-      console.log("✅ Port 3000 is available, starting server...");
-    } else {
-      console.log(`⚠️ Port 3000 is busy, using port ${port} instead...`);
-    }
+    const targetPort = 3000;
+    console.log(`✅ Attempting to start server on port ${targetPort}...`);
 
     // Set the PORT environment variable and start the server
-    const env = { ...process.env, PORT: port.toString() };
+    const env = {
+      ...process.env,
+      PORT: targetPort.toString(),
+      NODE_ENV: process.env.NODE_ENV || "development",
+    };
     const serverProcess = spawn("node", ["server.js"], {
       env,
       stdio: "inherit",
       cwd: __dirname,
     });
 
-    console.log(`🚀 Server starting on port ${port}`);
-    console.log(`🌐 Access your app at: http://localhost:${port}`);
+    // Note: The "Server starting on port" message will now primarily come from server.js
+    // console.log(`🚀 Server starting on port ${targetPort}`);
+    // console.log(`🌐 Access your app at: http://localhost:${targetPort}`);
 
     // Handle process termination
     process.on("SIGINT", () => {
       console.log("\n🛑 Shutting down server...");
-      serverProcess.kill("SIGINT");
+      if (serverProcess && !serverProcess.killed) {
+        serverProcess.kill("SIGINT");
+      }
       process.exit(0);
     });
 
     serverProcess.on("close", (code) => {
       console.log(`Server process exited with code ${code}`);
-      process.exit(code);
+      // Only exit if the server process itself exits non-zero, otherwise keep start.js alive (e.g. for nodemon-like restarts if added later)
+      // For now, we'll exit with the server's code.
+      process.exit(code === null ? 0 : code);
+    });
+
+    serverProcess.on("error", (err) => {
+      console.error(`❌ Failed to spawn server process: ${err.message}`);
+      process.exit(1);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error.message);

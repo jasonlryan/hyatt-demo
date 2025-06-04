@@ -1,12 +1,13 @@
-const fs = require("fs");
+const fs = require("fs").promises;
 const path = require("path");
 const OpenAI = require("openai");
 
 class ResearchAudienceAgent {
   constructor() {
     this.name = "Research & Audience GPT";
+    this.promptFile = "research_audience_gpt.md";
     this.temperature = parseFloat(process.env.RESEARCH_TEMPERATURE) || 0.2;
-    this.systemPrompt = this.loadSystemPrompt();
+    this.systemPrompt = null;
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || "your-api-key-here",
     });
@@ -28,48 +29,90 @@ class ResearchAudienceAgent {
     );
   }
 
-  loadSystemPrompt() {
-    try {
-      // Try multiple possible paths for different environments
-      // Prioritize local GPTs directory for Vercel deployment
-      const possiblePaths = [
-        path.join(__dirname, "../GPTs/research_audience_gpt.md"), // Local GPTs in app folder (Vercel)
-        path.join(process.cwd(), "GPTs/research_audience_gpt.md"), // Vercel deployment alternative
-        path.join(__dirname, "../../GPTs/research_audience_gpt.md"), // Local development (parent dir)
-        path.join(__dirname, "../../../GPTs/research_audience_gpt.md"), // Alternative path
-      ];
+  async loadSystemPrompt(attempt = 1) {
+    const potentialPaths = [
+      path.join(__dirname, "../GPTs", this.promptFile), // Preferred path
+      // Fallback paths (can be removed if the above is robust)
+      // path.join(process.cwd(), 'GPTs', this.promptFile),
+      // path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile),
+      // path.join(__dirname, '../../GPTs', this.promptFile) // If agents are nested deeper
+    ];
 
-      let prompt = null;
-      let successPath = null;
-
-      for (const promptPath of possiblePaths) {
-        try {
-          if (fs.existsSync(promptPath)) {
-            prompt = fs.readFileSync(promptPath, "utf8");
-            successPath = promptPath;
-            break;
-          }
-        } catch (err) {
-          // Continue to next path
-          continue;
-        }
+    for (const p of potentialPaths) {
+      try {
+        // console.log(`Attempting to load prompt from: ${p}`); // Debug log
+        const content = await fs.readFile(p, "utf8");
+        this.systemPrompt = content;
+        console.log(`Loaded system prompt from ${p}`);
+        return;
+      } catch (error) {
+        // console.warn(`Failed to load prompt from ${p}: ${error.message}`); // Debug log
       }
-
-      if (prompt) {
-        console.log(
-          `✅ ${this.name}: Loaded system prompt from ${successPath}`
-        );
-        return prompt;
-      } else {
-        throw new Error("No valid prompt file found in any expected location");
-      }
-    } catch (error) {
-      console.warn(
-        `⚠️ ${this.name}: Could not load system prompt from file, using fallback:`,
-        error.message
-      );
-      return `You are Research & Audience GPT, a specialized AI assistant for Hyatt Hotels that provides expert insights about traveler demographics, preferences, and behaviors. You excel at collaborative work with other specialized GPTs and provide data-driven insights.`;
     }
+
+    console.error(
+      `Failed to load system prompt after trying all paths: ${this.promptFile}`
+    );
+    throw new Error(`Failed to load system prompt: ${this.promptFile}`);
+
+    // Old logic for reference, to be replaced by the loop above
+    /*
+    try {
+      let promptPath = path.join(__dirname, '../../GPTs/', this.promptFile); // original path
+      // Check if running in Vercel by checking for VERCEL_ENV environment variable
+      if (process.env.VERCEL_ENV) {
+          // Try a path relative to process.cwd() for Vercel
+          promptPath = path.join(process.cwd(), 'GPTs', this.promptFile);
+          try {
+            await fs.access(promptPath);
+          } catch (e) {
+            // If not found, try another common Vercel structure if GPTs is inside hyatt-gpt-prototype
+            promptPath = path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile);
+            try {
+                await fs.access(promptPath);
+            } catch (e2) {
+                // Fallback to original __dirname if specific Vercel paths fail
+                promptPath = path.join(__dirname, '../../GPTs/', this.promptFile); 
+            }
+          }
+      } else {
+        // Local development: try a path relative to where AgentOrchestrator might be if it's at project root
+        const localPath1 = path.join(__dirname, '../GPTs', this.promptFile); // Assumes agents/ is sibling to GPTs/
+        const localPath2 = path.join(process.cwd(), 'GPTs', this.promptFile); // Assumes running from DEMO, GPTs is sibling
+        const localPath3 = path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile); // Assumes running from DEMO, then into app
+
+        const checkPaths = [localPath1, localPath2, localPath3, promptPath]; 
+        let foundPath = false;
+        for (const p of checkPaths) {
+            try {
+                await fs.access(p);
+                promptPath = p;
+                foundPath = true;
+                break;
+            } catch (e) {}
+        }
+        if (!foundPath) {
+            console.log(`Prompt not found at any typical local paths, defaulting to: ${promptPath}`);
+        }
+
+      }
+
+      console.log(`Attempting to load system prompt from: ${promptPath}`);
+      const content = await fs.readFile(promptPath, 'utf8');
+      this.systemPrompt = content;
+      console.log(`Loaded system prompt from ${promptPath}`);
+    } catch (error) {
+      console.error(`Error loading system prompt (attempt ${attempt}): ${error.message} from path related to ${this.promptFile}`);
+      if (attempt < 3) {
+        console.log(`Retrying to load system prompt... (attempt ${attempt + 1})`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        await this.loadSystemPrompt(attempt + 1);
+      } else {
+        console.error(`Failed to load system prompt after ${attempt} attempts: ${this.promptFile}`);
+        throw error; 
+      }
+    }
+    */
   }
 
   async analyzeAudience(campaignBrief, externalData = null) {
