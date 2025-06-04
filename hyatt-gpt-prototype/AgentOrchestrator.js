@@ -1445,7 +1445,7 @@ class AgentOrchestrator {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) return;
 
-    if (this.enableManualReview) {
+    if (campaign.manualReview) {
       const awaitingMap = {
         strategic_insight: "research",
         trending: "strategic_insight",
