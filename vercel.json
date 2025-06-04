@@ -3,21 +3,21 @@
   "name": "hyatt-gpt-agents-system",
   "builds": [
     {
-      "src": "hyatt-gpt-prototype/server.js",
+      "src": "server.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "hyatt-gpt-prototype/server.js"
+      "dest": "server.js"
     }
   ],
   "env": {
     "NODE_ENV": "production"
   },
   "functions": {
-    "hyatt-gpt-prototype/server.js": {
+    "server.js": {
       "maxDuration": 30
     }
   }
