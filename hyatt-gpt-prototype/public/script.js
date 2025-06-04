@@ -921,6 +921,8 @@
                 startNewCampaign();
                 banner.style.display = 'none';
             };
+
+            addReviewPrompt(campaign);
         }
 
         function hideReviewBanner() {
@@ -931,6 +933,52 @@
             resumeBtn.textContent = 'Resume';
             resumeBtn.classList.remove('btn-finalize');
             reviewBannerVisible = false;
+
+            removeReviewPrompt();
+        }
+
+        function addReviewPrompt(campaign) {
+            const container = document.getElementById('conversationMessages');
+            if (!container || document.getElementById('reviewPrompt')) return;
+
+            const prompt = document.createElement('div');
+            prompt.id = 'reviewPrompt';
+            prompt.className = 'review-prompt';
+
+            const message = campaign.pendingPhase === 'final_signoff'
+                ? 'Review the final strategy and click Finalize to complete the campaign.'
+                : `Awaiting review of the ${campaign.awaitingReview} phase.`;
+
+            const resumeLabel = campaign.pendingPhase === 'final_signoff' ? 'Finalize' : 'Resume';
+
+            prompt.innerHTML = `
+                <div class="review-prompt-text">${message}</div>
+                <div class="review-prompt-actions">
+                    <button id="resumeBtnFlow" class="btn ${resumeLabel === 'Finalize' ? 'btn-finalize' : ''}">${resumeLabel}</button>
+                    <button id="refineBtnFlow" class="btn btn-refine">Refine</button>
+                </div>
+            `;
+
+            container.appendChild(prompt);
+            scrollToConversationBottom();
+
+            document.getElementById('resumeBtnFlow').onclick = async () => {
+                try {
+                    await fetch(`/api/campaigns/${campaign.id}/resume`, { method: 'POST' });
+                } catch (err) {
+                    alert('Failed to resume campaign');
+                }
+            };
+
+            document.getElementById('refineBtnFlow').onclick = () => {
+                startNewCampaign();
+                removeReviewPrompt();
+            };
+        }
+
+        function removeReviewPrompt() {
+            const prompt = document.getElementById('reviewPrompt');
+            if (prompt) prompt.remove();
         }
 
         function toggleCampaignsList() {
