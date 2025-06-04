@@ -180,14 +180,15 @@ ENABLE_MANUAL_REVIEW=true
 When manual review is enabled the orchestrator pauses after each phase.
 The web UI shows a banner describing which phase is awaiting approval.
 Click **Resume** to continue with the next phase or **Refine** to restart the
-campaign with updated instructions.
+campaign with updated instructions. After the collaborative phase the system
+awaits **Final Sign-Off**. Choose **Finalize** to mark the campaign complete.
 
 ## 🔄 Dynamic Flow Examples
 
 ### Standard Flow
 
 ```
-Research → Trending → Story → Collaborative → Complete
+Research → Trending → Story → Collaborative → Final Sign-Off → Complete
 ```
 
 ### Alternative Flow (Weak Trends)
