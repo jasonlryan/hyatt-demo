@@ -1400,6 +1400,52 @@ class AgentOrchestrator {
     return true;
   }
 
+  refineCampaign(campaignId, instructions) {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign || campaign.status !== "paused" || !campaign.awaitingReview) {
+      return false;
+    }
+
+    const phaseToRefine = campaign.awaitingReview;
+
+    // Append refinement instructions to conversation
+    campaign.conversation.push({
+      speaker: "User Refinement",
+      message: instructions,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Apply refinement to campaign context so agents see updated brief
+    campaign.context.originalBrief += `\nREFINEMENT (${phaseToRefine}): ${instructions}`;
+
+    campaign.pendingPhase = null;
+    campaign.awaitingReview = null;
+    campaign.status = "active";
+    campaign.lastUpdated = new Date().toISOString();
+
+    switch (phaseToRefine) {
+      case "research":
+        this.runResearchPhase(campaignId, campaign.context);
+        break;
+      case "strategic_insight":
+        this.runStrategicInsightPhase(campaignId, campaign.context);
+        break;
+      case "trending":
+        this.runTrendingPhase(campaignId, campaign.context);
+        break;
+      case "story":
+        this.runStoryPhase(campaignId, campaign.context);
+        break;
+      case "collaborative":
+        this.runCollaborativePhase(campaignId, campaign.context);
+        break;
+      default:
+        return false;
+    }
+
+    return true;
+  }
+
   getPreviousPhaseData(campaign, nextPhase) {
     switch (nextPhase) {
       case "strategic_insight":
