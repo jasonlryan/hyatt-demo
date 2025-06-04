@@ -850,10 +850,11 @@
         <div class="header">
             <h1>🏨 Hyatt GPT Agents System</h1>
             <p>Collaborative AI agents for PR campaign development</p>
+            <button class="btn" id="newCampaignBtn" onclick="newCampaign()" style="display:none; margin-left:20px;">New Campaign</button>
         </div>
 
         <div class="main-content">
-            <div class="campaign-form">
+            <div class="campaign-form" id="campaignForm">
                 <h2 style="font-size: 1.4rem;">Create New Campaign</h2>
                 <div class="form-group">
                     <label for="campaignBrief">Campaign Brief</label>
@@ -880,6 +881,10 @@
                 
                 <button id="deliverablesBtn" onclick="openDeliverablesPanel()" style="display: none; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
                     View Deliverables
+                </button>
+
+                <button id="newCampaignBtn" onclick="startNewCampaign()" style="display: none; background: #ffc107; color: black; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
+                    New Campaign
                 </button>
                 
                 <!-- Progress Updates Section (Hidden - now in side panel) -->
@@ -988,8 +993,35 @@
         let progressMessages = [];
         let lastProgressCount = 0;
         let isCreatingCampaign = false; // Prevent duplicate submissions
+        let campaignInProgress = false; // Track if a campaign is running
         let currentPhase = null; // Track current phase
         let phaseStartTime = null; // Track phase timing
+
+        async function startNewCampaign() {
+            if (currentCampaignId) {
+                try {
+                    await fetch(`/api/campaigns/${currentCampaignId}`, { method: 'DELETE' });
+                } catch (e) {
+                    console.error('Failed to cancel campaign', e);
+                }
+                if (pollingInterval) clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+
+            currentCampaignId = null;
+            progressMessages = [];
+            lastProgressCount = 0;
+            campaignDeliverables = {};
+            updateDeliverablesPanel();
+
+            document.getElementById('campaignId').innerHTML = '<div class="campaign-id">No active campaign</div>';
+            document.getElementById('progressBtn').style.display = 'none';
+            document.getElementById('deliverablesBtn').style.display = 'none';
+            document.getElementById('newCampaignBtn').style.display = 'none';
+            document.getElementById('progressMessages').innerHTML = '';
+            document.getElementById('progressPanelMessages').innerHTML = '';
+            document.getElementById('conversationMessages').innerHTML = '';
+        }
 
         async function createCampaign() {
             // Prevent multiple submissions
@@ -997,6 +1029,8 @@
                 console.log('Campaign creation already in progress, ignoring duplicate request');
                 return;
             }
+
+            document.getElementById('newCampaignBtn').style.display = 'none';
 
             // Clear previous campaign deliverables
             campaignDeliverables = {};
@@ -1048,6 +1082,11 @@
                         <div class="campaign-status status-active">Active</div>
                     `;
                     document.getElementById('statusSection').style.display = 'block';
+
+                    // Hide input form and show "New Campaign" button
+                    document.getElementById('campaignForm').style.display = 'none';
+                    document.getElementById('newCampaignBtn').style.display = 'inline-block';
+                    campaignInProgress = true;
                     
                     addProgressMessage('✅ Campaign created successfully', 'success');
                     addProgressMessage('🤖 AI agents are now collaborating on your campaign', 'info');
@@ -1058,6 +1097,8 @@
                     
                     // Start polling for updates immediately
                     startPolling();
+
+                    document.getElementById('newCampaignBtn').style.display = 'inline-block';
                     
                     // Also do an immediate poll
                     setTimeout(updateCampaignStatus, 2000); // Increased delay
@@ -1179,6 +1220,7 @@
             if (campaign.status === 'completed' && !progressMessages.some(m => m.message.includes('Campaign completed'))) {
                 addProgressMessage('🎉 Campaign strategy completed successfully!', 'success', 'completion');
                 addProgressMessage('💾 Campaign saved and ready for implementation', 'success', 'saved');
+                campaignInProgress = false;
             }
         }
 
@@ -1312,6 +1354,7 @@
 
                     if (campaign.status === 'completed') {
                         clearInterval(pollingInterval);
+                        campaignInProgress = false;
                     }
                 } else {
                     console.error('Failed to fetch campaign status:', campaign.error);
@@ -1658,6 +1701,10 @@
                 <div class="campaign-status status-active">Loading...</div>
             `;
             document.getElementById('statusSection').style.display = 'block';
+
+            document.getElementById('campaignForm').style.display = 'none';
+            document.getElementById('newCampaignBtn').style.display = 'inline-block';
+            campaignInProgress = true;
             
             // Reset deliverables button
             document.getElementById('deliverablesBtn').style.display = 'none';
@@ -1676,8 +1723,9 @@
                     results.style.display = 'none';
                 }
             });
-            
+
             startPolling();
+            document.getElementById('newCampaignBtn').style.display = 'inline-block';
         }
 
         // Initialize page
@@ -1856,6 +1904,26 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
+
+        function newCampaign() {
+            if (campaignInProgress || isCreatingCampaign) {
+                const cancel = confirm('A campaign is currently running. Click OK to cancel it and start a new one, or Cancel to keep waiting.');
+                if (!cancel) {
+                    return; // User chose to wait
+                }
+                if (pollingInterval) clearInterval(pollingInterval);
+                campaignInProgress = false;
+                isCreatingCampaign = false;
+                currentCampaignId = null;
+                document.getElementById('statusSection').style.display = 'none';
+                document.getElementById('progressBtn').style.display = 'none';
+                document.getElementById('progressUpdates').style.display = 'none';
+                document.getElementById('progressPanelMessages').innerHTML = '';
+            }
+
+            document.getElementById('campaignForm').style.display = 'block';
+            document.getElementById('newCampaignBtn').style.display = 'none';
+        }
     </script>
 </body>
-</html> 
+</html>

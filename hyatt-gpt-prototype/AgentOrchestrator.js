@@ -15,6 +15,7 @@ const QualityController = require("./utils/QualityController");
 class AgentOrchestrator {
   constructor() {
     this.campaigns = new Map();
+    this.campaignTimers = new Map();
     this.researchAgent = new ResearchAudienceAgent();
     this.trendingAgent = new TrendingNewsAgent();
     this.storyAgent = new StoryAnglesAgent();
@@ -99,9 +100,10 @@ class AgentOrchestrator {
       campaign.lastUpdated = new Date().toISOString();
 
       // Start the research phase with dynamic flow control
-      setTimeout(() => {
+      const t = setTimeout(() => {
         this.runResearchPhase(campaignId, campaignContext);
       }, 1000);
+      this.addCampaignTimer(campaignId, t);
 
       return {
         campaignId,
@@ -284,7 +286,7 @@ class AgentOrchestrator {
 
   async runResearchPhase(campaignId, campaignContext) {
     const campaign = this.campaigns.get(campaignId);
-    if (!campaign) return;
+    if (!campaign || campaign.status === "cancelled") return;
 
     try {
       console.log(`[${campaignId}] Starting research phase...`);
@@ -395,7 +397,7 @@ class AgentOrchestrator {
       }
 
       // Generate dynamic PR Manager handoff
-      setTimeout(async () => {
+      const t = setTimeout(async () => {
         try {
           const handoffMessage = await this.generatePRManagerHandoffMessage(
             campaignContext,
@@ -431,6 +433,7 @@ class AgentOrchestrator {
           this.runStrategicInsightPhase(campaignId, campaignContext);
         }
       }, 2000);
+      this.addCampaignTimer(campaignId, t);
     } catch (error) {
       console.error(`[${campaignId}] Research phase failed:`, error);
       campaign.status = "failed";
@@ -534,7 +537,7 @@ class AgentOrchestrator {
 
   async runStrategicInsightPhase(campaignId, campaignContext) {
     const campaign = this.campaigns.get(campaignId);
-    if (!campaign || !campaign.phases.research) return;
+    if (!campaign || campaign.status === "cancelled" || !campaign.phases.research) return;
 
     try {
       console.log(`[${campaignId}] Starting strategic insight phase...`);
@@ -590,7 +593,7 @@ class AgentOrchestrator {
       });
 
       // Generate dynamic PR Manager handoff
-      setTimeout(async () => {
+      const t = setTimeout(async () => {
         try {
           const handoffMessage = await this.generatePRManagerHandoffMessage(
             campaignContext,
@@ -610,6 +613,7 @@ class AgentOrchestrator {
           console.error(`[${campaignId}] Handoff to trending failed:`, error);
         }
       }, 2000);
+      this.addCampaignTimer(campaignId, t);
     } catch (error) {
       console.error(
         `[${campaignId}] Strategic insight phase failed:`,
@@ -647,6 +651,7 @@ class AgentOrchestrator {
     const campaign = this.campaigns.get(campaignId);
     if (
       !campaign ||
+      campaign.status === "cancelled" ||
       !campaign.phases.research ||
       !campaign.phases.strategic_insight
     )
@@ -767,7 +772,7 @@ class AgentOrchestrator {
       }
 
       // Generate dynamic PR Manager handoff
-      setTimeout(async () => {
+      const t = setTimeout(async () => {
         try {
           const handoffMessage = await this.generatePRManagerHandoffMessage(
             campaignContext,
@@ -795,6 +800,7 @@ class AgentOrchestrator {
           this.runStoryPhase(campaignId, campaignContext);
         }
       }, 2000);
+      this.addCampaignTimer(campaignId, t);
     } catch (error) {
       console.error(`[${campaignId}] Trending phase failed:`, error);
       campaign.status = "failed";
@@ -830,6 +836,7 @@ class AgentOrchestrator {
     const campaign = this.campaigns.get(campaignId);
     if (
       !campaign ||
+      campaign.status === "cancelled" ||
       !campaign.phases.research ||
       !campaign.phases.strategic_insight ||
       !campaign.phases.trending
@@ -909,7 +916,7 @@ class AgentOrchestrator {
       console.log(`[${campaignId}] Story phase completed`);
 
       // Generate dynamic PR Manager handoff
-      setTimeout(async () => {
+      const t = setTimeout(async () => {
         try {
           const handoffMessage = await this.generatePRManagerHandoffMessage(
             campaignContext,
@@ -942,6 +949,7 @@ class AgentOrchestrator {
           this.runCollaborativePhase(campaignId, campaignContext);
         }
       }, 2000);
+      this.addCampaignTimer(campaignId, t);
     } catch (error) {
       console.error(`[${campaignId}] Story phase failed:`, error);
       campaign.status = "failed";
@@ -954,6 +962,7 @@ class AgentOrchestrator {
     const campaign = this.campaigns.get(campaignId);
     if (
       !campaign ||
+      campaign.status === "cancelled" ||
       !campaign.phases.research ||
       !campaign.phases.strategic_insight ||
       !campaign.phases.story
@@ -1403,6 +1412,46 @@ class AgentOrchestrator {
     } catch (error) {
       console.error("Failed to save campaign to file:", error);
     }
+  }
+
+  addCampaignTimer(campaignId, timer) {
+    if (!this.campaignTimers.has(campaignId)) {
+      this.campaignTimers.set(campaignId, []);
+    }
+    this.campaignTimers.get(campaignId).push(timer);
+  }
+
+  clearCampaignTimers(campaignId) {
+    const timers = this.campaignTimers.get(campaignId);
+    if (timers && timers.length > 0) {
+      timers.forEach(clearTimeout);
+      this.campaignTimers.delete(campaignId);
+    }
+  }
+
+  deleteCampaignFile(campaignId) {
+    if (process.env.NODE_ENV === "production") return;
+    try {
+      const campaignsDir = path.join(__dirname, "campaigns");
+      const filepath = path.join(campaignsDir, `campaign_${campaignId}.json`);
+      if (fs.existsSync(filepath)) {
+        fs.unlinkSync(filepath);
+        console.log(`🗑️ Deleted campaign file ${filepath}`);
+      }
+    } catch (err) {
+      console.error("Failed to delete campaign file:", err);
+    }
+  }
+
+  cancelCampaign(campaignId) {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign) return false;
+    campaign.status = "cancelled";
+    campaign.lastUpdated = new Date().toISOString();
+    this.clearCampaignTimers(campaignId);
+    this.campaigns.delete(campaignId);
+    this.deleteCampaignFile(campaignId);
+    return true;
   }
 
   // Add new methods to extract specific details from brief
