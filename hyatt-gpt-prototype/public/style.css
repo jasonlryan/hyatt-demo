@@ -183,6 +183,31 @@
             margin-top: 15px;
         }
 
+        .deliverable-placeholder {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .review-prompt {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .review-prompt-actions {
+            margin-top: 10px;
+        }
+
+        .review-prompt-actions .btn {
+            margin: 0 5px;
+        }
+
         .review-banner p {
             margin-bottom: 10px;
         }
