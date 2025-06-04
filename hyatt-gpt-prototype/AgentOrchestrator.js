@@ -1456,6 +1456,12 @@ class AgentOrchestrator {
       campaign.pendingPhase = nextPhase;
       campaign.awaitingReview = awaitingMap[nextPhase];
       campaign.lastUpdated = new Date().toISOString();
+      campaign.conversation.push({
+        speaker: "PR Manager",
+        message:
+          `Campaign is paused for manual review after the ${campaign.awaitingReview} phase. Choose \"Resume\" to continue to ${nextPhase} or \"Refine\" to adjust instructions.`,
+        timestamp: new Date().toISOString(),
+      });
       this.saveCampaignToFile(campaign);
       return;
     }

@@ -7,6 +7,7 @@
         let campaignInProgress = false; // Track if a campaign is running
         let currentPhase = null; // Track current phase
         let phaseStartTime = null; // Track phase timing
+        let reviewBannerVisible = false;
 
         async function startNewCampaign() {
             if (currentCampaignId) {
@@ -362,6 +363,12 @@
                 if (response.ok) {
                     updateConversationFlow(campaign);
                     simulateProgressFromConversation(campaign);
+
+                    if (campaign.status === 'paused') {
+                        showReviewBanner(campaign);
+                    } else {
+                        hideReviewBanner();
+                    }
 
                     if (campaign.status === 'completed') {
                         clearInterval(pollingInterval);
@@ -882,6 +889,34 @@
             setTimeout(() => {
                 deliverablesBtn.style.animation = '';
             }, 2000);
+        }
+
+        function showReviewBanner(campaign) {
+            const banner = document.getElementById('reviewBanner');
+            const msg = document.getElementById('reviewMessage');
+            msg.textContent = `Awaiting review of the ${campaign.awaitingReview} phase.`;
+            banner.style.display = 'block';
+            reviewBannerVisible = true;
+
+            document.getElementById('resumeBtn').onclick = async () => {
+                try {
+                    await fetch(`/api/campaigns/${campaign.id}/resume`, { method: 'POST' });
+                } catch (err) {
+                    alert('Failed to resume campaign');
+                }
+            };
+
+            document.getElementById('refineBtn').onclick = () => {
+                startNewCampaign();
+                banner.style.display = 'none';
+            };
+        }
+
+        function hideReviewBanner() {
+            if (!reviewBannerVisible) return;
+            const banner = document.getElementById('reviewBanner');
+            banner.style.display = 'none';
+            reviewBannerVisible = false;
         }
 
         function toggleCampaignsList() {

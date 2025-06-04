@@ -171,6 +171,17 @@ MIN_STORY_ANGLE_STRENGTH=80
 REQUIRE_DATA_VALIDATION=true
 ```
 
+### HITL Manual Review
+
+```bash
+ENABLE_MANUAL_REVIEW=true
+```
+
+When manual review is enabled the orchestrator pauses after each phase.
+The web UI shows a banner describing which phase is awaiting approval.
+Click **Resume** to continue with the next phase or **Refine** to restart the
+campaign with updated instructions.
+
 ## 🔄 Dynamic Flow Examples
 
 ### Standard Flow
