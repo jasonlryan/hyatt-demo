@@ -905,7 +905,6 @@
 
         function showReviewBanner(campaign) {
             addReviewPrompt(campaign);
-            alert('If you cannot see the Resume button, please scroll to the bottom of the conversation.');
         }
 
         function hideReviewBanner() {
