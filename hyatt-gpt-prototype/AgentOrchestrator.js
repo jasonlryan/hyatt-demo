@@ -31,6 +31,8 @@ class AgentOrchestrator {
     this.enableQualityControl = process.env.ENABLE_QUALITY_CONTROL === "true";
     this.enableAgentInteraction =
       process.env.ENABLE_AGENT_INTERACTION === "true";
+    // Manual review mode
+    this.enableManualReview = process.env.ENABLE_MANUAL_REVIEW === "true";
 
     // Synchronous part of setup
     this.loadCampaignsFromFiles();
@@ -68,6 +70,9 @@ class AgentOrchestrator {
       qualityMetrics: {},
       dataSourcesUsed: [],
       flowDecisions: [],
+      manualReview: this.enableManualReview,
+      pendingPhase: null,
+      awaitingReview: null,
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
     };
@@ -396,44 +401,13 @@ class AgentOrchestrator {
         }
       }
 
-      // Generate dynamic PR Manager handoff
-      const t = setTimeout(async () => {
-        try {
-          const handoffMessage = await this.generatePRManagerHandoffMessage(
-            campaignContext,
-            "strategic_insight",
-            researchResult.insights
-          );
-
-          campaign.conversation.push({
-            speaker: "PR Manager",
-            message: handoffMessage,
-            timestamp: new Date().toISOString(),
-          });
-
-          console.log(
-            `[${campaignId}] Starting strategic insight phase handoff...`
-          );
-          console.log(
-            `🔄 TRANSFORMATION PHASE: Converting functional insights to emotional truths...`
-          );
-          this.runStrategicInsightPhase(campaignId, campaignContext);
-        } catch (error) {
-          console.error(
-            `[${campaignId}] Handoff to strategic insight failed:`,
-            error
-          );
-          // Still proceed to strategic insight phase even if handoff message fails
-          campaign.conversation.push({
-            speaker: "PR Manager",
-            message:
-              "Now we need to transform these functional insights into deeper human truths. Strategic Insight Agent, please dig beneath the surface to find the emotional core that will drive authentic connection.",
-            timestamp: new Date().toISOString(),
-          });
-          this.runStrategicInsightPhase(campaignId, campaignContext);
-        }
-      }, 2000);
-      this.addCampaignTimer(campaignId, t);
+      // Schedule next phase or pause for manual review
+      this.scheduleNextPhase(
+        campaignId,
+        campaignContext,
+        "strategic_insight",
+        researchResult.insights
+      );
     } catch (error) {
       console.error(`[${campaignId}] Research phase failed:`, error);
       campaign.status = "failed";
@@ -592,28 +566,13 @@ class AgentOrchestrator {
         timestamp: new Date().toISOString(),
       });
 
-      // Generate dynamic PR Manager handoff
-      const t = setTimeout(async () => {
-        try {
-          const handoffMessage = await this.generatePRManagerHandoffMessage(
-            campaignContext,
-            "trending",
-            strategicInsightResult
-          );
-
-          campaign.conversation.push({
-            speaker: "PR Manager",
-            message: handoffMessage,
-            timestamp: new Date().toISOString(),
-          });
-
-          console.log(`[${campaignId}] Starting trending phase handoff...`);
-          this.runTrendingPhase(campaignId, campaignContext);
-        } catch (error) {
-          console.error(`[${campaignId}] Handoff to trending failed:`, error);
-        }
-      }, 2000);
-      this.addCampaignTimer(campaignId, t);
+      // Schedule next phase or pause for manual review
+      this.scheduleNextPhase(
+        campaignId,
+        campaignContext,
+        "trending",
+        strategicInsightResult
+      );
     } catch (error) {
       console.error(
         `[${campaignId}] Strategic insight phase failed:`,
@@ -771,36 +730,13 @@ class AgentOrchestrator {
         }
       }
 
-      // Generate dynamic PR Manager handoff
-      const t = setTimeout(async () => {
-        try {
-          const handoffMessage = await this.generatePRManagerHandoffMessage(
-            campaignContext,
-            "story",
-            trendingResult.trends
-          );
-
-          campaign.conversation.push({
-            speaker: "PR Manager",
-            message: handoffMessage,
-            timestamp: new Date().toISOString(),
-          });
-
-          console.log(`[${campaignId}] Starting story phase handoff...`);
-          this.runStoryPhase(campaignId, campaignContext);
-        } catch (error) {
-          console.error(`[${campaignId}] Handoff to story failed:`, error);
-          // Still proceed to story phase even if handoff message fails
-          campaign.conversation.push({
-            speaker: "PR Manager",
-            message:
-              "Now let's develop compelling story angles and headlines for our campaign.",
-            timestamp: new Date().toISOString(),
-          });
-          this.runStoryPhase(campaignId, campaignContext);
-        }
-      }, 2000);
-      this.addCampaignTimer(campaignId, t);
+      // Schedule next phase or pause for manual review
+      this.scheduleNextPhase(
+        campaignId,
+        campaignContext,
+        "story",
+        trendingResult.trends
+      );
     } catch (error) {
       console.error(`[${campaignId}] Trending phase failed:`, error);
       campaign.status = "failed";
@@ -915,41 +851,13 @@ class AgentOrchestrator {
       campaign.lastUpdated = new Date().toISOString();
       console.log(`[${campaignId}] Story phase completed`);
 
-      // Generate dynamic PR Manager handoff
-      const t = setTimeout(async () => {
-        try {
-          const handoffMessage = await this.generatePRManagerHandoffMessage(
-            campaignContext,
-            "collaborative",
-            storyResult.storyAngles
-          );
-
-          campaign.conversation.push({
-            speaker: "PR Manager",
-            message: handoffMessage,
-            timestamp: new Date().toISOString(),
-          });
-
-          console.log(
-            `[${campaignId}] Starting collaborative phase handoff...`
-          );
-          this.runCollaborativePhase(campaignId, campaignContext);
-        } catch (error) {
-          console.error(
-            `[${campaignId}] Handoff to collaborative failed:`,
-            error
-          );
-          // Still proceed to collaborative phase even if handoff message fails
-          campaign.conversation.push({
-            speaker: "PR Manager",
-            message:
-              "Now let's bring all our insights together for the final campaign strategy.",
-            timestamp: new Date().toISOString(),
-          });
-          this.runCollaborativePhase(campaignId, campaignContext);
-        }
-      }, 2000);
-      this.addCampaignTimer(campaignId, t);
+      // Schedule next phase or pause for manual review
+      this.scheduleNextPhase(
+        campaignId,
+        campaignContext,
+        "collaborative",
+        storyResult.storyAngles
+      );
     } catch (error) {
       console.error(`[${campaignId}] Story phase failed:`, error);
       campaign.status = "failed";
@@ -1452,6 +1360,110 @@ class AgentOrchestrator {
     this.campaigns.delete(campaignId);
     this.deleteCampaignFile(campaignId);
     return true;
+  }
+
+  resumeCampaign(campaignId) {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign || campaign.status !== "paused" || !campaign.pendingPhase) {
+      return false;
+    }
+
+    const nextPhase = campaign.pendingPhase;
+    campaign.status = "active";
+    campaign.pendingPhase = null;
+    campaign.awaitingReview = null;
+    campaign.lastUpdated = new Date().toISOString();
+
+    const prevData = this.getPreviousPhaseData(campaign, nextPhase);
+    this.triggerNextPhase(campaignId, campaign.context, nextPhase, prevData);
+    return true;
+  }
+
+  getPreviousPhaseData(campaign, nextPhase) {
+    switch (nextPhase) {
+      case "strategic_insight":
+        return campaign.phases.research?.insights;
+      case "trending":
+        return campaign.phases.strategic_insight?.insights;
+      case "story":
+        return campaign.phases.trending?.trends;
+      case "collaborative":
+        return campaign.phases.story?.storyAngles;
+      default:
+        return null;
+    }
+  }
+
+  triggerNextPhase(campaignId, campaignContext, nextPhase, previousData) {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign) return;
+
+    (async () => {
+      try {
+        const handoffMessage = await this.generatePRManagerHandoffMessage(
+          campaignContext,
+          nextPhase,
+          previousData
+        );
+
+        campaign.conversation.push({
+          speaker: "PR Manager",
+          message: handoffMessage,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error(`[${campaignId}] Handoff to ${nextPhase} failed:`, error);
+        campaign.conversation.push({
+          speaker: "PR Manager",
+          message: `Proceeding to ${nextPhase} phase...`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      console.log(`[${campaignId}] Starting ${nextPhase} phase handoff...`);
+
+      switch (nextPhase) {
+        case "strategic_insight":
+          this.runStrategicInsightPhase(campaignId, campaignContext);
+          break;
+        case "trending":
+          this.runTrendingPhase(campaignId, campaignContext);
+          break;
+        case "story":
+          this.runStoryPhase(campaignId, campaignContext);
+          break;
+        case "collaborative":
+          this.runCollaborativePhase(campaignId, campaignContext);
+          break;
+        default:
+          break;
+      }
+    })();
+  }
+
+  scheduleNextPhase(campaignId, campaignContext, nextPhase, previousData) {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign) return;
+
+    if (this.enableManualReview) {
+      const awaitingMap = {
+        strategic_insight: "research",
+        trending: "strategic_insight",
+        story: "trending",
+        collaborative: "story",
+      };
+      campaign.status = "paused";
+      campaign.pendingPhase = nextPhase;
+      campaign.awaitingReview = awaitingMap[nextPhase];
+      campaign.lastUpdated = new Date().toISOString();
+      this.saveCampaignToFile(campaign);
+      return;
+    }
+
+    const t = setTimeout(() => {
+      this.triggerNextPhase(campaignId, campaignContext, nextPhase, previousData);
+    }, 2000);
+    this.addCampaignTimer(campaignId, t);
   }
 
   // Add new methods to extract specific details from brief

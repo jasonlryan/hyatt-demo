@@ -243,6 +243,16 @@ app.delete("/api/campaigns/:id", (req, res) => {
   res.json({ status: "cancelled", campaignId: id });
 });
 
+// Resume a paused campaign
+app.post("/api/campaigns/:id/resume", (req, res) => {
+  const { id } = req.params;
+  const resumed = orchestrator.resumeCampaign(id);
+  if (!resumed) {
+    return res.status(400).json({ error: "Unable to resume campaign" });
+  }
+  res.json({ status: "resumed", campaignId: id });
+});
+
 // Serve the frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
