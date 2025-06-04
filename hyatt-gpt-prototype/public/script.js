@@ -756,6 +756,8 @@
             // ADDED: Initial render of the progress panel if it exists, to show placeholder or existing messages
             if (document.getElementById('progressPanelMessages')) {
                 renderProgressPanel();
+                // Open progress panel on initial load so users immediately see updates
+                openProgressPanel();
             }
 
             fetch('/api/manual-review')
