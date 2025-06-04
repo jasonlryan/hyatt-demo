@@ -881,10 +881,6 @@
                 <button id="deliverablesBtn" onclick="openDeliverablesPanel()" style="display: none; background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
                     View Deliverables
                 </button>
-
-                <button id="newCampaignBtn" onclick="startNewCampaign()" style="display: none; background: #ffc107; color: black; border: none; padding: 8px 16px; border-radius: 20px; margin-top: 10px; margin-left: 10px; cursor: pointer;">
-                    New Campaign
-                </button>
                 
                 <!-- Progress Updates Section (Hidden - now in side panel) -->
                 <div id="progressUpdates" class="progress-updates" style="display: none;">
@@ -995,40 +991,12 @@
         let currentPhase = null; // Track current phase
         let phaseStartTime = null; // Track phase timing
 
-        async function startNewCampaign() {
-            if (currentCampaignId) {
-                try {
-                    await fetch(`/api/campaigns/${currentCampaignId}`, { method: 'DELETE' });
-                } catch (e) {
-                    console.error('Failed to cancel campaign', e);
-                }
-                if (pollingInterval) clearInterval(pollingInterval);
-                pollingInterval = null;
-            }
-
-            currentCampaignId = null;
-            progressMessages = [];
-            lastProgressCount = 0;
-            campaignDeliverables = {};
-            updateDeliverablesPanel();
-
-            document.getElementById('campaignId').innerHTML = '<div class="campaign-id">No active campaign</div>';
-            document.getElementById('progressBtn').style.display = 'none';
-            document.getElementById('deliverablesBtn').style.display = 'none';
-            document.getElementById('newCampaignBtn').style.display = 'none';
-            document.getElementById('progressMessages').innerHTML = '';
-            document.getElementById('progressPanelMessages').innerHTML = '';
-            document.getElementById('conversationMessages').innerHTML = '';
-        }
-
         async function createCampaign() {
             // Prevent multiple submissions
             if (isCreatingCampaign) {
                 console.log('Campaign creation already in progress, ignoring duplicate request');
                 return;
             }
-
-            document.getElementById('newCampaignBtn').style.display = 'none';
 
             // Clear previous campaign deliverables
             campaignDeliverables = {};
@@ -1090,8 +1058,6 @@
                     
                     // Start polling for updates immediately
                     startPolling();
-
-                    document.getElementById('newCampaignBtn').style.display = 'inline-block';
                     
                     // Also do an immediate poll
                     setTimeout(updateCampaignStatus, 2000); // Increased delay
@@ -1710,9 +1676,8 @@
                     results.style.display = 'none';
                 }
             });
-
+            
             startPolling();
-            document.getElementById('newCampaignBtn').style.display = 'inline-block';
         }
 
         // Initialize page
