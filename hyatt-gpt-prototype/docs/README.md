@@ -88,7 +88,7 @@ ENABLE_DYNAMIC_FLOW=true
 ENABLE_QUALITY_CONTROL=true
 ENABLE_AGENT_INTERACTION=true
 ENABLE_REAL_DATA_SOURCES=false
-ENABLE_MANUAL_REVIEW=false
+ENABLE_MANUAL_REVIEW=true
 
 # 🆕 QUALITY THRESHOLDS
 MIN_TREND_RELEVANCE=60
@@ -174,7 +174,7 @@ REQUIRE_DATA_VALIDATION=true
 ### HITL Manual Review
 
 ```bash
-ENABLE_MANUAL_REVIEW=true
+ENABLE_MANUAL_REVIEW=true  # default (set to false to disable)
 ```
 
 When manual review is enabled the orchestrator pauses after each phase.

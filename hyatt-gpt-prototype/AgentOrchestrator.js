@@ -31,8 +31,8 @@ class AgentOrchestrator {
     this.enableQualityControl = process.env.ENABLE_QUALITY_CONTROL === "true";
     this.enableAgentInteraction =
       process.env.ENABLE_AGENT_INTERACTION === "true";
-    // Manual review mode
-    this.enableManualReview = process.env.ENABLE_MANUAL_REVIEW === "true";
+    // Manual review mode - on by default
+    this.enableManualReview = process.env.ENABLE_MANUAL_REVIEW !== "false";
     // Require final sign-off even if manual review is disabled
     this.requireFinalSignoff = process.env.REQUIRE_FINAL_SIGNOFF !== "false";
 
