@@ -751,6 +751,14 @@
                 renderProgressPanel();
             }
 
+            fetch('/api/manual-review')
+                .then(res => res.json())
+                .then(data => {
+                    const cb = document.getElementById('manualReviewCheckbox');
+                    if (cb) cb.checked = data.enabled;
+                })
+                .catch(() => {});
+
             // ADDED: Event listener for conversation scroll
             const conversationMessages = document.getElementById('conversationMessages');
             if (conversationMessages) {
@@ -935,3 +943,30 @@
             document.getElementById('campaignForm').style.display = 'block';
             document.getElementById('newCampaignBtn').style.display = 'none';
         }
+
+        function toggleSettings() {
+            const popup = document.getElementById('settingsPopup');
+            popup.classList.toggle('show');
+        }
+
+        async function toggleManualReview() {
+            const checkbox = document.getElementById('manualReviewCheckbox');
+            try {
+                await fetch('/api/manual-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled: checkbox.checked })
+                });
+            } catch (err) {
+                alert('Failed to update manual review setting');
+                checkbox.checked = !checkbox.checked;
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            const popup = document.getElementById('settingsPopup');
+            const btn = document.getElementById('settingsBtn');
+            if (!popup.contains(e.target) && e.target !== btn) {
+                popup.classList.remove('show');
+            }
+        });

@@ -12,6 +12,13 @@
             <h1>🏨 Hyatt GPT Agents System</h1>
             <p>Collaborative AI agents for PR campaign development</p>
             <button class="btn" id="newCampaignBtn" onclick="newCampaign()" style="display:none; margin-left:20px;">New Campaign</button>
+            <button class="settings-btn" id="settingsBtn" onclick="toggleSettings()">⚙️</button>
+            <div class="settings-popup" id="settingsPopup">
+                <label>
+                    <input type="checkbox" id="manualReviewCheckbox" onchange="toggleManualReview()">
+                    Enable Manual Review
+                </label>
+            </div>
         </div>
 
         <div class="main-content">
