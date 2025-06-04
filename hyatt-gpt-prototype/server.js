@@ -233,6 +233,16 @@ app.get("/api/campaigns", async (req, res) => {
   }
 });
 
+// Cancel and remove a campaign
+app.delete("/api/campaigns/:id", (req, res) => {
+  const { id } = req.params;
+  const cancelled = orchestrator.cancelCampaign(id);
+  if (!cancelled) {
+    return res.status(404).json({ error: "Campaign not found" });
+  }
+  res.json({ status: "cancelled", campaignId: id });
+});
+
 // Serve the frontend
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
