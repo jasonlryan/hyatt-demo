@@ -175,6 +175,22 @@
             transform: none;
         }
 
+        .review-banner {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .review-banner p {
+            margin-bottom: 10px;
+        }
+
+        .btn-refine {
+            background: #e83e8c;
+        }
+
         .status-section {
             margin-top: 30px;
         }
