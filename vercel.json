@@ -9,6 +9,10 @@
     {
       "src": "hyatt-gpt-prototype/public/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "hyatt-gpt-prototype/GPTs/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -17,11 +21,20 @@
       "dest": "hyatt-gpt-prototype/server.js"
     },
     {
+      "src": "/GPTs/(.*)",
+      "dest": "hyatt-gpt-prototype/GPTs/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "hyatt-gpt-prototype/public/$1"
     }
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "hyatt-gpt-prototype/server.js": {
+      "maxDuration": 30
+    }
   }
 } 

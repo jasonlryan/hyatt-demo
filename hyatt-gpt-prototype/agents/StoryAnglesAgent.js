@@ -31,9 +31,11 @@ class StoryAnglesAgent {
   loadSystemPrompt() {
     try {
       // Try multiple possible paths for different environments
+      // Prioritize local GPTs directory for Vercel deployment
       const possiblePaths = [
-        path.join(__dirname, "../../GPTs/story_angles_headlines_gpt.md"), // Local development
-        path.join(process.cwd(), "GPTs/story_angles_headlines_gpt.md"), // Vercel deployment
+        path.join(__dirname, "../GPTs/story_angles_headlines_gpt.md"), // Local GPTs in app folder (Vercel)
+        path.join(process.cwd(), "GPTs/story_angles_headlines_gpt.md"), // Vercel deployment alternative
+        path.join(__dirname, "../../GPTs/story_angles_headlines_gpt.md"), // Local development (parent dir)
         path.join(__dirname, "../../../GPTs/story_angles_headlines_gpt.md"), // Alternative path
       ];
 
