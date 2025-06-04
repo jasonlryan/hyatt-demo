@@ -175,13 +175,6 @@
             transform: none;
         }
 
-        .review-banner {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-        }
 
         .review-prompt {
             background: #fff3cd;
@@ -200,9 +193,6 @@
             margin: 0 5px;
         }
 
-        .review-banner p {
-            margin-bottom: 10px;
-        }
 
         .btn-refine {
             background: #e83e8c;
