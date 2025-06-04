@@ -191,6 +191,10 @@
             background: #e83e8c;
         }
 
+        .btn-finalize {
+            background: #28a745;
+        }
+
         .status-section {
             margin-top: 30px;
         }

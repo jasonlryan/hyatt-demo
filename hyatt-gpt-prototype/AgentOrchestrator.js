@@ -985,14 +985,18 @@ class AgentOrchestrator {
         );
       }
 
-      campaign.status = "completed";
       campaign.lastUpdated = new Date().toISOString();
       console.log(
-        `[${campaignId}] Collaborative phase completed - Campaign finished!`
+        `[${campaignId}] Collaborative phase completed - awaiting final sign-off`
       );
 
-      // Save campaign to file
-      this.saveCampaignToFile(campaign);
+      // Schedule final sign-off phase or pause for review
+      this.scheduleNextPhase(
+        campaignId,
+        campaignContext,
+        "final_signoff",
+        campaign.phases.collaborative.finalStrategy
+      );
     } catch (error) {
       console.error(`[${campaignId}] Collaborative phase failed:`, error);
       campaign.status = "failed";
@@ -1362,6 +1366,15 @@ class AgentOrchestrator {
     return true;
   }
 
+  finalizeCampaign(campaignId) {
+    const campaign = this.campaigns.get(campaignId);
+    if (!campaign) return false;
+    campaign.status = "completed";
+    campaign.lastUpdated = new Date().toISOString();
+    this.saveCampaignToFile(campaign);
+    return true;
+  }
+
   resumeCampaign(campaignId) {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign || campaign.status !== "paused" || !campaign.pendingPhase) {
@@ -1369,13 +1382,19 @@ class AgentOrchestrator {
     }
 
     const nextPhase = campaign.pendingPhase;
-    campaign.status = "active";
-    campaign.pendingPhase = null;
-    campaign.awaitingReview = null;
-    campaign.lastUpdated = new Date().toISOString();
+    if (nextPhase === "final_signoff") {
+      campaign.pendingPhase = null;
+      campaign.awaitingReview = null;
+      this.finalizeCampaign(campaignId);
+    } else {
+      campaign.status = "active";
+      campaign.pendingPhase = null;
+      campaign.awaitingReview = null;
+      campaign.lastUpdated = new Date().toISOString();
 
-    const prevData = this.getPreviousPhaseData(campaign, nextPhase);
-    this.triggerNextPhase(campaignId, campaign.context, nextPhase, prevData);
+      const prevData = this.getPreviousPhaseData(campaign, nextPhase);
+      this.triggerNextPhase(campaignId, campaign.context, nextPhase, prevData);
+    }
     return true;
   }
 
@@ -1435,6 +1454,9 @@ class AgentOrchestrator {
         case "collaborative":
           this.runCollaborativePhase(campaignId, campaignContext);
           break;
+        case "final_signoff":
+          this.finalizeCampaign(campaignId);
+          break;
         default:
           break;
       }
@@ -1451,6 +1473,7 @@ class AgentOrchestrator {
         trending: "strategic_insight",
         story: "trending",
         collaborative: "story",
+        final_signoff: "collaborative",
       };
       campaign.status = "paused";
       campaign.pendingPhase = nextPhase;
@@ -1459,7 +1482,7 @@ class AgentOrchestrator {
       campaign.conversation.push({
         speaker: "PR Manager",
         message:
-          `Campaign is paused for manual review after the ${campaign.awaitingReview} phase. Choose \"Resume\" to continue to ${nextPhase} or \"Refine\" to adjust instructions.`,
+          `Campaign is paused for manual review after the ${campaign.awaitingReview} phase. Choose \"${nextPhase === "final_signoff" ? "Finalize" : "Resume"}\" to continue to ${nextPhase} or \"Refine\" to adjust instructions.`,
         timestamp: new Date().toISOString(),
       });
       this.saveCampaignToFile(campaign);
