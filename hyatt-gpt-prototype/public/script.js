@@ -944,11 +944,6 @@
             document.getElementById('newCampaignBtn').style.display = 'none';
         }
 
-        function toggleSettings() {
-            const popup = document.getElementById('settingsPopup');
-            popup.classList.toggle('show');
-        }
-
         async function toggleManualReview() {
             const checkbox = document.getElementById('manualReviewCheckbox');
             try {
@@ -963,10 +958,3 @@
             }
         }
 
-        window.addEventListener('click', function(e) {
-            const popup = document.getElementById('settingsPopup');
-            const btn = document.getElementById('settingsBtn');
-            if (!popup.contains(e.target) && e.target !== btn) {
-                popup.classList.remove('show');
-            }
-        });
