@@ -1055,13 +1055,15 @@
             document.getElementById('progressPanel').classList.add('open');
             document.getElementById('panelOverlay').classList.add('show');
             document.getElementById('progressContent').innerHTML = document.getElementById('conversationFlow').innerHTML;
-            document.getElementById('mainContainer').style.marginRight = '800px';
+            const margin = document.getElementById('deliverablesPanel').classList.contains('open') ? '800px' : '400px';
+            document.getElementById('mainContainer').style.marginRight = margin;
         }
 
         function closeProgressPanel() {
             document.getElementById('progressPanel').classList.remove('open');
             document.getElementById('panelOverlay').classList.remove('show');
-            document.getElementById('mainContainer').style.marginRight = '400px';
+            const margin = document.getElementById('deliverablesPanel').classList.contains('open') ? '400px' : '0';
+            document.getElementById('mainContainer').style.marginRight = margin;
         }
 
         function closeOverlay() {
