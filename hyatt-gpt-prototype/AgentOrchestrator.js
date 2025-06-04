@@ -33,6 +33,8 @@ class AgentOrchestrator {
       process.env.ENABLE_AGENT_INTERACTION === "true";
     // Manual review mode
     this.enableManualReview = process.env.ENABLE_MANUAL_REVIEW === "true";
+    // Require final sign-off even if manual review is disabled
+    this.requireFinalSignoff = process.env.REQUIRE_FINAL_SIGNOFF !== "false";
 
     // Synchronous part of setup
     this.loadCampaignsFromFiles();
@@ -1467,14 +1469,18 @@ class AgentOrchestrator {
     const campaign = this.campaigns.get(campaignId);
     if (!campaign) return;
 
-    if (campaign.manualReview) {
-      const awaitingMap = {
-        strategic_insight: "research",
-        trending: "strategic_insight",
-        story: "trending",
-        collaborative: "story",
-        final_signoff: "collaborative",
-      };
+    const awaitingMap = {
+      strategic_insight: "research",
+      trending: "strategic_insight",
+      story: "trending",
+      collaborative: "story",
+      final_signoff: "collaborative",
+    };
+
+    const finalSignoffRequired =
+      nextPhase === "final_signoff" && this.requireFinalSignoff;
+
+    if (campaign.manualReview || finalSignoffRequired) {
       campaign.status = "paused";
       campaign.pendingPhase = nextPhase;
       campaign.awaitingReview = awaitingMap[nextPhase];
@@ -1482,7 +1488,9 @@ class AgentOrchestrator {
       campaign.conversation.push({
         speaker: "PR Manager",
         message:
-          `Campaign is paused for manual review after the ${campaign.awaitingReview} phase. Choose \"${nextPhase === "final_signoff" ? "Finalize" : "Resume"}\" to continue to ${nextPhase} or \"Refine\" to adjust instructions.`,
+          nextPhase === "final_signoff" && !campaign.manualReview
+            ? `Campaign is paused for final sign-off. Review the final deliverables and click \"Finalize\" to complete or \"Refine\" to adjust.`
+            : `Campaign is paused for manual review after the ${campaign.awaitingReview} phase. Choose \"${nextPhase === "final_signoff" ? "Finalize" : "Resume"}\" to continue to ${nextPhase} or \"Refine\" to adjust instructions.`,
         timestamp: new Date().toISOString(),
       });
       this.saveCampaignToFile(campaign);
