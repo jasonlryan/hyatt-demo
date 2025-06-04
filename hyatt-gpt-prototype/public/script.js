@@ -417,7 +417,7 @@
                 if (message.deliverable) {
                     messageHtml += `
                         <div class="deliverable-section">
-                            ${formatDeliverableData(message.deliverable, message.agent || message.speaker)}
+                            ${formatDeliverableData(message.deliverable, message.agent || message.speaker, campaign)}
                         </div>
                     `;
                 }
@@ -488,7 +488,7 @@
             }
         }
 
-        function formatDeliverableData(deliverable, agent) {
+        function formatDeliverableData(deliverable, agent, campaign) {
             if (typeof deliverable === 'object') {
                 let content = '';
                 let title = `${agent} Deliverable`;
@@ -614,10 +614,18 @@
                 // Add visual notification for new deliverable
                 addDeliverableNotification(title);
 
+                const resumeLabel = campaign && campaign.pendingPhase === 'final_signoff' ? 'Finalize' : 'Resume';
+                const reviewControls = campaign && campaign.status === 'paused' ? `
+                    <div class="review-prompt-actions">
+                        <button class="btn ${resumeLabel === 'Finalize' ? 'btn-finalize' : ''}" onclick="resumeCampaign('${campaign.id}')">${resumeLabel}</button>
+                        <button class="btn btn-refine" onclick="startNewCampaign()">Refine</button>
+                    </div>` : '';
+
                 return `<div class="deliverable-placeholder">
                     📄 <strong>DELIVERABLE:</strong> ${title}
                     <span class="deliverable-badge">Ready</span>
                     <button class="deliverable-toggle" onclick="openDeliverablesPanel()">View Details</button>
+                    ${reviewControls}
                 </div>`;
             }
 
@@ -637,10 +645,18 @@
             // Add visual notification for new deliverable
             addDeliverableNotification(`${agent} Deliverable`);
 
+            const resumeLabel = campaign && campaign.pendingPhase === 'final_signoff' ? 'Finalize' : 'Resume';
+            const reviewControls = campaign && campaign.status === 'paused' ? `
+                <div class="review-prompt-actions">
+                    <button class="btn ${resumeLabel === 'Finalize' ? 'btn-finalize' : ''}" onclick="resumeCampaign('${campaign.id}')">${resumeLabel}</button>
+                    <button class="btn btn-refine" onclick="startNewCampaign()">Refine</button>
+                </div>` : '';
+
             return `<div class="deliverable-placeholder">
                 📄 <strong>DELIVERABLE:</strong> ${agent} Deliverable
                 <span class="deliverable-badge">Ready</span>
                 <button class="deliverable-toggle" onclick="openDeliverablesPanel()">View Details</button>
+                ${reviewControls}
             </div>`;
         }
 
@@ -931,6 +947,14 @@
             resumeBtn.textContent = 'Resume';
             resumeBtn.classList.remove('btn-finalize');
             reviewBannerVisible = false;
+        }
+
+        async function resumeCampaign(campaignId) {
+            try {
+                await fetch(`/api/campaigns/${campaignId}/resume`, { method: 'POST' });
+            } catch (err) {
+                alert('Failed to resume campaign');
+            }
         }
 
         function toggleCampaignsList() {
