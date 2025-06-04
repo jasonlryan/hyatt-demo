@@ -179,6 +179,12 @@
             margin-top: 30px;
         }
 
+        .hitl-message {
+            font-size: 0.85rem;
+            color: #555;
+            margin: 10px 0 20px 0;
+        }
+
         .status-card {
             background: white;
             border: 2px solid #e9ecef;
