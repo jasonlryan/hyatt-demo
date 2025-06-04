@@ -509,10 +509,11 @@
         <div class="header">
             <h1>🏨 Hyatt GPT Agents System</h1>
             <p>Collaborative AI agents for PR campaign development</p>
+            <button id="newCampaignBtn" class="btn" style="display:none; margin-top:10px;" onclick="handleNewCampaign()">New Campaign</button>
         </div>
 
         <div class="main-content">
-            <div class="campaign-form">
+            <div class="campaign-form" id="campaignForm">
                 <h2>Create New Campaign</h2>
                 <div class="form-group">
                     <label for="campaignBrief">Campaign Brief</label>
@@ -642,6 +643,10 @@
                         <div class="campaign-status status-active">Active</div>
                     `;
                     document.getElementById('statusSection').style.display = 'block';
+
+                    // Hide the campaign form and show New Campaign button
+                    document.getElementById('campaignForm').style.display = 'none';
+                    document.getElementById('newCampaignBtn').style.display = 'inline-block';
                     
                     // Show conversation flow immediately
                     updateConversationFlow(result);
@@ -689,6 +694,9 @@
 
                     if (campaign.status === 'completed') {
                         clearInterval(pollingInterval);
+                        pollingInterval = null;
+                        currentCampaignId = null;
+                        document.getElementById('newCampaignBtn').style.display = 'inline-block';
                     }
                 } else {
                     console.error('Failed to fetch campaign status:', campaign.error);
@@ -1026,6 +1034,27 @@
             const deliverable = campaignDeliverables[agentName];
             deliverable.expanded = !deliverable.expanded;
             updateDeliverablesPanel();
+        }
+
+        function handleNewCampaign() {
+            if (currentCampaignId) {
+                const confirmCancel = confirm('A campaign is currently running. Click OK to cancel it and start a new one, or Cancel to continue waiting.');
+                if (!confirmCancel) {
+                    return;
+                }
+
+                // Stop polling and reset state
+                if (pollingInterval) clearInterval(pollingInterval);
+                pollingInterval = null;
+                currentCampaignId = null;
+                document.getElementById('statusSection').style.display = 'none';
+                document.getElementById('conversationMessages').innerHTML = '';
+                campaignDeliverables = {};
+                document.getElementById('deliverablesBtn').style.display = 'none';
+            }
+
+            document.getElementById('campaignForm').style.display = 'block';
+            document.getElementById('newCampaignBtn').style.display = 'none';
         }
     </script>
 </body>
