@@ -7,7 +7,6 @@
         let campaignInProgress = false; // Track if a campaign is running
         let currentPhase = null; // Track current phase
         let phaseStartTime = null; // Track phase timing
-        let reviewBannerVisible = false;
 
         async function startNewCampaign() {
             if (currentCampaignId) {
@@ -903,48 +902,11 @@
         }
 
         function showReviewBanner(campaign) {
-            const banner = document.getElementById('reviewBanner');
-            const msg = document.getElementById('reviewMessage');
-            const resumeBtn = document.getElementById('resumeBtn');
-
-            if (campaign.pendingPhase === 'final_signoff') {
-                msg.textContent = 'Review the final strategy and click Finalize to complete the campaign.';
-                resumeBtn.textContent = 'Finalize';
-                resumeBtn.classList.add('btn-finalize');
-            } else {
-                msg.textContent = `Awaiting review of the ${campaign.awaitingReview} phase.`;
-                resumeBtn.textContent = 'Resume';
-                resumeBtn.classList.remove('btn-finalize');
-            }
-
-            banner.style.display = 'block';
-            reviewBannerVisible = true;
-
-            resumeBtn.onclick = async () => {
-                try {
-                    await fetch(`/api/campaigns/${campaign.id}/resume`, { method: 'POST' });
-                } catch (err) {
-                    alert('Failed to resume campaign');
-                }
-            };
-
-            document.getElementById('refineBtn').onclick = () => {
-                startNewCampaign();
-                banner.style.display = 'none';
-            };
-
             addReviewPrompt(campaign);
+            alert('If you cannot see the Resume button, please scroll to the bottom of the conversation.');
         }
 
         function hideReviewBanner() {
-            if (!reviewBannerVisible) return;
-            const banner = document.getElementById('reviewBanner');
-            const resumeBtn = document.getElementById('resumeBtn');
-            banner.style.display = 'none';
-            resumeBtn.textContent = 'Resume';
-            resumeBtn.classList.remove('btn-finalize');
-            reviewBannerVisible = false;
-
             removeReviewPrompt();
         }
 
