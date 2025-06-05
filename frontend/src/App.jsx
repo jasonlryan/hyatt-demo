@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Building } from 'lucide-react';
 import CampaignForm from './components/CampaignForm.jsx';
 import ProgressPanel from './components/ProgressPanel.jsx';
-import DeliverablesPanel from './components/DeliverablesPanel.jsx';
 import DeliverableModal from './components/DeliverableModal.jsx';
-import SidePanel from './components/SidePanel.jsx';
+import Header from './bolt/Header.jsx';
+import SidePanel from './bolt/SidePanel.jsx';
+import CampaignDeliverables from './bolt/CampaignDeliverables.jsx';
 
 function App() {
   const [campaignId, setCampaignId] = useState(null);
@@ -107,48 +107,22 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-100">
       {/* Header */}
-      <header className="bg-slate-700 text-white p-4 shadow-md">
-        <div className="container mx-auto flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div className="flex items-center">
-            <div className="text-amber-400 mr-3">
-              <Building size={36} />
-            </div>
-            <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-100">
-                Hyatt GPT Agents System
-              </h1>
-              <p className="text-slate-300 text-sm">
-                Collaborative AI agents for PR campaign development
-              </p>
-            </div>
-          </div>
-          
-          <div className="flex items-center mt-4 md:mt-0 space-x-4">
-            <button 
-              className="bg-indigo-500 hover:bg-indigo-600 transition-colors duration-200 py-2 px-4 rounded-lg text-white font-medium"
-              onClick={handleNewCampaign}
-            >
-              New Campaign
-            </button>
-            
-            <div className="flex items-center">
-              <span className="mr-2 text-slate-300">HITL Review</span>
-              <div 
-                className={`relative w-12 h-6 rounded-full transition-colors duration-200 ease-in-out cursor-pointer ${isHitlEnabled ? 'bg-green-500' : 'bg-slate-500'}`}
-                onClick={() => setIsHitlEnabled(!isHitlEnabled)}
-              >
-                <div className={`absolute left-1 top-1 w-4 h-4 rounded-full bg-white transition-transform duration-200 ease-in-out ${isHitlEnabled ? 'transform translate-x-6' : ''}`}></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header
+        onNewCampaign={handleNewCampaign}
+        hitlReview={isHitlEnabled}
+        onToggleHitl={() => setIsHitlEnabled(!isHitlEnabled)}
+      />
       
       {/* Side Panel */}
-      <SidePanel 
+      <SidePanel
         isOpen={isSidePanelOpen}
         onClose={() => setIsSidePanelOpen(false)}
-        messages={conversation}
+        events={conversation.map((msg, idx) => ({
+          id: idx,
+          timestamp: formatTimestamp(msg.timestamp),
+          description: `${msg.speaker}: ${msg.message}`,
+          icon: 'MessageSquare',
+        }))}
       />
       
       {/* Main Content */}
@@ -178,9 +152,14 @@ function App() {
           </div>
           
           <div className="lg:col-span-1">
-            <DeliverablesPanel
-              deliverables={deliverables}
-              onOpen={openModal}
+            <CampaignDeliverables
+              deliverables={Object.entries(deliverables).map(([agent, d]) => ({
+                id: agent,
+                title: d.title,
+                agent,
+                status: 'ready',
+              }))}
+              onViewDetails={(id) => openModal(id)}
             />
           </div>
         </div>
@@ -207,6 +186,17 @@ function guessDeliverableTitle(deliv, speaker) {
 function formatDeliverable(deliv) {
   if (typeof deliv === 'string') return deliv;
   return JSON.stringify(deliv, null, 2);
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp) return '';
+  if (typeof timestamp === 'string' && timestamp.includes(':')) return timestamp;
+  return new Date(timestamp).toLocaleTimeString('en-US', {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
 }
 
 export default App;
