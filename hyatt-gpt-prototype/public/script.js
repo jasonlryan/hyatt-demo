@@ -362,15 +362,9 @@ function addProgressMessage(message, type = "info", key = null) {
   if (existingMessageIndex > -1) {
     // Replace existing message to update timestamp/content
     progressMessages[existingMessageIndex] = messageObj;
-    console.log(
-      `[Progress Debug] Updated existing message with key: "${messageObj.key}"`
-    );
   } else {
     // Add new message
     progressMessages.push(messageObj);
-    console.log(
-      `[Progress Debug] Added new message with key: "${messageObj.key}"`
-    );
   }
 
   // Re-render the entire progress panel to reflect changes
@@ -414,42 +408,58 @@ function renderProgressPanel() {
 function formatMarkdown(text) {
   if (!text) return "";
 
-  // Convert markdown to HTML
-  return (
-    text
-      // ADDED: First, replace literal '\\n' with actual newlines '\n'
-      .replace(/\\n/g, "\n")
+  let html = text;
 
-      // Headers
-      .replace(/^### (.*$)/gm, "<h3>$1</h3>")
-      .replace(/^## (.*$)/gm, "<h2>$1</h2>")
-      .replace(/^# (.*$)/gm, "<h1>$1</h1>")
-      .replace(/^\*\*(.*)\*\*$/gm, "<h4>$1</h4>")
+  // Normalize line endings and replace literal \n
+  html = html.replace(/\r\n|\r/g, "\n").replace(/\\n/g, "\n");
 
-      // Bold and italic
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+  // Block elements: Headers
+  html = html.replace(/^### (.*$)/gm, "<h3>$1</h3>");
+  html = html.replace(/^## (.*$)/gm, "<h2>$1</h2>");
+  html = html.replace(/^# (.*$)/gm, "<h1>$1</h1>");
+  // Custom rule for H4 from original code
+  html = html.replace(/^\*\*(.*)\*\*$/gm, "<h4>$1</h4>");
 
-      // Lists
-      .replace(/^- (.*$)/gm, "<li>$1</li>")
-      .replace(/^(\d+)\. (.*$)/gm, "<li>$2</li>")
+  // Block elements: Lists
+  // Process Unordered Lists
+  html = html.replace(/^- (.*$)/gm, "<li>$1</li>");
+  html = html.replace(/^(<li>.*(?:\n<li>.*)*)$/gm, "<ul>\n$1\n</ul>");
 
-      // Line breaks
-      .replace(/\n\n/g, "</p><p>")
-      .replace(/\n/g, "<br>")
+  // Process Ordered Lists
+  // Temporarily mark ordered list items to distinguish from unordered
+  html = html.replace(/^(\d+)\. (.*$)/gm, "<ol_li>$2</ol_li>");
+  html = html.replace(/^(<ol_li>.*(?:\n<ol_li>.*)*)$/gm, "<ol>\n$1\n</ol>");
+  html = html.replace(/<ol_li>/g, "<li>").replace(/<\/ol_li>/g, "</li>");
 
-      // Wrap in paragraphs
-      .replace(/^(?!<[h|l|p])/gm, "<p>")
-      .replace(/(?<!>)$/gm, "</p>")
+  // Inline elements: Bold and Italic
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
 
-      // Clean up empty paragraphs
-      .replace(/<p><\/p>/g, "")
-      .replace(/<p><br><\/p>/g, "")
+  // Paragraphs and Line Breaks
+  // Split into blocks by newlines, then process
+  const blocks = html.split("\n\n");
+  html = blocks
+    .map((block) => {
+      // If the block is already a list or header, leave it as is (trimming whitespace)
+      if (block.match(/^<(ul|ol|h[1-4])>/)) {
+        return block.trim();
+      }
+      // Otherwise, wrap in <p> and convert single newlines to <br>
+      if (block.trim() !== "") {
+        return "<p>" + block.trim().replace(/\n/g, "<br>") + "</p>";
+      }
+      return "";
+    })
+    .join("\n\n"); // Join blocks back, could also be just join('') depending on desired spacing between <p> and <ul> etc.
 
-      // Wrap lists
-      .replace(/(<li>.*<\/li>)/gs, "<ul>$1</ul>")
-      .replace(/<\/ul>\s*<ul>/g, "")
-  );
+  // Clean up any accidentally created empty paragraphs or paragraphs with only <br>
+  html = html.replace(/<p>\s*<\/p>/g, "").replace(/<p>(<br>\s*)+<\/p>/g, "");
+
+  // Consolidate adjacent lists of the same type (if any were separated)
+  html = html.replace(/<\/ul>\s*<ul>/g, "");
+  html = html.replace(/<\/ol>\s*<ol>/g, "");
+
+  return html;
 }
 
 function startPolling() {
@@ -611,6 +621,8 @@ function getSpeakerIcon(speaker) {
       return "🔍";
     case "Strategic Insight GPT":
       return "🧠";
+    case "Strategic Insight & Human Truth GPT":
+      return "🧠";
     case "Trending News GPT":
       return "📈";
     case "Story Angles & Headlines GPT":
@@ -763,10 +775,7 @@ function formatDeliverableData(deliverable, agent) {
     campaignDeliverables[agent] = {
       title,
       content,
-      // Preserve existing expanded state, or default for new deliverables
-      expanded: existingDeliverable
-        ? existingDeliverable.expanded
-        : Object.keys(campaignDeliverables).length === 0,
+      expanded: existingDeliverable ? existingDeliverable.expanded : true,
     };
 
     // Show deliverables button and auto-update panel
@@ -1038,30 +1047,32 @@ function updateDeliverablesPanel() {
   }
 
   let html = "";
-  for (const [agentName, deliverable] of Object.entries(campaignDeliverables)) {
+  for (const [agentName, deliverableItem] of Object.entries(
+    campaignDeliverables
+  )) {
     const formattedContent = formatMarkdown(
-      deliverable.content || "No content available"
+      deliverableItem.content || "No content available"
     );
     const agentIcon = getSpeakerIcon(agentName);
     html += `
                     <div class="deliverable-item">
                         <div class="deliverable-header ${
-                          deliverable.expanded ? "expanded" : ""
+                          deliverableItem.expanded ? "expanded" : ""
                         }" onclick="toggleDeliverable('${agentName}')">
                             <div>
-                                <h4>${deliverable.title || agentName}</h4>
+                                <h4>${deliverableItem.title || agentName}</h4>
                                 <div class="agent-name">${agentIcon} From: ${agentName}</div>
                             </div>
                             <div class="deliverable-actions">
                                 <button class="view-btn" onclick="openDeliverableModal('${agentName}', event)" title="Open in modal">🔍</button>
                                 <button class="download-btn" onclick="downloadDeliverable('${agentName}', event)" title="Download as markdown file">📥</button>
                                 <span class="collapse-icon ${
-                                  deliverable.expanded ? "expanded" : ""
+                                  deliverableItem.expanded ? "expanded" : ""
                                 }">▼</span>
                             </div>
                         </div>
                         <div class="deliverable-content ${
-                          deliverable.expanded ? "expanded" : ""
+                          deliverableItem.expanded ? "expanded" : ""
                         }">${formattedContent}</div>
                     </div>
                 `;
@@ -1094,7 +1105,7 @@ function closeDeliverableModal() {
   currentModalDeliverable = null;
 }
 
-function downloadModalPdf() {
+async function downloadModalPdf() {
   if (!currentModalDeliverable) return;
   const element = document.getElementById("modalBody");
   const rawTitle =
@@ -1103,7 +1114,26 @@ function downloadModalPdf() {
   const cleanTitle = rawTitle.replace(/[^a-zA-Z0-9]/g, "_");
   const timestamp = new Date().toISOString().slice(0, 10);
   const filename = `${cleanTitle}_${timestamp}.pdf`;
-  html2pdf().from(element).set({ filename }).save();
+
+  // Store original styles
+  const originalMaxHeight = element.style.maxHeight;
+  const originalOverflowY = element.style.overflowY;
+
+  // Temporarily override styles for PDF generation
+  element.style.maxHeight = "none";
+  element.style.overflowY = "visible";
+
+  try {
+    // Use the promise interface of html2pdf
+    await html2pdf().from(element).set({ filename }).save();
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    alert("Failed to generate PDF. Please try again.");
+  } finally {
+    // Restore original styles after PDF generation attempt
+    element.style.maxHeight = originalMaxHeight;
+    element.style.overflowY = originalOverflowY;
+  }
 }
 
 function closePanelsOnMobile() {

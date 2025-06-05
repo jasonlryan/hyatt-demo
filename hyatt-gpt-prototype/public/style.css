@@ -610,7 +610,6 @@
             border: 1px solid #e9ecef;
             border-radius: 8px;
             margin-bottom: 15px;
-            overflow: hidden;
         }
 
         .deliverable-header {
@@ -914,10 +913,50 @@
         }
 
         .modal-body {
-            margin-top: 10px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            font-size: 0.9rem;
+            margin-top: 15px;
+            max-height: 70vh; /* Max height for scrollability */
+            overflow-y: auto;
+            line-height: 1.7; /* Slightly increased line height */
+            color: #333;
+            font-size: 16px; /* Base font size for modal content - adjust as needed */
+            padding: 10px 20px; /* Added: top/bottom 10px, left/right 20px padding */
+        }
+
+        .modal-body p {
+            margin-bottom: 1em; /* Consistent paragraph spacing */
+        }
+
+        .modal-body h1,
+        .modal-body h2,
+        .modal-body h3,
+        .modal-body h4 {
+            margin-top: 1.2em;
+            margin-bottom: 0.6em;
+            line-height: 1.3;
+            color: #2c3e50; /* Header color */
+        }
+
+        .modal-body h1 { font-size: 1.8em; border-bottom: 2px solid #667eea; padding-bottom: 0.3em; }
+        .modal-body h2 { font-size: 1.5em; border-bottom: 1px solid #a0aee8; padding-bottom: 0.2em; }
+        .modal-body h3 { font-size: 1.25em; }
+        .modal-body h4 { font-size: 1.1em; color: #555; }
+
+        .modal-body ul,
+        .modal-body ol {
+            margin-left: 25px; /* Indentation for lists */
+            margin-bottom: 1em;
+        }
+
+        .modal-body li {
+            margin-bottom: 0.5em;
+        }
+
+        .modal-body strong {
+            font-weight: 600; /* Slightly bolder for emphasis if needed */
+        }
+
+        .modal-body em {
+            font-style: italic;
         }
 
         /* Overlay for mobile */
