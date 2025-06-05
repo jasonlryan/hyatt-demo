@@ -11,30 +11,40 @@ function App() {
   const [deliverables, setDeliverables] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalDeliverable, setModalDeliverable] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!campaignId) return;
-    const interval = setInterval(() => {
-      fetch(`/api/campaigns/${campaignId}`)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.conversation) {
-            setConversation(data.conversation);
-            const delivs = {};
-            data.conversation.forEach((msg) => {
-              if (msg.deliverable) {
-                const title = guessDeliverableTitle(msg.deliverable, msg.speaker);
-                const content = formatDeliverable(msg.deliverable);
-                delivs[msg.speaker] = { title, content };
-              }
-            });
-            setDeliverables(delivs);
-          }
-          if (data.status === 'completed') {
-            clearInterval(interval);
-          }
-        })
-        .catch(() => {});
+    let failureCount = 0;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/campaigns/${campaignId}`);
+        if (!res.ok) throw new Error('Network error');
+        const data = await res.json();
+        failureCount = 0;
+        setError(null);
+        if (data.conversation) {
+          setConversation(data.conversation);
+          const delivs = {};
+          data.conversation.forEach((msg) => {
+            if (msg.deliverable) {
+              const title = guessDeliverableTitle(msg.deliverable, msg.speaker);
+              const content = formatDeliverable(msg.deliverable);
+              delivs[msg.speaker] = { title, content };
+            }
+          });
+          setDeliverables(delivs);
+        }
+        if (data.status === 'completed') {
+          clearInterval(interval);
+        }
+      } catch {
+        failureCount += 1;
+        setError('Connection lost');
+        if (failureCount >= 3) {
+          clearInterval(interval);
+        }
+      }
     }, 3000);
     return () => clearInterval(interval);
   }, [campaignId]);
@@ -76,10 +86,15 @@ function App() {
       </Link>
       {!campaignId && <CampaignForm onCreate={startCampaign} />}
       {campaignId && (
-        <div className="mb-4 font-mono">Campaign ID: {campaignId}</div>
+        <div className="mb-4 font-mono">
+          Campaign ID: {campaignId}
+          {error && (
+            <span className="text-red-600 ml-2">{error}</span>
+          )}
+        </div>
       )}
       <div className="flex">
-        <ProgressPanel messages={conversation} />
+        <ProgressPanel messages={conversation} error={error} />
         <DeliverablesPanel
           deliverables={deliverables}
           onOpen={openModal}
