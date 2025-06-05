@@ -12,6 +12,7 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [modalDeliverable, setModalDeliverable] = useState(null);
   const [error, setError] = useState(null);
+  const [isHitlEnabled, setIsHitlEnabled] = useState(true);
 
   useEffect(() => {
     if (!campaignId) return;
@@ -76,30 +77,52 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <h1 className="text-2xl font-bold mb-4">Hyatt GPT Agents System</h1>
-      <Link
-        to="/plan"
-        className="text-teal-700 underline text-sm mb-4 inline-block"
-      >
-        View Implementation Plan
-      </Link>
-      {!campaignId && <CampaignForm onCreate={startCampaign} />}
-      {campaignId && (
-        <div className="mb-4 font-mono">
-          Campaign ID: {campaignId}
-          {error && (
-            <span className="text-red-600 ml-2">{error}</span>
+    <div className="min-h-screen bg-gray-100 p-4 font-sans">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-hyatt-blue">Hyatt GPT Agents System</h1>
+          <p className="text-sm text-gray-600">Collaborative AI agents for PR campaign development</p>
+        </div>
+        <div className="flex items-center">
+          <label className="mr-2 text-sm font-medium">HITL Review</label>
+          <div 
+            onClick={() => setIsHitlEnabled(!isHitlEnabled)}
+            className={`relative inline-flex items-center h-6 rounded-full w-11 cursor-pointer transition-colors ${isHitlEnabled ? 'bg-green-500' : 'bg-gray-300'}`}
+          >
+            <span className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${isHitlEnabled ? 'translate-x-6' : 'translate-x-1'}`}/>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex space-x-4 h-[calc(100vh-120px)]">
+        
+        {/* Left Panel: Progress */}
+        <div className="w-1/4 bg-white rounded shadow p-4 overflow-y-auto">
+            <h2 className="text-lg font-semibold mb-2">Campaign Status</h2>
+            <p className="text-sm text-gray-500">High-level progress updates will appear here.</p>
+        </div>
+
+        {/* Center Panel: Form or Conversation */}
+        <div className="w-1/2 bg-white rounded shadow p-4">
+          {!campaignId ? (
+            <CampaignForm onCreate={startCampaign} />
+          ) : (
+            <ProgressPanel messages={conversation} error={error} />
           )}
         </div>
-      )}
-      <div className="flex">
-        <ProgressPanel messages={conversation} error={error} />
-        <DeliverablesPanel
-          deliverables={deliverables}
-          onOpen={openModal}
-        />
+
+        {/* Right Panel: Deliverables */}
+        <div className="w-1/4">
+          <DeliverablesPanel
+            deliverables={deliverables}
+            onOpen={openModal}
+          />
+        </div>
+
       </div>
+
       <DeliverableModal
         show={showModal}
         deliverable={modalDeliverable}

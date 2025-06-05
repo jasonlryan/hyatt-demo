@@ -66,11 +66,6 @@ const HyattImplementationPlan = () => {
                 for Hyatt eco-resorts.
               </p>
               <div className="border border-gray-200 p-3 rounded bg-gray-50">
-                <img
-                  src="/api/placeholder/800/400"
-                  alt="System architecture diagram showing User/PR Manager connecting to API Gateway, which connects to Orchestrator Service, which manages the three GPT agents"
-                  className="w-full"
-                />
               </div>
             </div>
 
@@ -81,11 +76,6 @@ const HyattImplementationPlan = () => {
                 deliverable.
               </p>
               <div className="border border-gray-200 p-3 rounded bg-gray-50">
-                <img
-                  src="/api/placeholder/800/400"
-                  alt="Workflow diagram showing sequence from brief submission through research, trend analysis, story development, and collaboration phases"
-                  className="w-full"
-                />
               </div>
             </div>
           </div>
@@ -331,73 +321,27 @@ app.listen(3000, () => {
               <h2 className="text-xl font-bold text-teal-700 mb-2">
                 Implementation Timeline
               </h2>
-              <p className="mb-3">Estimated 76-day implementation schedule</p>
-
               <div className="border border-gray-200 p-3 rounded bg-gray-50 mb-4">
-                <img
-                  src="/api/placeholder/800/200"
-                  alt="Gantt chart showing implementation timeline"
-                  className="w-full"
-                />
               </div>
 
-              <div className="space-y-3">
-                <div className="flex border-l-4 border-teal-500 pl-3">
-                  <div className="flex-shrink-0 mr-3">
-                    <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
-                      1
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Setup Phase</h3>
-                    <p className="text-sm text-gray-600">
-                      Environment configuration (10 days)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex border-l-4 border-blue-500 pl-3">
-                  <div className="flex-shrink-0 mr-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold">
-                      2
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Agent Development</h3>
-                    <p className="text-sm text-gray-600">
-                      Creating specialized agents (21 days)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex border-l-4 border-purple-500 pl-3">
-                  <div className="flex-shrink-0 mr-3">
-                    <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold">
-                      3
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Orchestration Layer</h3>
-                    <p className="text-sm text-gray-600">
-                      Building coordination system (23 days)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex border-l-4 border-amber-500 pl-3">
-                  <div className="flex-shrink-0 mr-3">
-                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">
-                      4
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">Testing & Deployment</h3>
-                    <p className="text-sm text-gray-600">
-                      Quality assurance and launch (15 days)
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <ul className="list-disc list-inside space-y-2">
+                <li>
+                  <span className="font-semibold">Phase 1 (Weeks 1-2):</span>{" "}
+                  Environment configuration (10 days)
+                </li>
+                <li>
+                  <span className="font-semibold">Phase 2 (Weeks 3-5):</span>{" "}
+                  Creating specialized agents (21 days)
+                </li>
+                <li>
+                  <span className="font-semibold">Phase 3 (Weeks 6-8):</span>{" "}
+                  Building coordination system (23 days)
+                </li>
+                <li>
+                  <span className="font-semibold">Phase 4 (Weeks 9-10):</span>{" "}
+                  Quality assurance and launch (15 days)
+                </li>
+              </ul>
             </div>
 
             <div className="bg-white p-4 rounded-lg shadow">
