@@ -1,35 +1,104 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import CampaignForm from './components/CampaignForm.jsx';
+import ProgressPanel from './components/ProgressPanel.jsx';
+import DeliverablesPanel from './components/DeliverablesPanel.jsx';
+import DeliverableModal from './components/DeliverableModal.jsx';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [campaignId, setCampaignId] = useState(null);
+  const [conversation, setConversation] = useState([]);
+  const [deliverables, setDeliverables] = useState({});
+  const [showModal, setShowModal] = useState(false);
+  const [modalDeliverable, setModalDeliverable] = useState(null);
+
+  useEffect(() => {
+    if (!campaignId) return;
+    const interval = setInterval(() => {
+      fetch(`/api/campaigns/${campaignId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.conversation) {
+            setConversation(data.conversation);
+            const delivs = {};
+            data.conversation.forEach((msg) => {
+              if (msg.deliverable) {
+                const title = guessDeliverableTitle(msg.deliverable, msg.speaker);
+                const content = formatDeliverable(msg.deliverable);
+                delivs[msg.speaker] = { title, content };
+              }
+            });
+            setDeliverables(delivs);
+          }
+          if (data.status === 'completed') {
+            clearInterval(interval);
+          }
+        })
+        .catch(() => {});
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [campaignId]);
+
+  const startCampaign = async (brief) => {
+    const res = await fetch('/api/campaigns', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignBrief: brief }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setCampaignId(data.campaignId);
+      setConversation([]);
+      setDeliverables({});
+    } else {
+      alert(data.error || 'Failed to create campaign');
+    }
+  };
+
+  const openModal = (agent) => {
+    setModalDeliverable(deliverables[agent]);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setModalDeliverable(null);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen bg-gray-100 p-4">
+      <h1 className="text-2xl font-bold mb-4">Hyatt GPT Agents System</h1>
+      {!campaignId && <CampaignForm onCreate={startCampaign} />}
+      {campaignId && (
+        <div className="mb-4 font-mono">Campaign ID: {campaignId}</div>
+      )}
+      <div className="flex">
+        <ProgressPanel messages={conversation} />
+        <DeliverablesPanel
+          deliverables={deliverables}
+          onOpen={openModal}
+        />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <DeliverableModal
+        show={showModal}
+        deliverable={modalDeliverable}
+        onClose={closeModal}
+      />
+    </div>
+  );
 }
 
-export default App
+function guessDeliverableTitle(deliv, speaker) {
+  if (deliv.analysis) return 'Audience Research';
+  if (deliv.trendsAnalysis) return 'Trending News Analysis';
+  if (deliv.storyStrategy) return 'Story Angles & Headlines';
+  if (deliv.humanTruthAnalysis) return 'Strategic Insight';
+  if (deliv.theme || deliv.humanTruth) return 'Integrated Campaign Plan';
+  return `${speaker} Deliverable`;
+}
+
+function formatDeliverable(deliv) {
+  if (typeof deliv === 'string') return deliv;
+  return JSON.stringify(deliv, null, 2);
+}
+
+export default App;
