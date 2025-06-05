@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Layers, Database, Server, Code, FileText } from "lucide-react";
+import { Layers, Database, Code } from "lucide-react";
 
 const HyattImplementationPlan = () => {
   const [activeTab, setActiveTab] = useState("overview");

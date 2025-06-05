@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import CampaignForm from './components/CampaignForm.jsx';
 import ProgressPanel from './components/ProgressPanel.jsx';
 import DeliverablesPanel from './components/DeliverablesPanel.jsx';
@@ -67,6 +68,12 @@ function App() {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <h1 className="text-2xl font-bold mb-4">Hyatt GPT Agents System</h1>
+      <Link
+        to="/plan"
+        className="text-teal-700 underline text-sm mb-4 inline-block"
+      >
+        View Implementation Plan
+      </Link>
       {!campaignId && <CampaignForm onCreate={startCampaign} />}
       {campaignId && (
         <div className="mb-4 font-mono">Campaign ID: {campaignId}</div>
