@@ -1,21 +1,26 @@
+import React from 'react';
+import DeliverableCard from './DeliverableCard.jsx';
+
 function DeliverablesPanel({ deliverables, onOpen }) {
+  const entries = Object.entries(deliverables);
+
   return (
-    <div className="bg-white rounded shadow p-4 h-full">
-      <h2 className="text-lg font-semibold mb-2">Deliverables</h2>
-      {Object.keys(deliverables).length === 0 ? (
-        <p className="text-sm text-gray-500">Deliverables will appear here.</p>
+    <div className="bg-slate-700 text-white p-6 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-6">Campaign Deliverables</h2>
+      {entries.length === 0 ? (
+        <div className="bg-slate-600 bg-opacity-50 rounded-lg p-4 text-center">
+          <p>No deliverables available yet.</p>
+        </div>
       ) : (
-        <ul className="space-y-2">
-          {Object.entries(deliverables).map(([agent, deliv]) => (
-            <li
+        <div className="space-y-4">
+          {entries.map(([agent, deliv]) => (
+            <DeliverableCard
               key={agent}
-              onClick={() => onOpen(agent)}
-              className="text-sm text-blue-600 hover:underline cursor-pointer"
-            >
-              {deliv.title}
-            </li>
+              deliverable={{ ...deliv, agent }}
+              onViewDetails={() => onOpen(agent)}
+            />
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

@@ -1,4 +1,6 @@
-function ProgressPanel({ messages, error }) {
+import { RefreshCw } from 'lucide-react';
+
+function ProgressPanel({ messages, error, onViewProgress }) {
   // Map speaker names to agent info for consistent styling
   const getAgentInfo = (speaker) => {
     const agentMap = {
@@ -93,6 +95,18 @@ function ProgressPanel({ messages, error }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {messages.length > 0 && (
+        <div className="flex justify-end mt-4">
+          <button
+            className="flex items-center justify-center px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors text-sm"
+            onClick={onViewProgress}
+          >
+            <RefreshCw size={16} className="mr-2" />
+            View Progress
+          </button>
         </div>
       )}
     </div>

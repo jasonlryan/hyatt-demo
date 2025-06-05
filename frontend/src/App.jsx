@@ -4,6 +4,7 @@ import CampaignForm from './components/CampaignForm.jsx';
 import ProgressPanel from './components/ProgressPanel.jsx';
 import DeliverablesPanel from './components/DeliverablesPanel.jsx';
 import DeliverableModal from './components/DeliverableModal.jsx';
+import SidePanel from './components/SidePanel.jsx';
 
 function App() {
   const [campaignId, setCampaignId] = useState(null);
@@ -13,6 +14,7 @@ function App() {
   const [modalDeliverable, setModalDeliverable] = useState(null);
   const [error, setError] = useState(null);
   const [isHitlEnabled, setIsHitlEnabled] = useState(true);
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
 
   useEffect(() => {
     if (!campaignId) return;
@@ -140,7 +142,11 @@ function App() {
                   </div>
                 </div>
                 
-                <ProgressPanel messages={conversation} error={error} />
+                <ProgressPanel
+                  messages={conversation}
+                  error={error}
+                  onViewProgress={() => setIsSidePanelOpen(true)}
+                />
               </>
             )}
           </div>
@@ -158,6 +164,12 @@ function App() {
         show={showModal}
         deliverable={modalDeliverable}
         onClose={closeModal}
+      />
+
+      <SidePanel
+        messages={conversation}
+        isOpen={isSidePanelOpen}
+        onClose={() => setIsSidePanelOpen(false)}
       />
     </div>
   );
