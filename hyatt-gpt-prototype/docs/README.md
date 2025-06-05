@@ -88,6 +88,7 @@ ENABLE_DYNAMIC_FLOW=true
 ENABLE_QUALITY_CONTROL=true
 ENABLE_AGENT_INTERACTION=true
 ENABLE_REAL_DATA_SOURCES=false
+ENABLE_MANUAL_REVIEW=true
 
 # 🆕 QUALITY THRESHOLDS
 MIN_TREND_RELEVANCE=60
@@ -170,12 +171,25 @@ MIN_STORY_ANGLE_STRENGTH=80
 REQUIRE_DATA_VALIDATION=true
 ```
 
+### HITL Manual Review
+
+```bash
+ENABLE_MANUAL_REVIEW=true  # default (set to false to disable)
+```
+
+When manual review is enabled the orchestrator pauses after each phase.
+The conversation flow now displays a prompt describing which phase is awaiting
+approval. Use **Resume** (or **Finalize** for the last step) to continue or
+select **Refine** to provide new instructions. The system will ask how you
+want to adjust the deliverable and then rerun the current phase with your
+updates.
+
 ## 🔄 Dynamic Flow Examples
 
 ### Standard Flow
 
 ```
-Research → Trending → Story → Collaborative → Complete
+Research → Trending → Story → Collaborative → Final Sign-Off → Complete
 ```
 
 ### Alternative Flow (Weak Trends)

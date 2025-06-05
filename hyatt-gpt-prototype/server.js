@@ -48,6 +48,17 @@ const orchestrator = new AgentOrchestrator();
 
 // Routes
 
+// Manual review status
+app.get("/api/manual-review", (req, res) => {
+  res.json({ enabled: orchestrator.enableManualReview });
+});
+
+app.post("/api/manual-review", (req, res) => {
+  const { enabled } = req.body;
+  orchestrator.enableManualReview = !!enabled;
+  res.json({ enabled: orchestrator.enableManualReview });
+});
+
 // Health check
 app.get("/health", (req, res) => {
   res.json({
@@ -241,6 +252,27 @@ app.delete("/api/campaigns/:id", (req, res) => {
     return res.status(404).json({ error: "Campaign not found" });
   }
   res.json({ status: "cancelled", campaignId: id });
+});
+
+// Resume a paused campaign
+app.post("/api/campaigns/:id/resume", (req, res) => {
+  const { id } = req.params;
+  const resumed = orchestrator.resumeCampaign(id);
+  if (!resumed) {
+    return res.status(400).json({ error: "Unable to resume campaign" });
+  }
+  res.json({ status: "resumed", campaignId: id });
+});
+
+// Apply refinement and rerun the current phase
+app.post("/api/campaigns/:id/refine", (req, res) => {
+  const { id } = req.params;
+  const { instructions } = req.body;
+  const refined = orchestrator.refineCampaign(id, instructions || "");
+  if (!refined) {
+    return res.status(400).json({ error: "Unable to refine campaign" });
+  }
+  res.json({ status: "refining", campaignId: id });
 });
 
 // Serve the frontend
