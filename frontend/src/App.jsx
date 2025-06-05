@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Building } from 'lucide-react';
 import CampaignForm from './components/CampaignForm.jsx';
 import ProgressPanel from './components/ProgressPanel.jsx';
@@ -15,15 +15,26 @@ function App() {
   const [error, setError] = useState(null);
   const [isHitlEnabled, setIsHitlEnabled] = useState(true);
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     if (!campaignId) return;
+    
     let failureCount = 0;
-    const interval = setInterval(async () => {
+    intervalRef.current = setInterval(async () => {
       try {
-        const res = await fetch(`/api/campaigns/${campaignId}`);
+        const currentId = campaignId;
+        const res = await fetch(`/api/campaigns/${currentId}`);
         if (!res.ok) throw new Error('Network error');
         const data = await res.json();
+        
+        // Check if campaign ID changed during the request
+        if (currentId !== campaignId) return;
+        
         failureCount = 0;
         setError(null);
         if (data.conversation) {
@@ -38,18 +49,26 @@ function App() {
           });
           setDeliverables(delivs);
         }
-        if (data.status === 'completed') {
-          clearInterval(interval);
+        if (data.status === 'completed' && intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
       } catch {
         failureCount += 1;
         setError('Connection lost');
-        if (failureCount >= 3) {
-          clearInterval(interval);
+        if (failureCount >= 3 && intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
         }
       }
     }, 3000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [campaignId]);
 
   const startCampaign = async (brief) => {
@@ -125,6 +144,13 @@ function App() {
         </div>
       </header>
       
+      {/* Side Panel */}
+      <SidePanel 
+        isOpen={isSidePanelOpen}
+        onClose={() => setIsSidePanelOpen(false)}
+        campaignId={campaignId}
+      />
+      
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -164,12 +190,6 @@ function App() {
         show={showModal}
         deliverable={modalDeliverable}
         onClose={closeModal}
-      />
-
-      <SidePanel
-        messages={conversation}
-        isOpen={isSidePanelOpen}
-        onClose={() => setIsSidePanelOpen(false)}
       />
     </div>
   );
