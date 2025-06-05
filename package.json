@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "Hyatt GPT Demo - Parent Directory",
   "scripts": {
-    "start": "cd hyatt-gpt-prototype && npm run smart-start",
-    "dev": "cd hyatt-gpt-prototype && npm run dev",
+    "start": "npm run build:client && cd hyatt-gpt-prototype && npm run smart-start",
+    "dev": "npm --prefix frontend run dev & cd hyatt-gpt-prototype && npm run dev",
     "stop": "pkill -f 'node server.js'",
     "kill-port": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true",
-    "check-port": "lsof -i:3000 || echo 'Port 3000 is free'"
+    "check-port": "lsof -i:3000 || echo 'Port 3000 is free'",
+    "build:client": "npm --prefix frontend run build"
   },
   "private": true,
   "dependencies": {
