@@ -280,9 +280,8 @@
             const progressContainer = document.getElementById('progressPanelMessages');
             if (!progressContainer) return;
 
-            // Check if user is scrolled to the bottom before clearing and re-rendering
-            const scrollThreshold = 5; 
-            const userWasAtBottom = progressContainer.scrollHeight - progressContainer.clientHeight <= progressContainer.scrollTop + scrollThreshold;
+            // Always remember the user's scroll position before re-rendering
+            const previousScrollBottom = progressContainer.scrollHeight - progressContainer.scrollTop;
 
             progressContainer.innerHTML = ''; // Clear existing messages
 
@@ -297,9 +296,10 @@
                 });
             }
 
-            if (userWasAtBottom) {
-                progressContainer.scrollTop = progressContainer.scrollHeight;
-            }
+            // Auto-scroll to the bottom to show the newest message
+            // Preserve user's scroll offset from the bottom if they were reading older messages
+            const newScrollTop = Math.max(0, progressContainer.scrollHeight - previousScrollBottom);
+            progressContainer.scrollTop = newScrollTop;
         }
 
         function formatMarkdown(text) {
