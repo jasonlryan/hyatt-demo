@@ -513,7 +513,12 @@ class AgentOrchestrator {
 
   async runStrategicInsightPhase(campaignId, campaignContext) {
     const campaign = this.campaigns.get(campaignId);
-    if (!campaign || campaign.status === "cancelled" || !campaign.phases.research) return;
+    if (
+      !campaign ||
+      campaign.status === "cancelled" ||
+      !campaign.phases.research
+    )
+      return;
 
     try {
       console.log(`[${campaignId}] Starting strategic insight phase...`);
@@ -522,7 +527,7 @@ class AgentOrchestrator {
 
       // Add processing indicator
       campaign.conversation.push({
-        speaker: "Strategic Insight & Human Truth GPT",
+        speaker: "Strategic Insight GPT",
         message:
           "_[Analyzing research data to discover deeper human truths...]_",
         timestamp: new Date().toISOString(),
@@ -563,8 +568,12 @@ class AgentOrchestrator {
 
       // Add the actual analysis to conversation
       campaign.conversation.push({
-        speaker: "Strategic Insight & Human Truth GPT",
+        speaker: "Strategic Insight GPT",
         message: strategicInsightResult.humanTruthAnalysis,
+        deliverable: {
+          humanTruthAnalysis: strategicInsightResult.humanTruthAnalysis,
+        },
+        agent: "Strategic Insight GPT",
         timestamp: new Date().toISOString(),
       });
 
@@ -1536,7 +1545,11 @@ class AgentOrchestrator {
         message:
           nextPhase === "final_signoff" && !campaign.manualReview
             ? `Campaign is paused for final sign-off. Review the final deliverables and click \"Finalize\" to complete or \"Refine\" to adjust.`
-            : `Campaign is paused for manual review after the ${campaign.awaitingReview} phase. Choose \"${nextPhase === "final_signoff" ? "Finalize" : "Resume"}\" to continue to ${nextPhase} or \"Refine\" to adjust instructions.`,
+            : `Campaign is paused for manual review after the ${
+                campaign.awaitingReview
+              } phase. Choose \"${
+                nextPhase === "final_signoff" ? "Finalize" : "Resume"
+              }\" to continue to ${nextPhase} or \"Refine\" to adjust instructions.`,
         timestamp: new Date().toISOString(),
       });
       this.saveCampaignToFile(campaign);
@@ -1544,7 +1557,12 @@ class AgentOrchestrator {
     }
 
     const t = setTimeout(() => {
-      this.triggerNextPhase(campaignId, campaignContext, nextPhase, previousData);
+      this.triggerNextPhase(
+        campaignId,
+        campaignContext,
+        nextPhase,
+        previousData
+      );
     }, 2000);
     this.addCampaignTimer(campaignId, t);
   }

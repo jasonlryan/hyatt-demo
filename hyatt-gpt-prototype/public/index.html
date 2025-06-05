@@ -163,6 +163,17 @@
         </div>
     </div>
 
+    <!-- Deliverable Modal -->
+    <div id="deliverableModal" class="deliverable-modal" onclick="closeDeliverableModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="close-modal" onclick="closeDeliverableModal()">×</button>
+            <h3 id="modalTitle"></h3>
+            <div id="modalBody" class="modal-body"></div>
+            <button class="download-btn" onclick="downloadModalPdf()" style="margin-top: 15px;">Download PDF</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </body>
 </html>
