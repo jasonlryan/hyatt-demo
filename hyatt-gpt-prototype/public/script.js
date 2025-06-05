@@ -7,6 +7,7 @@
         let campaignInProgress = false; // Track if a campaign is running
         let currentPhase = null; // Track current phase
         let phaseStartTime = null; // Track phase timing
+        let currentModalDeliverable = null; // Track open deliverable in modal
 
         async function startNewCampaign() {
             if (currentCampaignId) {
@@ -859,9 +860,8 @@
                                 <div class="agent-name">${agentIcon} From: ${agentName}</div>
                             </div>
                             <div class="deliverable-actions">
-                                <button class="download-btn" onclick="downloadDeliverable('${agentName}', event)" title="Download as markdown file">
-                                    📥
-                                </button>
+                                <button class="view-btn" onclick="openDeliverableModal('${agentName}', event)" title="Open in modal">🔍</button>
+                                <button class="download-btn" onclick="downloadDeliverable('${agentName}', event)" title="Download as markdown file">📥</button>
                                 <span class="collapse-icon ${deliverable.expanded ? 'expanded' : ''}">▼</span>
                             </div>
                         </div>
@@ -876,6 +876,32 @@
             const deliverable = campaignDeliverables[agentName];
             deliverable.expanded = !deliverable.expanded;
             updateDeliverablesPanel();
+        }
+
+        function openDeliverableModal(agentName, event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const deliverable = campaignDeliverables[agentName];
+            if (!deliverable) return;
+            currentModalDeliverable = agentName;
+            document.getElementById('modalTitle').textContent = deliverable.title || agentName;
+            document.getElementById('modalBody').innerHTML = formatMarkdown(deliverable.content || 'No content available');
+            document.getElementById('deliverableModal').classList.add('show');
+        }
+
+        function closeDeliverableModal() {
+            document.getElementById('deliverableModal').classList.remove('show');
+            currentModalDeliverable = null;
+        }
+
+        function downloadModalPdf() {
+            if (!currentModalDeliverable) return;
+            const element = document.getElementById('modalBody');
+            const rawTitle = campaignDeliverables[currentModalDeliverable].title || currentModalDeliverable;
+            const cleanTitle = rawTitle.replace(/[^a-zA-Z0-9]/g, '_');
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const filename = `${cleanTitle}_${timestamp}.pdf`;
+            html2pdf().from(element).set({ filename }).save();
         }
 
         function closePanelsOnMobile() {
