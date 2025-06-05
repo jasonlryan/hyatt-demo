@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import CampaignForm from './components/CampaignForm.jsx';
 import ProgressPanel from './components/ProgressPanel.jsx';
 import DeliverablesPanel from './components/DeliverablesPanel.jsx';
@@ -10,13 +10,20 @@ function App() {
   const [deliverables, setDeliverables] = useState({});
   const [showModal, setShowModal] = useState(false);
   const [modalDeliverable, setModalDeliverable] = useState(null);
+  const intervalRef = useRef(null);
 
   useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
     if (!campaignId) return;
-    const interval = setInterval(() => {
-      fetch(`/api/campaigns/${campaignId}`)
+    intervalRef.current = setInterval(() => {
+      const currentId = campaignId;
+      fetch(`/api/campaigns/${currentId}`)
         .then((res) => res.json())
         .then((data) => {
+          if (currentId !== campaignId) return;
           if (data.conversation) {
             setConversation(data.conversation);
             const delivs = {};
@@ -29,13 +36,19 @@ function App() {
             });
             setDeliverables(delivs);
           }
-          if (data.status === 'completed') {
-            clearInterval(interval);
+          if (data.status === 'completed' && intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
           }
         })
         .catch(() => {});
     }, 3000);
-    return () => clearInterval(interval);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
   }, [campaignId]);
 
   const startCampaign = async (brief) => {
