@@ -148,7 +148,7 @@ function App() {
       <SidePanel 
         isOpen={isSidePanelOpen}
         onClose={() => setIsSidePanelOpen(false)}
-        campaignId={campaignId}
+        messages={conversation}
       />
       
       {/* Main Content */}
