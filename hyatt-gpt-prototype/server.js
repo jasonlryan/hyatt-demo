@@ -11,6 +11,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
+const frontendPath = path.join(__dirname, "..", "frontend", "dist");
+app.use(express.static(frontendPath));
 
 // Initialize orchestrator
 const orchestrator = new AgentOrchestrator();
@@ -277,7 +279,7 @@ app.post("/api/campaigns/:id/refine", (req, res) => {
 
 // Serve the frontend
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(path.join(frontendPath, "index.html"));
 });
 
 // Error handling middleware
