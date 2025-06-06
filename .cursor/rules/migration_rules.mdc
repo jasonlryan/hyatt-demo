@@ -1,0 +1,18 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Migration Implementation Rules
+
+This document outlines the rules to be followed during the migration from the old HTML/JS frontend to the new React/TypeScript frontend. These rules must be strictly adhered to.
+
+1.  **Keep HTML site for reference**: The existing `public` directory, which contains the original HTML, CSS, and JS files, must be kept as a working reference until the new React application is fully functional and verified. It should only be removed during the final cleanup phase as outlined in the plan.
+
+2.  **Allow for review points and update plan**: The migration will be executed in phases. At the end of each phase, work will be submitted for review. During this review, we will update the `Plans/react_migration_plan.md` document to reflect progress and any necessary adjustments before the next phase begins.
+
+3.  **Do not deviate from the plan**: The migration must strictly follow the steps detailed in `Plans/react_migration_plan.md`. No steps should be skipped or reordered unless a change to the plan is explicitly approved.
+
+4.  **Check for file existence before creation**: Before creating any new file, always verify that a file with the same name does not already exist in the target directory to prevent accidentally overwriting work.
+
+5.  **Backend and HTML Source Location**: All backend server code (Node.js, Express) and the original HTML/JS frontend files are located in the `@hyatt-gpt-prototype` directory. This directory serves as the source for the backend API and as a reference for the original frontend implementation.
