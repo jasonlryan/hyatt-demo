@@ -9,7 +9,7 @@ function Header({ onNewCampaign, hitlReview, onToggleHitl }) {
             <Building size={36} />
           </div>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-100">
+            <h1 className="text-2xl md:text-3xl font-bold text-white">
               Hyatt GPT Agents System
             </h1>
             <p className="text-slate-300 text-sm">
