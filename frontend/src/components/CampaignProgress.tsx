@@ -25,12 +25,10 @@ const CampaignProgress: React.FC<CampaignProgressProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-slate-800 mb-4">
-        Campaign Progress
-      </h2>
+    <div className="bg-slate-700 rounded-lg shadow-md p-6">
+      <h2 className="text-2xl font-bold text-white mb-4">Campaign Progress</h2>
       <div className="mb-4">
-        <div className="text-sm text-slate-500 mb-1">
+        <div className="text-sm text-slate-300 mb-1">
           Campaign ID: {campaign.id}
         </div>
         <div className="flex items-center">

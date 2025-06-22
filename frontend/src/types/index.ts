@@ -27,14 +27,16 @@ export interface ConversationMessage {
 export interface Deliverable {
   id: string;
   title: string;
-  status: 'pending' | 'ready' | 'reviewed';
+  status: 'pending' | 'ready' | 'reviewed' | 'completed';
   agent: string;
   timestamp: string;
   content: string | Record<string, any>;
+  lastUpdated?: string;
 }
 
 export interface Campaign {
   id: string;
+  campaignId?: string; // Backend sometimes returns this instead of id
   brief: string;
   status: 'initializing' | 'active' | 'completed' | 'failed' | 'paused';
   conversation: ConversationMessage[];
@@ -42,6 +44,16 @@ export interface Campaign {
   createdAt: string;
   lastUpdated: string;
   error?: string;
+  awaitingReview?: string;
+  pendingPhase?: string;
+  phases?: {
+    research?: {
+      insights?: {
+        analysis: string;
+        lastUpdated: string;
+      };
+    };
+  };
 }
 
 export interface AudienceResearch {

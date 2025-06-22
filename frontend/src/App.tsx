@@ -9,6 +9,7 @@ import RefineInputModal from "./components/RefineInputModal";
 import ReviewPanel from "./components/ReviewPanel";
 import HitlReviewModal from "./components/HitlReviewModal";
 import CampaignForm from "./components/CampaignForm";
+import CampaignSelector from "./components/CampaignSelector";
 import DeliverableModal from "./components/DeliverableModal";
 import {
   Campaign,
@@ -19,18 +20,20 @@ import {
 
 function App() {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [deliverables, setDeliverables] = useState<{
     [key: string]: Deliverable;
   }>({});
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [isResearchModalOpen, setIsResearchModalOpen] = useState(false);
   const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
   const [isHitlModalOpen, setIsHitlModalOpen] = useState(false);
   const [hitlReview, setHitlReview] = useState(true);
-  const [showReviewPanel, setShowReviewPanel] = useState(true);
+  const [showReviewPanel, setShowReviewPanel] = useState(false);
   const [modalDeliverable, setModalDeliverable] = useState<Deliverable | null>(
     null
   );
@@ -63,6 +66,85 @@ function App() {
     }
   };
 
+  // Load existing campaigns on app start
+  useEffect(() => {
+    const loadCampaigns = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch("/api/campaigns");
+        if (!res.ok) throw new Error("Failed to load campaigns");
+        const data = await res.json();
+        setCampaigns(data);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadCampaigns();
+  }, []);
+
+  const handleSelectCampaign = async (campaignId: string) => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/campaigns/${campaignId}`);
+      if (!res.ok) throw new Error("Failed to load campaign");
+      const data = await res.json();
+      // Ensure campaign has id property for consistency
+      if ((data as any).campaignId && !data.id) {
+        data.id = (data as any).campaignId;
+      }
+      setCampaign(data);
+
+      // Load conversation and deliverables
+      if (data.conversation) {
+        setConversation(data.conversation);
+      }
+
+      // Extract deliverables from backend data
+      const extractedDeliverables: { [key: string]: any } = {};
+
+      // Get research deliverable
+      if (data.phases?.research?.insights) {
+        extractedDeliverables["research"] = {
+          id: "research",
+          title: "Audience Research",
+          status: "completed",
+          agent: "Research & Audience GPT",
+          timestamp:
+            data.phases.research.insights.lastUpdated ||
+            new Date().toISOString(),
+          content: data.phases.research.insights.analysis,
+          lastUpdated: data.phases.research.insights.lastUpdated,
+        };
+      }
+
+      // Get deliverables from conversation
+      if (data.conversation) {
+        data.conversation.forEach((msg: any, index: number) => {
+          if (msg.deliverable) {
+            const id = `deliverable-${index}`;
+            extractedDeliverables[id] = {
+              id,
+              title: msg.speaker || "Deliverable",
+              status: "completed",
+              agent: msg.speaker || "AI Agent",
+              timestamp: msg.timestamp || new Date().toISOString(),
+              content: msg.deliverable.analysis || msg.deliverable,
+              lastUpdated: msg.timestamp,
+            };
+          }
+        });
+      }
+
+      setDeliverables(extractedDeliverables);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleNewCampaign = () => {
     setCampaign(null);
     setConversation([]);
@@ -72,6 +154,7 @@ function App() {
 
   const startCampaign = async (brief: string) => {
     try {
+      setIsLoading(true);
       const res = await fetch("/api/campaigns", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -79,10 +162,22 @@ function App() {
       });
       if (!res.ok) throw new Error("Failed to start campaign");
       const data = await res.json();
-      // The backend returns a full campaign object on start now
+      // Fix: Backend returns campaignId, but we need id for consistency
+      if ((data as any).campaignId && !data.id) {
+        data.id = (data as any).campaignId;
+      }
       setCampaign(data);
+
+      // Reload campaigns list to include the new one
+      const campaignsRes = await fetch("/api/campaigns");
+      if (campaignsRes.ok) {
+        const campaignsData = await campaignsRes.json();
+        setCampaigns(campaignsData);
+      }
     } catch (e: any) {
       setError(e.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,6 +190,7 @@ function App() {
 
     if (
       campaign &&
+      campaign.id &&
       campaign.status !== "completed" &&
       campaign.status !== "failed"
     ) {
@@ -104,14 +200,60 @@ function App() {
           if (!res.ok) throw new Error("Network error");
           const data: Campaign = await res.json();
 
+          // Ensure campaign has id property for consistency
+          if (data.campaignId && !data.id) {
+            data.id = data.campaignId;
+          }
           setCampaign(data);
           if (data.conversation) {
             setConversation(data.conversation);
           }
-          if (data.deliverables) {
-            setDeliverables(data.deliverables);
+
+          // Extract deliverables from the backend data structure
+          const extractedDeliverables: { [key: string]: any } = {};
+
+          // Get research deliverable from phases
+          if (data.phases?.research?.insights) {
+            extractedDeliverables["research"] = {
+              id: "research",
+              title: "Audience Research",
+              status: "completed",
+              agent: "Research & Audience GPT",
+              timestamp:
+                data.phases.research.insights.lastUpdated ||
+                new Date().toISOString(),
+              content: data.phases.research.insights.analysis,
+              lastUpdated: data.phases.research.insights.lastUpdated,
+            };
           }
+
+          // Get deliverables from conversation messages
+          if (data.conversation) {
+            data.conversation.forEach((msg: any, index: number) => {
+              if (msg.deliverable) {
+                const id = `deliverable-${index}`;
+                extractedDeliverables[id] = {
+                  id,
+                  title: msg.speaker || "Deliverable",
+                  status: "completed",
+                  agent: msg.speaker || "AI Agent",
+                  timestamp: msg.timestamp || new Date().toISOString(),
+                  content: msg.deliverable.analysis || msg.deliverable,
+                  lastUpdated: msg.timestamp,
+                };
+              }
+            });
+          }
+
+          setDeliverables(extractedDeliverables);
           setError(null);
+
+          // Show review panel if campaign is paused for manual review
+          if (data.status === "paused" && data.awaitingReview) {
+            setShowReviewPanel(true);
+          } else {
+            setShowReviewPanel(false);
+          }
 
           if (data.status === "completed" || data.status === "failed") {
             if (intervalRef.current) clearInterval(intervalRef.current);
@@ -130,25 +272,59 @@ function App() {
     };
   }, [campaign]);
 
-  const handleResume = () => {
-    setShowReviewPanel(false);
-    alert("Campaign resumed. Moving to the next phase.");
+  const handleResume = async () => {
+    if (!campaign || !campaign.id) return;
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/campaigns/${campaign.id}/resume`, {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("Failed to resume campaign");
+
+      setShowReviewPanel(false);
+      // The polling will pick up the status change
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRefine = () => {
     setIsRefineModalOpen(true);
   };
 
-  const handleSubmitRefinement = (instructions: string) => {
-    console.log("Refinement instructions:", instructions);
-    setShowReviewPanel(false);
-    alert("Refinement instructions submitted. Adjusting research phase...");
+  const handleSubmitRefinement = async (instructions: string) => {
+    if (!campaign || !campaign.id) return;
+
+    try {
+      setIsLoading(true);
+      const res = await fetch(`/api/campaigns/${campaign.id}/refine`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instructions }),
+      });
+
+      if (!res.ok) throw new Error("Failed to refine campaign");
+
+      setShowReviewPanel(false);
+      setIsRefineModalOpen(false);
+      // The polling will pick up the status change
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-slate-100">
       <Header
         onNewCampaign={handleNewCampaign}
+        onLoadCampaign={handleSelectCampaign}
+        campaigns={campaigns}
         hitlReview={hitlReview}
         onToggleHitl={() => {
           setHitlReview(!hitlReview);
@@ -168,7 +344,11 @@ function App() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
             {!campaign ? (
-              <CampaignForm onCreate={startCampaign} isLoading={!!campaign} />
+              <CampaignForm
+                onCreate={startCampaign}
+                onCancel={handleNewCampaign}
+                isLoading={isLoading}
+              />
             ) : (
               <>
                 <CampaignProgress
@@ -180,6 +360,8 @@ function App() {
 
                 <ReviewPanel
                   isVisible={showReviewPanel}
+                  awaitingReview={campaign?.awaitingReview}
+                  pendingPhase={campaign?.pendingPhase}
                   onResume={handleResume}
                   onRefine={handleRefine}
                 />

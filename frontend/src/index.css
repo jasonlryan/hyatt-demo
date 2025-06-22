@@ -1,3 +1,81 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Hyatt brand colors and styles */
+:root {
+  --color-hyatt-blue: #002d72;
+  --color-hyatt-blue-hover: #0046a8;
+  --color-hyatt-gold: #d4af37;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+  line-height: 1.6;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Custom component styles */
+.panel {
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+h1, h2, h3 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: white !important;
+}
+
+/* Ensure all titles are white on dark backgrounds */
+.bg-slate-700 h1, 
+.bg-slate-700 h2, 
+.bg-slate-700 h3,
+.bg-slate-800 h1,
+.bg-slate-800 h2,
+.bg-slate-800 h3 {
+  color: white !important;
+}
+
+button {
+  background-color: var(--color-hyatt-blue);
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: var(--color-hyatt-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(0 45 114 / 0.3);
+}
+
+textarea, input {
+  width: 100%;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  transition: border-color 0.2s ease-in-out;
+}
+
+textarea:focus, input:focus {
+  outline: none;
+  border-color: var(--color-hyatt-blue);
+  box-shadow: 0 0 0 3px rgb(0 45 114 / 0.1);
+}

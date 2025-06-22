@@ -3,9 +3,14 @@ import React, { useState } from "react";
 interface CampaignFormProps {
   onCreate: (brief: string) => void;
   isLoading: boolean;
+  onCancel: () => void;
 }
 
-const CampaignForm: React.FC<CampaignFormProps> = ({ onCreate, isLoading }) => {
+const CampaignForm: React.FC<CampaignFormProps> = ({
+  onCreate,
+  isLoading,
+  onCancel,
+}) => {
   const [brief, setBrief] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,6 +49,14 @@ const CampaignForm: React.FC<CampaignFormProps> = ({ onCreate, isLoading }) => {
             className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? "Creating..." : "Create Campaign"}
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-md hover:bg-gray-300 transition duration-300"
+            disabled={isLoading}
+          >
+            Cancel
           </button>
         </div>
       </form>

@@ -45,8 +45,9 @@ The new project is structured as a modern React application:
 11. **Build `SidePanel` and `DeliverableModal` Components**:
     - Re-create `SidePanel.tsx` and `DeliverableModal.tsx` in `components`, styled to match the new professional design, to show the event log and deliverable content. [COMPLETED]
 
-#### **Phase 4: Final Assembly & Cleanup**
+#### **Phase 4: Final Assembly & Verification**
 
-12. **Assemble in `App.tsx`**: Import and arrange all the new components within `App.tsx`, connecting all state and props.
-13. **Global Styling**: Apply global styles, such as background colors and fonts, in `frontend/src/index.css`.
-14. **Delete Old Frontend**: After verifying that the new React frontend has achieved full functionality, the old `public` directory and its contents can be safely deleted.
+12. **Assemble in `App.tsx`**: Import and arrange all the new components within `App.tsx`, connecting all state and props. [COMPLETED]
+13. **Global Styling**: Apply global styles, such as background colors and fonts, in `frontend/src/index.css`. [COMPLETED]
+14. **Functional Verification**: Thoroughly test the new React application against the original HTML version to ensure all features are working correctly and all UI elements are present and functional. [PENDING]
+15. **Delete Old Frontend**: After verifying that the new React frontend has achieved full functionality, the old `public` directory and its contents can be safely deleted. [PENDING - DO NOT PROCEED UNTIL VERIFIED]
