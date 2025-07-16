@@ -3,6 +3,10 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const AgentOrchestrator = require("./AgentOrchestrator");
+const VisualPromptGeneratorAgent = require("./agents/classes/VisualPromptGeneratorAgent");
+const ModularElementsRecommenderAgent = require("./agents/classes/ModularElementsRecommenderAgent");
+const TrendCulturalAnalyzerAgent = require("./agents/classes/TrendCulturalAnalyzerAgent");
+const BrandQAAgent = require("./agents/classes/BrandQAAgent");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -274,6 +278,249 @@ app.post("/api/campaigns/:id/refine", (req, res) => {
   }
   res.json({ status: "refining", campaignId: id });
 });
+
+// Get agents configuration
+app.get("/api/config/agents", (req, res) => {
+  try {
+    const fs = require("fs");
+    const configPath = path.join(__dirname, "agents/agents.config.json");
+
+    if (!fs.existsSync(configPath)) {
+      return res
+        .status(404)
+        .json({ error: "Agents configuration file not found" });
+    }
+
+    const configData = fs.readFileSync(configPath, "utf8");
+    const agentsConfig = JSON.parse(configData);
+
+    res.json(agentsConfig);
+  } catch (error) {
+    console.error("Get agents config error:", error);
+    res.status(500).json({
+      error: "Failed to retrieve agents configuration",
+      details: error.message,
+    });
+  }
+});
+
+// Update agents configuration
+app.put("/api/config/agents", (req, res) => {
+  try {
+    const fs = require("fs");
+    const configPath = path.join(__dirname, "agents/agents.config.json");
+    const updatedConfig = req.body;
+
+    // Add metadata
+    updatedConfig.metadata = {
+      ...updatedConfig.metadata,
+      lastUpdated: new Date().toISOString(),
+      updatedBy: "user",
+    };
+
+    // Write the updated configuration
+    fs.writeFileSync(configPath, JSON.stringify(updatedConfig, null, 2));
+
+    res.json({
+      success: true,
+      message: "Agents configuration updated successfully",
+      config: updatedConfig,
+    });
+  } catch (error) {
+    console.error("Update agents config error:", error);
+    res.status(500).json({
+      error: "Failed to update agents configuration",
+      details: error.message,
+    });
+  }
+});
+
+// Get GPT prompt files
+app.get("/api/prompts/:filename", (req, res) => {
+  try {
+    const { filename } = req.params;
+    const fs = require("fs");
+
+    // Security check - only allow specific prompt files
+    const allowedFiles = [
+      "research_audience_gpt.md",
+      "trending_news_gpt.md",
+      "story_angles_headlines_gpt.md",
+      "strategic_insight_gpt.md",
+      "pr_manager_gpt.md",
+      // New visual prompt agents
+      "visual_prompt_generator.md",
+      "modular_elements_recommender.md",
+      "trend_cultural_analyzer.md",
+      "brand_qa.md",
+    ];
+
+    if (!allowedFiles.includes(filename)) {
+      return res.status(404).json({ error: "Prompt file not found" });
+    }
+
+    const promptPath = path.join(__dirname, "agents/prompts", filename);
+
+    if (!fs.existsSync(promptPath)) {
+      return res.status(404).json({ error: "Prompt file not found" });
+    }
+
+    const promptContent = fs.readFileSync(promptPath, "utf8");
+    res.set("Content-Type", "text/plain");
+    res.send(promptContent);
+  } catch (error) {
+    console.error("Get prompt file error:", error);
+    res.status(500).json({
+      error: "Failed to retrieve prompt file",
+      details: error.message,
+    });
+  }
+});
+
+// Hive visual orchestration endpoint (must be declared BEFORE the 404 handler)
+app.post("/api/hive-orchestrate", async (req, res) => {
+  const {
+    campaign,
+    momentType,
+    visualObjective,
+    heroVisualDescription,
+    promptSnippet,
+    modularElements,
+  } = req.body;
+  if (!campaign || !visualObjective || !heroVisualDescription) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+  try {
+    const context = {
+      campaign,
+      momentType,
+      visualObjective,
+      heroVisualDescription,
+      promptSnippet,
+      modularElements,
+    };
+
+    const visualAgent = new VisualPromptGeneratorAgent();
+    const modularAgent = new ModularElementsRecommenderAgent();
+    const trendAgent = new TrendCulturalAnalyzerAgent();
+    const qaAgent = new BrandQAAgent();
+
+    const baseResult = await visualAgent.generatePrompt(context);
+    const modulars = await modularAgent.recommendElements(context, baseResult);
+    const trendInsights = await trendAgent.analyzeTrends(context);
+    const qaResult = await qaAgent.reviewPrompt(
+      baseResult,
+      modulars,
+      trendInsights
+    );
+    res.json({
+      promptText: baseResult.promptText,
+      imageUrl: baseResult.imageUrl,
+      modulars,
+      trendInsights,
+      qaResult,
+    });
+  } catch (err) {
+    console.error("Hive orchestrate error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// -------- Hive Visual Stream (SSE) --------
+app.get("/api/hive-orchestrate-stream", async (req, res) => {
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  const send = (event, payload) => {
+    res.write(`event:${event}\ndata:${JSON.stringify(payload)}\n\n`);
+  };
+
+  const context = {
+    campaign: req.query.campaign || "Capri Sun Pouch Pallet",
+    momentType:
+      req.query.momentType || "Brand Rumor Response / Nostalgia Reassurance",
+    visualObjective:
+      req.query.visualObjective ||
+      "Reinforce pouch nostalgia while introducing new bottle",
+    heroVisualDescription:
+      req.query.heroVisualDescription ||
+      "Classic Capri Sun pouch in foreground, bottle behind, pop-art style on blue background",
+    promptSnippet: req.query.promptSnippet || "",
+    modularElements: [],
+  };
+
+  try {
+    const visualAgent = new VisualPromptGeneratorAgent();
+    send("status", { stage: "loading_prompts" });
+    const baseResult = await visualAgent.generatePrompt(context);
+    send("progress", { stage: "base_prompt", baseResult });
+
+    const modularAgent = new ModularElementsRecommenderAgent();
+    const modulars = await modularAgent.recommendElements(context, baseResult);
+    send("progress", { stage: "modular_elements", modulars });
+
+    const trendAgent = new TrendCulturalAnalyzerAgent();
+    const trendInsights = await trendAgent.analyzeTrends(context);
+    send("progress", { stage: "trend_insights", trendInsights });
+
+    const qaAgent = new BrandQAAgent();
+    const qaResult = await qaAgent.reviewPrompt(
+      baseResult,
+      modulars,
+      trendInsights
+    );
+    send("progress", { stage: "brand_qa", qaResult });
+
+    send("complete", {
+      promptText: baseResult.promptText,
+      imageUrl: baseResult.imageUrl,
+      modulars,
+      trendInsights,
+      qaResult,
+    });
+    res.end();
+  } catch (err) {
+    send("error", { message: err.message });
+    res.end();
+  }
+});
+// -------- End SSE Route --------
+
+// -------- Simple Image Generation Endpoint --------
+app.post("/api/generate-image", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt || prompt.trim().length === 0) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    const axios = require("axios");
+    const response = await axios.post(
+      "https://api.openai.com/v1/images/generations",
+      {
+        model: "gpt-image-1",
+        prompt,
+        n: 1,
+        size: "1024x1024",
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const b64 = response.data.data[0].b64_json;
+    const imageUrl = `data:image/png;base64,${b64}`;
+    res.json({ imageUrl });
+  } catch (err) {
+    console.error("Image generation error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+// -------- End Image Generation Endpoint --------
 
 // Serve the frontend
 app.get("/", (req, res) => {

@@ -34,7 +34,9 @@ class TrendingNewsAgent {
       console.log("System prompt already loaded.");
       return;
     }
-    const potentialPaths = [path.join(__dirname, "../GPTs", this.promptFile)];
+    const potentialPaths = [
+      path.join(__dirname, "../prompts", this.promptFile),
+    ];
 
     for (const p of potentialPaths) {
       try {

@@ -2,11 +2,11 @@ const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 
-const ResearchAudienceAgent = require("./agents/ResearchAudienceAgent");
-const TrendingNewsAgent = require("./agents/TrendingNewsAgent");
-const StoryAnglesAgent = require("./agents/StoryAnglesAgent");
-const PRManagerAgent = require("./agents/PRManagerAgent");
-const StrategicInsightAgent = require("./agents/StrategicInsightAgent");
+const ResearchAudienceAgent = require("./agents/classes/ResearchAudienceAgent");
+const TrendingNewsAgent = require("./agents/classes/TrendingNewsAgent");
+const StoryAnglesAgent = require("./agents/classes/StoryAnglesAgent");
+const PRManagerAgent = require("./agents/classes/PRManagerAgent");
+const StrategicInsightAgent = require("./agents/classes/StrategicInsightAgent");
 
 // Import new dynamic components
 const DataSourceManager = require("./utils/DataSourceManager");

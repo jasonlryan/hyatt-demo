@@ -1,0 +1,205 @@
+{
+  "agents": {
+    "research": {
+      "id": "research",
+      "name": "Research & Audience GPT",
+      "description": "Analyzes target audiences and provides demographic insights",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.2,
+      "maxTokens": 2500,
+      "timeout": 45000,
+      "delay": 4000,
+      "promptFile": "research_audience_gpt.md",
+      "role": "research",
+      "priority": 1
+    },
+    "trending": {
+      "id": "trending",
+      "name": "Trending News GPT",
+      "description": "Identifies trending topics and news opportunities",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.3,
+      "maxTokens": 3000,
+      "timeout": 45000,
+      "delay": 5000,
+      "promptFile": "trending_news_gpt.md",
+      "role": "trending",
+      "priority": 2
+    },
+    "story": {
+      "id": "story",
+      "name": "Story Angles & Headlines GPT",
+      "description": "Creates compelling story angles and headlines",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.4,
+      "maxTokens": 3500,
+      "timeout": 45000,
+      "delay": 6000,
+      "promptFile": "story_angles_headlines_gpt.md",
+      "role": "story",
+      "priority": 3
+    },
+    "strategic": {
+      "id": "strategic",
+      "name": "Strategic Insight GPT",
+      "description": "Provides strategic insights and recommendations",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.3,
+      "maxTokens": 3000,
+      "timeout": 45000,
+      "delay": 5000,
+      "promptFile": "strategic_insight_gpt.md",
+      "role": "strategic",
+      "priority": 4
+    },
+    "pr-manager": {
+      "id": "pr-manager",
+      "name": "PR Manager GPT",
+      "description": "Coordinates campaigns and manages overall strategy",
+      "enabled": true,
+      "model": "gpt-4o-mini-2024-07-18",
+      "temperature": 0.7,
+      "maxTokens": 4000,
+      "timeout": 45000,
+      "delay": 3000,
+      "promptFile": "pr_manager_gpt.md",
+      "role": "manager",
+      "priority": 5
+    },
+    "visual_prompt_generator": {
+      "id": "visual_prompt_generator",
+      "name": "Visual Prompt Generator",
+      "description": "Generates detailed, actionable visual prompts for campaign creative based on strategy and objectives.",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.7,
+      "maxTokens": 2000,
+      "timeout": 45000,
+      "delay": 4000,
+      "promptFile": "visual_prompt_generator.md",
+      "role": "visual_prompt",
+      "priority": 6
+    },
+    "modular_elements_recommender": {
+      "id": "modular_elements_recommender",
+      "name": "Modular Elements Recommender",
+      "description": "Suggests modular visual elements, overlays, and motifs based on campaign context and objectives.",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.7,
+      "maxTokens": 2000,
+      "timeout": 45000,
+      "delay": 4000,
+      "promptFile": "modular_elements_recommender.md",
+      "role": "modular_elements",
+      "priority": 7
+    },
+    "trend_cultural_analyzer": {
+      "id": "trend_cultural_analyzer",
+      "name": "Trend & Cultural Analyzer",
+      "description": "Analyzes current trends and cultural moments to inform visual creative direction.",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.7,
+      "maxTokens": 2000,
+      "timeout": 45000,
+      "delay": 4000,
+      "promptFile": "trend_cultural_analyzer.md",
+      "role": "trend_culture",
+      "priority": 8
+    },
+    "brand_qa": {
+      "id": "brand_qa",
+      "name": "Brand QA Agent",
+      "description": "Reviews visual prompts and modular elements for brand alignment, tone, and quality.",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.7,
+      "maxTokens": 2000,
+      "timeout": 45000,
+      "delay": 4000,
+      "promptFile": "brand_qa.md",
+      "role": "brand_qa",
+      "priority": 9
+    }
+  },
+  "global": {
+    "fallbackModel": "gpt-4o-2024-08-06",
+    "fallbackMaxTokens": 2000,
+    "fallbackTimeout": 45000,
+    "enableRealDataSources": true,
+    "enableManualReview": true,
+    "enableQualityControl": true,
+    "enableDynamicFlow": true,
+    "enableAgentInteraction": true,
+    "enableAdaptiveRoles": true
+  },
+  "models": {
+    "available": [
+      {
+        "id": "gpt-4o-2024-08-06",
+        "name": "GPT-4o (Latest)",
+        "description": "Most capable model with structured outputs support",
+        "supportsStructuredOutputs": true,
+        "recommended": true,
+        "costTier": "premium"
+      },
+      {
+        "id": "gpt-4o-mini-2024-07-18",
+        "name": "GPT-4o Mini",
+        "description": "Faster and cheaper with structured outputs support",
+        "supportsStructuredOutputs": true,
+        "recommended": true,
+        "costTier": "standard"
+      },
+      {
+        "id": "gpt-4-turbo",
+        "name": "GPT-4 Turbo (Legacy)",
+        "description": "Legacy model without structured outputs",
+        "supportsStructuredOutputs": false,
+        "recommended": false,
+        "costTier": "premium"
+      },
+      {
+        "id": "gpt-4",
+        "name": "GPT-4 (Legacy)",
+        "description": "Legacy model without structured outputs",
+        "supportsStructuredOutputs": false,
+        "recommended": false,
+        "costTier": "premium"
+      }
+    ]
+  },
+  "qualityThresholds": {
+    "minTrendRelevance": 60,
+    "minAudienceConfidence": 70,
+    "minStoryAngleStrength": 65,
+    "skipWeakTrendsThreshold": 50,
+    "alternativeStrategyTrigger": 40,
+    "requireDataValidation": true
+  },
+  "dataSource": {
+    "enableRealDataSources": true,
+    "googleTrendsEnabled": false,
+    "newsApiEnabled": false,
+    "socialMediaEnabled": false,
+    "mockDataFallback": true
+  },
+  "system": {
+    "maxConcurrentCampaigns": 5,
+    "cacheTtl": 3600,
+    "requestTimeout": 60000,
+    "healthCheckInterval": 30000,
+    "logLevel": "info",
+    "debugMode": false
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2024-01-01T00:00:00Z",
+    "updatedBy": "system"
+  }
+} 
