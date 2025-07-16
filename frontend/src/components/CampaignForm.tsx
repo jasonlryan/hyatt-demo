@@ -46,7 +46,7 @@ const CampaignForm: React.FC<CampaignFormProps> = ({
           <button
             type="submit"
             disabled={isLoading || !brief.trim()}
-            className="px-6 py-2 bg-indigo-600 text-white font-semibold rounded-md hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
+            className="px-6 py-2 bg-success text-white font-semibold rounded-md hover:bg-green-600 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors"
           >
             {isLoading ? "Creating..." : "Create Campaign"}
           </button>

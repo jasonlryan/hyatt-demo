@@ -2,18 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom Hyatt brand colors and styles */
-:root {
-  --color-hyatt-blue: #002d72;
-  --color-hyatt-blue-hover: #0046a8;
-  --color-hyatt-gold: #d4af37;
+/* ===== SIMPLIFIED DESIGN SYSTEM ===== */
+/* Only the classes you actually use! */
+
+/* Base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-  background-color: #f8fafc;
-  color: #1e293b;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f8f9fa;
+  color: #212529;
   line-height: 1.6;
+  font-size: 16px;
 }
 
 #root {
@@ -22,81 +26,133 @@ body {
   min-height: 100vh;
 }
 
-/* Custom component styles */
-.panel {
-  background-color: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  border: 1px solid #e2e8f0;
+/* ===== ONLY THE CLASSES YOU ACTUALLY USE ===== */
+
+/* Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
 }
 
-/* Global heading styles - but exclude modals */
-h1:not(.modal h1):not(.modal-heading), 
-h2:not(.modal h2):not(.modal-heading), 
-h3:not(.modal h3):not(.modal-heading) {
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  color: white !important;
-}
-
-/* Ensure all titles are white on dark backgrounds */
-.bg-slate-700 h1, 
-.bg-slate-700 h2, 
-.bg-slate-700 h3,
-.bg-slate-800 h1,
-.bg-slate-800 h2,
-.bg-slate-800 h3 {
-  color: white !important;
-}
-
-button {
-  background-color: var(--color-hyatt-blue);
-  color: white;
-  font-weight: 600;
-  padding: 12px 24px;
-  border-radius: 8px;
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
   border: none;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  font-size: 14px;
+  transition: all 0.2s ease;
+  text-decoration: none;
 }
 
-button:hover {
-  background-color: var(--color-hyatt-blue-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgb(0 45 114 / 0.3);
+.btn-primary {
+  background: #4CAF50;
+  color: white;
 }
 
-textarea, input {
+.btn-primary:hover {
+  background: #45a049;
+}
+
+.btn-secondary {
+  background: white;
+  color: #212529;
+  border: 1px solid #dee2e6;
+}
+
+.btn-secondary:hover {
+  border-color: #adb5bd;
+}
+
+/* Cards */
+.card {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: #4CAF50;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.1);
+}
+
+/* Modals */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 12px;
-  font-size: 14px;
-  transition: border-color 0.2s ease-in-out;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 }
 
-textarea:focus, input:focus {
-  outline: none;
-  border-color: var(--color-hyatt-blue);
-  box-shadow: 0 0 0 3px rgb(0 45 114 / 0.1);
+.modal-content {
+  background: white;
+  border-radius: 0.75rem;
+  max-width: 32rem;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
+.modal-header {
+  padding: 1.5rem 1.5rem 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-footer {
+  padding: 0 1.5rem 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+/* Colors */
+.text-primary { color: #212529; }
+.text-secondary { color: #6c757d; }
+.text-success { color: #28a745; }
+.bg-secondary { background-color: #f8f9fa; }
+.bg-success { background-color: #28a745; }
+
+/* Special component */
 .agent-title {
-  @apply text-3xl font-extrabold text-gray-900 leading-tight !important;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 0.5rem;
 }
 
-/* Modal heading override */
-.modal-heading {
-  color: #1e293b !important;
+/* Focus states */
+.btn:focus,
+.card:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
 }
 
-/* Additional modal heading overrides */
-.modal h1, .modal h2, .modal h3 {
-  color: #1e293b !important;
-}
-
-.modal-heading, .modal .modal-heading {
-  color: #1e293b !important;
+/* Responsive */
+@media (min-width: 768px) {
+  .modal-content {
+    max-width: 40rem;
+  }
 }

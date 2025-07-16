@@ -11,21 +11,21 @@ const DeliverableCard: React.FC<DeliverableCardProps> = ({
   onViewDetails,
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div className="card mb-4">
       <div className="flex justify-between items-start mb-4">
         <div className="flex items-center">
           <span className="text-xl mr-2">📋</span>
-          <h3 className="text-lg font-semibold text-slate-800">
+          <h3 className="text-lg font-semibold text-primary">
             DELIVERABLE: {deliverable.title}
           </h3>
         </div>
         <div
           className={`px-2 py-1 text-xs font-medium rounded-full ${
             deliverable.status === "ready"
-              ? "bg-green-100 text-green-800"
+              ? "bg-success text-white"
               : deliverable.status === "reviewed"
-              ? "bg-blue-100 text-blue-800"
-              : "bg-yellow-100 text-yellow-800"
+              ? "bg-primary text-white"
+              : "bg-warning text-white"
           }`}
         >
           {deliverable.status === "ready"
@@ -40,14 +40,14 @@ const DeliverableCard: React.FC<DeliverableCardProps> = ({
         <span className="text-xl mr-2">
           {deliverable.agent?.includes("Research") ? "🔍" : "👨‍💼"}
         </span>
-        <div className="text-sm text-slate-700">
+        <div className="text-sm text-secondary">
           {deliverable.agent || "AI Agent"}
         </div>
       </div>
 
       <div className="flex justify-end">
         <button
-          className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md transition-colors text-sm"
+          className="btn btn-primary text-sm"
           onClick={() => onViewDetails(deliverable.id)}
         >
           View Details

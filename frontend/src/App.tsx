@@ -12,6 +12,7 @@ import CampaignForm from "./components/CampaignForm";
 import DeliverableModal from "./components/DeliverableModal";
 import AgentsPage from "./components/AgentsPage";
 import WorkflowsPage from "./components/WorkflowsPage";
+import StylePanel from "./components/StylePanel";
 import {
   Campaign,
   ConversationMessage,
@@ -373,7 +374,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <GlobalNav
         currentView={currentView}
         onNavigateToCampaigns={() => setCurrentView("campaigns")}
@@ -402,8 +403,8 @@ function App() {
       {currentView === "agents" ? (
         <AgentsPage />
       ) : (
-        <div className="bg-slate-100 min-h-screen">
-          <div className="container mx-auto px-4 py-6">
+        <div className="min-h-screen">
+          <div className="container py-6">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 {!campaign ? (
@@ -472,6 +473,9 @@ function App() {
         isOpen={isHitlModalOpen}
         onClose={() => setIsHitlModalOpen(false)}
       />
+
+      {/* Style Designer Panel */}
+      <StylePanel />
     </div>
   );
 }

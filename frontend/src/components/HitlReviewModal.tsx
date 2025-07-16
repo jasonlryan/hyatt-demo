@@ -13,22 +13,21 @@ const HitlReviewModal: React.FC<HitlReviewModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="modal bg-white rounded-lg shadow-xl w-full max-w-2xl">
-        <div className="flex justify-between items-center p-6 border-b border-slate-200">
-          <h2 className="text-2xl font-bold modal-heading">
-            HITL Review Settings
-          </h2>
+    <div className="modal">
+      <div className="modal-content">
+        <div className="modal-header">
+          <h2>HITL Review Settings</h2>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-700"
+            className="btn btn-secondary"
+            aria-label="Close modal"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <div className="p-6">
-          <p className="mb-4 text-slate-700">
+        <div className="modal-body">
+          <p className="text-secondary mb-4">
             When HITL Review is enabled, each deliverable pauses the workflow.
             Reply <span className="font-medium">"Resume"</span> or{" "}
             <span className="font-medium">"Refine"</span> to continue after
@@ -37,9 +36,9 @@ const HitlReviewModal: React.FC<HitlReviewModalProps> = ({
             <span className="font-medium">"Refine"</span>.
           </p>
 
-          <div className="bg-blue-50 p-4 rounded-md">
-            <h3 className="font-medium text-blue-800 mb-2">Review Options:</h3>
-            <ul className="list-disc pl-5 text-blue-700 space-y-2">
+          <div className="card bg-secondary">
+            <h3 className="font-medium text-primary mb-2">Review Options:</h3>
+            <ul className="list-disc pl-5 text-secondary space-y-2">
               <li>
                 <span className="font-medium">Resume</span> - Continue to the
                 next step without changes
@@ -56,11 +55,8 @@ const HitlReviewModal: React.FC<HitlReviewModalProps> = ({
           </div>
         </div>
 
-        <div className="flex justify-end p-4 border-t border-slate-200">
-          <button
-            className="px-4 py-2 bg-slate-500 hover:bg-slate-600 text-white rounded-md transition-colors"
-            onClick={onClose}
-          >
+        <div className="modal-footer">
+          <button className="btn btn-primary" onClick={onClose}>
             Close
           </button>
         </div>
