@@ -30,7 +30,7 @@ class PRManagerAgent {
         this.temperature = agentConfig.temperature || 0.7;
         this.maxTokens = agentConfig.maxTokens || 4000;
         this.timeout = agentConfig.timeout || 45000;
-        this.delay = agentConfig.delay || 3000;
+        this.delayMs = agentConfig.delay || 3000;
         this.enabled = agentConfig.enabled !== false;
       } else {
         // Fallback to environment variables if config not found
@@ -39,7 +39,7 @@ class PRManagerAgent {
           parseFloat(process.env.PR_MANAGER_TEMPERATURE) || 0.7;
         this.maxTokens = parseInt(process.env.PR_MANAGER_MAX_TOKENS) || 4000;
         this.timeout = parseInt(process.env.PR_MANAGER_TIMEOUT) || 45000;
-        this.delay = parseInt(process.env.PR_MANAGER_DELAY) || 3000;
+        this.delayMs = parseInt(process.env.PR_MANAGER_DELAY) || 3000;
         this.enabled = true;
       }
     } catch (error) {
@@ -52,7 +52,7 @@ class PRManagerAgent {
       this.temperature = parseFloat(process.env.PR_MANAGER_TEMPERATURE) || 0.7;
       this.maxTokens = parseInt(process.env.PR_MANAGER_MAX_TOKENS) || 4000;
       this.timeout = parseInt(process.env.PR_MANAGER_TIMEOUT) || 45000;
-      this.delay = parseInt(process.env.PR_MANAGER_DELAY) || 3000;
+      this.delayMs = parseInt(process.env.PR_MANAGER_DELAY) || 3000;
       this.enabled = true;
     }
   }

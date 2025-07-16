@@ -56,9 +56,9 @@ class StoryAnglesAgent {
   }
 
   async generateStoryAngles(campaignBrief, researchInsights, trendingData) {
-    // Simulate processing time - configurable via environment
-    const delay = parseInt(process.env.STORY_DELAY) || 6000;
-    await this.delay(delay);
+    // Simulate processing time
+    const delayDuration = parseInt(process.env.STORY_DELAY) || 4000;
+    await this.delay(delayDuration);
 
     // Use OpenAI API with system prompt to generate story angles dynamically
     const storyAngles = await this.createStoryAnglesUsingPrompt(

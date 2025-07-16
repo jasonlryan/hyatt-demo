@@ -32,7 +32,7 @@ class ResearchAudienceAgent {
         this.temperature = agentConfig.temperature || 0.2;
         this.maxTokens = agentConfig.maxTokens || 2500;
         this.timeout = agentConfig.timeout || 45000;
-        this.delay = agentConfig.delay || 4000;
+        this.delayMs = agentConfig.delay || 4000;
         this.enabled = agentConfig.enabled !== false;
       } else {
         // Fallback to environment variables if config not found
@@ -49,7 +49,7 @@ class ResearchAudienceAgent {
           parseInt(process.env.RESEARCH_TIMEOUT) ||
           parseInt(process.env.OPENAI_TIMEOUT) ||
           45000;
-        this.delay = parseInt(process.env.RESEARCH_DELAY) || 4000;
+        this.delayMs = parseInt(process.env.RESEARCH_DELAY) || 4000;
         this.enabled = true;
       }
     } catch (error) {
@@ -71,7 +71,7 @@ class ResearchAudienceAgent {
         parseInt(process.env.RESEARCH_TIMEOUT) ||
         parseInt(process.env.OPENAI_TIMEOUT) ||
         45000;
-      this.delay = parseInt(process.env.RESEARCH_DELAY) || 4000;
+      this.delayMs = parseInt(process.env.RESEARCH_DELAY) || 4000;
       this.enabled = true;
     }
   }
@@ -164,8 +164,7 @@ class ResearchAudienceAgent {
 
   async analyzeAudience(campaignBrief, externalData = null) {
     // Simulate processing time - configurable via environment
-    const delay = parseInt(process.env.RESEARCH_DELAY) || 4000;
-    await this.delay(delay);
+    await this.delay(this.delayMs);
 
     // Use OpenAI API with system prompt to analyze audience dynamically
     const insights = await this.generateInsightsUsingPrompt(

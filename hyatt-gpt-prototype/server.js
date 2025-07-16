@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
-const AgentOrchestrator = require("./AgentOrchestrator");
+const { createOrchestrator } = require("./orchestrations");
 const VisualPromptGeneratorAgent = require("./agents/classes/VisualPromptGeneratorAgent");
 const ModularElementsRecommenderAgent = require("./agents/classes/ModularElementsRecommenderAgent");
 const TrendCulturalAnalyzerAgent = require("./agents/classes/TrendCulturalAnalyzerAgent");
@@ -17,12 +17,12 @@ app.use(express.json());
 app.use(express.static("public"));
 
 // Initialize orchestrator
-const orchestrator = new AgentOrchestrator();
+const orchestrator = createOrchestrator("agent");
 
 // ASYNCHRONOUS IIFE (Immediately Invoked Function Expression) to initialize agents
 (async () => {
   try {
-    await orchestrator.initializeAgents();
+    await orchestrator.loadAgents();
     console.log("✅ Orchestrator and agents initialized successfully.");
 
     // Only start server if not in Vercel environment AND after successful initialization

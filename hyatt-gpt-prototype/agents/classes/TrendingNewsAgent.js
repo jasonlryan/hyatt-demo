@@ -55,10 +55,15 @@ class TrendingNewsAgent {
     throw new Error(`Failed to load system prompt: ${this.promptFile}`);
   }
 
-  async analyzeTrends(campaignBrief, researchInsights, externalData = null) {
-    // Simulate processing time - configurable via environment
-    const delay = parseInt(process.env.TRENDING_DELAY) || 5000;
-    await this.delay(delay);
+  async analyzeTrends(
+    campaignBrief,
+    researchInsights,
+    strategicInsights,
+    externalData = null
+  ) {
+    // Simulate processing time
+    const delayDuration = parseInt(process.env.TRENDING_DELAY) || 3000;
+    await this.delay(delayDuration);
 
     // Use OpenAI API with system prompt to analyze trends dynamically
     const trends = await this.generateTrendsUsingPrompt(
