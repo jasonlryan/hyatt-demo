@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import Header from "./components/Header";
+import { useState, useEffect, useRef } from "react";
+import GlobalNav from "./components/GlobalNav";
 import SidePanel from "./components/SidePanel";
 import CampaignProgress from "./components/CampaignProgress";
 import AgentCollaboration from "./components/AgentCollaboration";
@@ -9,8 +9,9 @@ import RefineInputModal from "./components/RefineInputModal";
 import ReviewPanel from "./components/ReviewPanel";
 import HitlReviewModal from "./components/HitlReviewModal";
 import CampaignForm from "./components/CampaignForm";
-import CampaignSelector from "./components/CampaignSelector";
 import DeliverableModal from "./components/DeliverableModal";
+import AgentsPage from "./components/AgentsPage";
+import WorkflowsPage from "./components/WorkflowsPage";
 import {
   Campaign,
   ConversationMessage,
@@ -27,6 +28,9 @@ function App() {
   }>({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [currentView, setCurrentView] = useState<
+    "campaigns" | "agents" | "workflows"
+  >("campaigns");
 
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [isResearchModalOpen, setIsResearchModalOpen] = useState(false);
@@ -41,6 +45,46 @@ function App() {
   const [modalResearch, setModalResearch] = useState<AudienceResearch | null>(
     null
   );
+
+  // Load HITL review state from backend
+  const loadHitlReviewState = async () => {
+    try {
+      const response = await fetch("/api/manual-review");
+      if (response.ok) {
+        const data = await response.json();
+        setHitlReview(data.enabled);
+      }
+    } catch (error) {
+      console.error("Failed to load HITL review state:", error);
+    }
+  };
+
+  // Update HITL review state on backend
+  const updateHitlReviewState = async (enabled: boolean) => {
+    try {
+      const response = await fetch("/api/manual-review", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ enabled }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHitlReview(data.enabled);
+      } else {
+        console.error("Failed to update HITL review state");
+      }
+    } catch (error) {
+      console.error("Failed to update HITL review state:", error);
+    }
+  };
+
+  // Load initial HITL state when component mounts
+  useEffect(() => {
+    loadHitlReviewState();
+  }, []);
 
   const handleViewDetails = (deliverable: Deliverable) => {
     if (deliverable.title === "Audience Research") {
@@ -150,6 +194,15 @@ function App() {
     setConversation([]);
     setDeliverables({});
     setError(null);
+    setCurrentView("campaigns");
+  };
+
+  const handleNavigateToAgents = () => {
+    setCurrentView("agents");
+  };
+
+  const handleNavigateToWorkflows = () => {
+    setCurrentView("workflows");
   };
 
   const startCampaign = async (brief: string) => {
@@ -320,15 +373,20 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <Header
+    <div className="min-h-screen bg-gray-50">
+      <GlobalNav
+        currentView={currentView}
+        onNavigateToCampaigns={() => setCurrentView("campaigns")}
+        onNavigateToAgents={handleNavigateToAgents}
+        onNavigateToWorkflows={handleNavigateToWorkflows}
         onNewCampaign={handleNewCampaign}
         onLoadCampaign={handleSelectCampaign}
         campaigns={campaigns}
         hitlReview={hitlReview}
-        onToggleHitl={() => {
-          setHitlReview(!hitlReview);
-          if (!hitlReview) {
+        onToggleHitl={async () => {
+          const newState = !hitlReview;
+          await updateHitlReviewState(newState);
+          if (newState) {
             setIsHitlModalOpen(true);
           }
         }}
@@ -340,48 +398,55 @@ function App() {
         onClose={() => setIsSidePanelOpen(false)}
       />
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {!campaign ? (
-              <CampaignForm
-                onCreate={startCampaign}
-                onCancel={handleNewCampaign}
-                isLoading={isLoading}
-              />
-            ) : (
-              <>
-                <CampaignProgress
-                  campaign={campaign}
-                  onViewProgress={() => setIsSidePanelOpen(true)}
+      {currentView === "workflows" && <WorkflowsPage />}
+      {currentView === "agents" ? (
+        <AgentsPage />
+      ) : (
+        <div className="bg-slate-100 min-h-screen">
+          <div className="container mx-auto px-4 py-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                {!campaign ? (
+                  <CampaignForm
+                    onCreate={startCampaign}
+                    onCancel={handleNewCampaign}
+                    isLoading={isLoading}
+                  />
+                ) : (
+                  <>
+                    <CampaignProgress
+                      campaign={campaign}
+                      onViewProgress={() => setIsSidePanelOpen(true)}
+                    />
+
+                    <AgentCollaboration messages={conversation} />
+
+                    <ReviewPanel
+                      isVisible={showReviewPanel}
+                      awaitingReview={campaign?.awaitingReview}
+                      pendingPhase={campaign?.pendingPhase}
+                      onResume={handleResume}
+                      onRefine={handleRefine}
+                    />
+                  </>
+                )}
+              </div>
+
+              <div className="lg:col-span-1">
+                <CampaignDeliverables
+                  deliverables={Object.values(deliverables)}
+                  onViewDetails={(id) => {
+                    const deliverable = Object.values(deliverables).find(
+                      (d) => d.id === id
+                    );
+                    if (deliverable) handleViewDetails(deliverable);
+                  }}
                 />
-
-                <AgentCollaboration messages={conversation} />
-
-                <ReviewPanel
-                  isVisible={showReviewPanel}
-                  awaitingReview={campaign?.awaitingReview}
-                  pendingPhase={campaign?.pendingPhase}
-                  onResume={handleResume}
-                  onRefine={handleRefine}
-                />
-              </>
-            )}
-          </div>
-
-          <div className="lg:col-span-1">
-            <CampaignDeliverables
-              deliverables={Object.values(deliverables)}
-              onViewDetails={(id) => {
-                const deliverable = Object.values(deliverables).find(
-                  (d) => d.id === id
-                );
-                if (deliverable) handleViewDetails(deliverable);
-              }}
-            />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       <DeliverableModal
         deliverable={modalDeliverable}

@@ -31,7 +31,10 @@ body {
   border: 1px solid #e2e8f0;
 }
 
-h1, h2, h3 {
+/* Global heading styles - but exclude modals */
+h1:not(.modal h1):not(.modal-heading), 
+h2:not(.modal h2):not(.modal-heading), 
+h3:not(.modal h3):not(.modal-heading) {
   font-family: 'Inter', sans-serif;
   font-weight: 700;
   color: white !important;
@@ -78,4 +81,22 @@ textarea:focus, input:focus {
   outline: none;
   border-color: var(--color-hyatt-blue);
   box-shadow: 0 0 0 3px rgb(0 45 114 / 0.1);
+}
+
+.agent-title {
+  @apply text-3xl font-extrabold text-gray-900 leading-tight !important;
+}
+
+/* Modal heading override */
+.modal-heading {
+  color: #1e293b !important;
+}
+
+/* Additional modal heading overrides */
+.modal h1, .modal h2, .modal h3 {
+  color: #1e293b !important;
+}
+
+.modal-heading, .modal .modal-heading {
+  color: #1e293b !important;
 }

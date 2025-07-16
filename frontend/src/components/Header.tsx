@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Building, BookmarkCheck, ChevronDown, FolderOpen } from "lucide-react";
+import { Building, ChevronDown, FolderOpen } from "lucide-react";
 
 interface Campaign {
   id: string;
@@ -14,6 +14,7 @@ interface HeaderProps {
   campaigns?: Campaign[];
   hitlReview: boolean;
   onToggleHitl: () => void;
+  currentView?: "campaigns" | "agents";
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -22,6 +23,7 @@ const Header: React.FC<HeaderProps> = ({
   campaigns = [],
   hitlReview,
   onToggleHitl,
+  currentView = "campaigns",
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -76,61 +78,65 @@ const Header: React.FC<HeaderProps> = ({
           </button>
 
           {/* Load Campaign Dropdown */}
-          <div className="relative" ref={dropdownRef}>
-            <button
-              className="bg-slate-600 hover:bg-slate-500 transition-colors duration-200 py-2 px-4 rounded-lg text-white font-medium flex items-center"
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            >
-              <FolderOpen size={16} className="mr-2" />
-              Load Campaign
-              <ChevronDown size={16} className="ml-2" />
-            </button>
+          {currentView === "campaigns" && (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                className="bg-slate-600 hover:bg-slate-500 transition-colors duration-200 py-2 px-4 rounded-lg text-white font-medium flex items-center"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <FolderOpen size={16} className="mr-2" />
+                Load Campaign
+                <ChevronDown size={16} className="ml-2" />
+              </button>
 
-            {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg z-50 border border-slate-200">
-                <div className="p-3 border-b border-slate-200">
-                  <div className="text-slate-800 font-semibold text-sm">
-                    All Campaigns ({campaigns.length})
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-lg z-50 border border-slate-200">
+                  <div className="p-3 border-b border-slate-200">
+                    <div className="text-slate-800 font-semibold text-sm">
+                      All Campaigns ({campaigns.length})
+                    </div>
+                  </div>
+                  <div className="max-h-80 overflow-y-auto">
+                    {campaigns.length > 0 ? (
+                      campaigns.map((campaign, index) => (
+                        <button
+                          key={campaign.id}
+                          onClick={() => handleLoadCampaign(campaign.id)}
+                          className="w-full text-left p-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0"
+                        >
+                          <div className="flex justify-between items-start mb-1">
+                            <div className="text-slate-900 font-medium text-sm leading-tight flex-1 pr-2">
+                              {campaign.brief.substring(0, 80)}...
+                            </div>
+                            <div className="text-xs text-slate-500 whitespace-nowrap">
+                              #{index + 1}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <div className="text-xs text-slate-600">
+                              Status:{" "}
+                              <span className="font-medium">
+                                {campaign.status}
+                              </span>
+                            </div>
+                            <div className="text-xs text-slate-500">
+                              {new Date(
+                                campaign.createdAt
+                              ).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    ) : (
+                      <div className="p-4 text-slate-500 text-sm text-center">
+                        No campaigns available
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="max-h-80 overflow-y-auto">
-                  {campaigns.length > 0 ? (
-                    campaigns.map((campaign, index) => (
-                      <button
-                        key={campaign.id}
-                        onClick={() => handleLoadCampaign(campaign.id)}
-                        className="w-full text-left p-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0"
-                      >
-                        <div className="flex justify-between items-start mb-1">
-                          <div className="text-slate-900 font-medium text-sm leading-tight flex-1 pr-2">
-                            {campaign.brief.substring(0, 80)}...
-                          </div>
-                          <div className="text-xs text-slate-500 whitespace-nowrap">
-                            #{index + 1}
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <div className="text-xs text-slate-600">
-                            Status:{" "}
-                            <span className="font-medium">
-                              {campaign.status}
-                            </span>
-                          </div>
-                          <div className="text-xs text-slate-500">
-                            {new Date(campaign.createdAt).toLocaleDateString()}
-                          </div>
-                        </div>
-                      </button>
-                    ))
-                  ) : (
-                    <div className="p-4 text-slate-500 text-sm text-center">
-                      No campaigns available
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           <div className="flex items-center">
             <span className="mr-2 text-slate-300">HITL Review</span>
