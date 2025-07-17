@@ -12,6 +12,7 @@ import CampaignForm from "./components/CampaignForm";
 import DeliverableModal from "./components/DeliverableModal";
 import AgentsPage from "./components/AgentsPage";
 import WorkflowsPage from "./components/WorkflowsPage";
+import OrchestrationsPage from "./components/OrchestrationsPage";
 import StylePanel from "./components/StylePanel";
 import {
   Campaign,
@@ -30,10 +31,15 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [currentView, setCurrentView] = useState<
-    "campaigns" | "agents" | "workflows"
-  >("campaigns");
+    "orchestrations" | "campaigns" | "agents" | "workflows"
+  >("orchestrations");
+
+  const [selectedOrchestration, setSelectedOrchestration] = useState<
+    string | null
+  >(null);
 
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isResearchModalOpen, setIsResearchModalOpen] = useState(false);
   const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
   const [isHitlModalOpen, setIsHitlModalOpen] = useState(false);
@@ -198,12 +204,21 @@ function App() {
     setCurrentView("campaigns");
   };
 
+  const handleSelectOrchestration = (orchestrationId: string) => {
+    setSelectedOrchestration(orchestrationId);
+    setCurrentView("campaigns");
+  };
+
   const handleNavigateToAgents = () => {
     setCurrentView("agents");
   };
 
   const handleNavigateToWorkflows = () => {
     setCurrentView("workflows");
+  };
+
+  const handleNavigateToOrchestrations = () => {
+    setCurrentView("orchestrations");
   };
 
   const startCampaign = async (brief: string) => {
@@ -380,9 +395,7 @@ function App() {
         onNavigateToCampaigns={() => setCurrentView("campaigns")}
         onNavigateToAgents={handleNavigateToAgents}
         onNavigateToWorkflows={handleNavigateToWorkflows}
-        onNewCampaign={handleNewCampaign}
-        onLoadCampaign={handleSelectCampaign}
-        campaigns={campaigns}
+        onNavigateToOrchestrations={handleNavigateToOrchestrations}
         hitlReview={hitlReview}
         onToggleHitl={async () => {
           const newState = !hitlReview;
@@ -399,12 +412,15 @@ function App() {
         onClose={() => setIsSidePanelOpen(false)}
       />
 
+      {currentView === "orchestrations" && (
+        <OrchestrationsPage onSelectOrchestration={handleSelectOrchestration} />
+      )}
       {currentView === "workflows" && <WorkflowsPage />}
       {currentView === "agents" ? (
         <AgentsPage />
       ) : (
         <div className="min-h-screen">
-          <div className="container py-6">
+          <div className="container pt-3 pb-8">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
                 {!campaign ? (
@@ -412,6 +428,12 @@ function App() {
                     onCreate={startCampaign}
                     onCancel={handleNewCampaign}
                     isLoading={isLoading}
+                    selectedOrchestration={selectedOrchestration}
+                    onNewCampaign={handleNewCampaign}
+                    onLoadCampaign={handleSelectCampaign}
+                    campaigns={campaigns}
+                    dropdownOpen={dropdownOpen}
+                    setDropdownOpen={setDropdownOpen}
                   />
                 ) : (
                   <>

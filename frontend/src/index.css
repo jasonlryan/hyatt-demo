@@ -32,7 +32,8 @@ body {
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 /* Buttons */
@@ -83,6 +84,22 @@ body {
   border-color: #4CAF50;
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(76, 175, 80, 0.1);
+}
+
+/* Compact Cards */
+.card-compact {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.card-compact:hover {
+  border-color: #4CAF50;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.1);
 }
 
 /* Modals */
