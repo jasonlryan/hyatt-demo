@@ -1,6 +1,7 @@
 import React from "react";
 import { ConversationMessage } from "../types";
-import { X, MessageSquare, User } from "lucide-react";
+import { X } from "lucide-react";
+import { getAgentStyleSmall } from "./orchestrations/agentStyles";
 
 interface SidePanelProps {
   messages: ConversationMessage[];
@@ -9,20 +10,11 @@ interface SidePanelProps {
 }
 
 const SidePanel: React.FC<SidePanelProps> = ({ messages, isOpen, onClose }) => {
-  const getIcon = (speaker: string) => {
-    if (speaker === "Campaign Brief") {
-      return <User size={16} className="text-blue-400" />;
-    }
-    return <MessageSquare size={16} className="text-teal-400" />;
-  };
+  if (!isOpen) return null;
 
   return (
-    <div
-      className={`fixed left-0 top-0 w-full md:w-96 h-full bg-slate-800 text-white shadow-xl transform transition-transform duration-300 ease-in-out z-50 ${
-        isOpen ? "translate-x-0" : "-translate-x-full"
-      }`}
-    >
-      <div className="flex items-center justify-between p-4 border-b border-slate-700">
+    <div className="w-full h-full bg-slate-800 text-white shadow-xl border-r border-slate-700 rounded-lg flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b border-slate-700 flex-shrink-0">
         <h2 className="text-xl font-semibold">Detailed Log</h2>
         <button
           onClick={onClose}
@@ -32,27 +24,47 @@ const SidePanel: React.FC<SidePanelProps> = ({ messages, isOpen, onClose }) => {
         </button>
       </div>
 
-      <div className="overflow-y-auto h-[calc(100%-64px)] pb-8">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className="p-4 border-l-4 border-indigo-500 bg-slate-700 bg-opacity-30 hover:bg-opacity-50 transition-colors m-4 rounded-r"
-          >
-            <div className="flex items-start">
-              <div className="mr-3 mt-1">{getIcon(msg.speaker)}</div>
-              <div className="flex-1">
-                <p className="font-semibold text-slate-300">{msg.speaker}</p>
-                <div className="text-xs text-slate-400 mb-1">
-                  {new Date(msg.timestamp).toLocaleString()}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-3">
+          {messages.map((msg, index) => {
+            const { icon, accent } = getAgentStyleSmall(msg.speaker);
+            return (
+              <div
+                key={index}
+                className={`p-3 ${accent} bg-slate-700 bg-opacity-30 hover:bg-opacity-50 transition-colors rounded-r`}
+                style={{ fontSize: "0.92rem" }}
+              >
+                <div className="flex items-start">
+                  <div className="mr-3 mt-1">{icon}</div>
+                  <div className="flex-1">
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-slate-300">
+                        {msg.speaker}
+                      </span>
+                      <span className="text-xs text-slate-400 mt-1">
+                        {new Date(msg.timestamp).toLocaleString()}
+                      </span>
+                    </div>
+                    <div
+                      className="text-slate-300 whitespace-pre-wrap mt-2"
+                      style={{ fontSize: "0.95em" }}
+                    >
+                      {msg.message}
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm whitespace-pre-wrap">{msg.message}</div>
               </div>
-            </div>
-          </div>
-        ))}
-        {messages.length === 0 && (
-          <p className="text-slate-500 text-center py-8">No log entries yet.</p>
-        )}
+            );
+          })}
+          {messages.length === 0 && (
+            <p
+              className="text-slate-500 text-center py-8"
+              style={{ fontSize: "0.95em" }}
+            >
+              No log entries yet.
+            </p>
+          )}
+        </div>
       </div>
     </div>
   );

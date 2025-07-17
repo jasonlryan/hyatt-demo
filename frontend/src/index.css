@@ -30,10 +30,11 @@ body {
 
 /* Layout */
 .container {
-  max-width: 1200px;
+  max-width: 1800px;
+  width: 100%;
   margin: 0 auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 /* Buttons */

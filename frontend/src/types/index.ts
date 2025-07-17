@@ -53,6 +53,24 @@ export interface Campaign {
         lastUpdated: string;
       };
     };
+    strategic_insight?: {
+      insights?: any;
+      timestamp?: string;
+    };
+    trending?: {
+      trends?: any;
+      timestamp?: string;
+    };
+    story?: {
+      storyAngles?: any;
+      timestamp?: string;
+    };
+    collaborative?: {
+      phase?: string;
+      contributions?: any[];
+      synthesisQuality?: any;
+      finalStrategy?: any;
+    };
   };
 }
 

@@ -1,6 +1,8 @@
 import React from "react";
 import { Deliverable } from "../types";
 import DeliverableCard from "./DeliverableCard";
+import { FileText } from "lucide-react";
+import "./deliverableStyles.css";
 
 interface CampaignDeliverablesProps {
   deliverables: Deliverable[];
@@ -12,14 +14,24 @@ const CampaignDeliverables: React.FC<CampaignDeliverablesProps> = ({
   onViewDetails,
 }) => {
   return (
-    <div className="card">
-      <h2 className="text-2xl font-bold mb-6 text-primary">
-        Campaign Deliverables
-      </h2>
+    <div className="deliverable-card">
+      <div className="deliverable-header">
+        <div className="deliverable-title">
+          <span className="deliverable-icon">
+            <FileText size={20} />
+          </span>
+          <h2 className="deliverable-title-text">Campaign Deliverables</h2>
+        </div>
+        <div className="deliverable-status ready">
+          {deliverables.length} Available
+        </div>
+      </div>
 
       {deliverables.length === 0 ? (
-        <div className="bg-secondary rounded-lg p-4 text-center">
-          <p className="text-secondary">No deliverables available yet.</p>
+        <div className="text-center py-8 text-gray-500">
+          <FileText size={48} className="mx-auto mb-4 text-gray-300" />
+          <p>No deliverables available yet.</p>
+          <p className="text-sm">Start a campaign to see deliverables here.</p>
         </div>
       ) : (
         <div className="space-y-4">

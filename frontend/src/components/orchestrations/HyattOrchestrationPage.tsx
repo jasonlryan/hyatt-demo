@@ -15,6 +15,7 @@ import {
   Deliverable,
   AudienceResearch,
 } from "../../types";
+import { Eye } from "lucide-react";
 
 interface HyattOrchestrationPageProps {
   selectedOrchestration: string | null;
@@ -48,6 +49,9 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
   const [modalResearch, setModalResearch] = useState<AudienceResearch | null>(
     null
   );
+
+  // Track which deliverable is being reviewed from phase card
+  const [reviewPhaseKey, setReviewPhaseKey] = useState<string | null>(null);
 
   const intervalRef = useRef<number | null>(null);
 
@@ -378,13 +382,34 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
     }
   };
 
+  // New: handle view from phase card
+  const handleViewPhaseDeliverable = (phaseKey: string) => {
+    // Try to find deliverable by phase key (e.g., "research")
+    const key = Object.keys(deliverables).find((k) => k.includes(phaseKey));
+    if (key && deliverables[key]) {
+      setModalDeliverable(deliverables[key]);
+      setIsDeliverableModalOpen(true);
+      setReviewPhaseKey(phaseKey);
+    }
+  };
+
+  // Handle resume from modal
+  const handleResumeFromModal = () => {
+    setIsDeliverableModalOpen(false);
+    setReviewPhaseKey(null);
+    handleResume();
+  };
+
+  // Handle refine from modal
+  const handleRefineFromModal = () => {
+    setIsDeliverableModalOpen(false);
+    setReviewPhaseKey(null);
+    setIsRefineModalOpen(true);
+  };
+
   return (
     <div className="min-h-screen">
-      <SidePanel
-        messages={conversation}
-        isOpen={isSidePanelOpen}
-        onClose={() => setIsSidePanelOpen(false)}
-      />
+      {/* SidePanel is now part of the grid */}
 
       <div className="container pt-6 pb-8">
         {/* Breadcrumb and HITL Toggle */}
@@ -428,8 +453,24 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
             </div>
           )}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left Panel - Transcript (optional) */}
+          {isSidePanelOpen && (
+            <div className="lg:col-span-3">
+              <SidePanel
+                messages={conversation}
+                isOpen={isSidePanelOpen}
+                onClose={() => setIsSidePanelOpen(false)}
+              />
+            </div>
+          )}
+
+          {/* Central Panel - Progress & Actions */}
+          <div
+            className={`${
+              isSidePanelOpen ? "lg:col-span-5" : "lg:col-span-8"
+            } space-y-6`}
+          >
             {!campaign ? (
               <CampaignForm
                 onCreate={startCampaign}
@@ -449,20 +490,21 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
                   onViewProgress={() => setIsSidePanelOpen(true)}
                 />
 
-                <AgentCollaboration messages={conversation} />
-
-                <ReviewPanel
-                  isVisible={showReviewPanel}
-                  awaitingReview={campaign?.awaitingReview}
-                  pendingPhase={campaign?.pendingPhase}
+                <AgentCollaboration
+                  messages={conversation}
+                  campaign={campaign}
                   onResume={handleResume}
                   onRefine={handleRefine}
+                  onViewDeliverable={handleViewPhaseDeliverable}
                 />
+
+                {/* ReviewPanel removed - controls now integrated into phase cards */}
               </>
             )}
           </div>
 
-          <div className="lg:col-span-1">
+          {/* Right Panel - Deliverables */}
+          <div className="lg:col-span-4">
             <CampaignDeliverables
               deliverables={Object.values(deliverables)}
               onViewDetails={(id) => {
@@ -479,7 +521,12 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
       <DeliverableModal
         deliverable={modalDeliverable}
         isOpen={isDeliverableModalOpen}
-        onClose={() => setIsDeliverableModalOpen(false)}
+        onClose={() => {
+          setIsDeliverableModalOpen(false);
+          setReviewPhaseKey(null);
+        }}
+        onResume={reviewPhaseKey ? handleResumeFromModal : undefined}
+        onRefine={reviewPhaseKey ? handleRefineFromModal : undefined}
       />
 
       {modalResearch && (

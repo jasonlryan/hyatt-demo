@@ -1,53 +1,97 @@
 import React from "react";
 import { Deliverable } from "../types";
-import { X } from "lucide-react";
+import { X, Download, Eye, Check, Edit } from "lucide-react";
+import DeliverableContent from "./DeliverableContent";
+import "./deliverableStyles.css";
 
 interface DeliverableModalProps {
   deliverable: Deliverable | null;
   isOpen: boolean;
   onClose: () => void;
+  onResume?: () => void;
+  onRefine?: () => void;
 }
 
 const DeliverableModal: React.FC<DeliverableModalProps> = ({
   deliverable,
   isOpen,
   onClose,
+  onResume,
+  onRefine,
 }) => {
   if (!isOpen || !deliverable) return null;
 
-  const content =
-    typeof deliverable.content === "string"
-      ? deliverable.content
-      : JSON.stringify(deliverable.content, null, 2);
+  const handleDownload = () => {
+    const content =
+      typeof deliverable.content === "string"
+        ? deliverable.content
+        : JSON.stringify(deliverable.content, null, 2);
+
+    const blob = new Blob([content], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${deliverable.title.replace(/\s+/g, "_")}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-800">
-            {deliverable.title}
-          </h2>
+    <div className="deliverable-modal" onClick={onClose}>
+      <div
+        className="deliverable-modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="deliverable-modal-header">
+          <h2 className="deliverable-modal-title">{deliverable.title}</h2>
           <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-700"
+            className="deliverable-modal-close"
+            aria-label="Close modal"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto">
-          <pre className="bg-slate-50 p-4 rounded-md text-slate-800 whitespace-pre-wrap font-sans text-sm">
-            {content}
-          </pre>
+        <div className="deliverable-modal-body">
+          <DeliverableContent content={deliverable.content} />
         </div>
 
-        <div className="flex justify-end p-4 border-t border-slate-200">
+        <div className="deliverable-modal-footer">
           <button
-            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md transition-colors"
-            onClick={onClose}
+            className="deliverable-icon-btn"
+            onClick={handleDownload}
+            title="Download"
+            aria-label="Download Deliverable"
           >
-            Close
+            <Download size={18} />
           </button>
+          {onResume && (
+            <button
+              className="deliverable-btn deliverable-btn-primary"
+              onClick={onResume}
+            >
+              <Check size={16} /> Resume Campaign
+            </button>
+          )}
+          {onRefine && (
+            <button
+              className="deliverable-btn deliverable-btn-secondary"
+              onClick={onRefine}
+            >
+              <Edit size={16} /> Refine & Retry
+            </button>
+          )}
+          {!onResume && !onRefine && (
+            <button
+              className="deliverable-btn deliverable-btn-primary"
+              onClick={onClose}
+            >
+              Close
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrati
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
 import HitlReviewModal from "./components/HitlReviewModal";
 import StylePanel from "./components/StylePanel";
+import "./components/deliverableStyles.css";
 
 function App() {
   const [currentView, setCurrentView] = useState<
