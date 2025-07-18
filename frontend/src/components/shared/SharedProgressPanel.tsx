@@ -10,7 +10,7 @@ import { RefreshCw } from 'lucide-react';
  * - `text-2xl font-bold text-white mb-4` – heading
  * - `text-sm text-slate-300 mb-1` – labels
  * - status badge colors (`bg-blue-100`, `bg-green-100`, etc.)
- * - button `px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md`
+ * - button `px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md`
  */
 export interface SharedProgressPanelProps {
   campaign: Campaign;
@@ -41,7 +41,7 @@ const SharedProgressPanel: React.FC<SharedProgressPanelProps> = ({ campaign, onV
         </div>
       </div>
       <button
-        className="flex items-center justify-center px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md transition-colors text-sm"
+        className="flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors text-sm"
         onClick={onViewProgress}
       >
         <RefreshCw size={16} className="mr-2" />
