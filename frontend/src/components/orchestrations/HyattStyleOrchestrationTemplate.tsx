@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useState } from "react";
 import BaseOrchestrationPage from "./BaseOrchestrationPage";
 import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
@@ -9,12 +9,9 @@ import CampaignDeliverables from "../CampaignDeliverables";
 import DeliverableModal from "../DeliverableModal";
 import RefineInputModal from "../RefineInputModal";
 import AudienceResearchModal from "../AudienceResearchModal";
-import {
-  Campaign,
-  ConversationMessage,
-  Deliverable,
-  AudienceResearch,
-} from "../../types";
+import { Campaign, Deliverable, AudienceResearch } from "../../types";
+import { useCampaignState } from "../../hooks/useCampaignState";
+import { useCampaignPolling } from "../../hooks/useCampaignPolling";
 
 interface HyattStyleOrchestrationTemplateProps {
   orchestrationId: string;
@@ -34,14 +31,20 @@ const HyattStyleOrchestrationTemplate: React.FC<
   onToggleHitl,
   renderExtraCenter,
 }) => {
-  const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
-  const [deliverables, setDeliverables] = useState<{ [key: string]: Deliverable }>(
-    {}
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    campaign,
+    campaigns,
+    conversation,
+    deliverables,
+    error,
+    isLoading,
+    updateFromApiData,
+    selectCampaign,
+    startCampaign,
+    resetCampaign,
+    resumeCampaign,
+    refineCampaign,
+  } = useCampaignState(orchestrationId);
 
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -55,8 +58,6 @@ const HyattStyleOrchestrationTemplate: React.FC<
     null
   );
   const [reviewPhaseKey, setReviewPhaseKey] = useState<string | null>(null);
-
-  const intervalRef = useRef<number | null>(null);
 
   const handleViewDetails = (deliverable: Deliverable) => {
     if (deliverable.title === "Audience Research") {
@@ -82,181 +83,31 @@ const HyattStyleOrchestrationTemplate: React.FC<
     }
   };
 
-  // Load existing campaigns on mount
-  useEffect(() => {
-    const loadCampaigns = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch("/api/campaigns");
-        if (!res.ok) throw new Error("Failed to load campaigns");
-        const data = await res.json();
-        setCampaigns(data);
-      } catch (e: any) {
-        setError(e.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadCampaigns();
-  }, []);
 
-  const handleSelectCampaign = async (campaignId: string) => {
-    try {
-      setIsLoading(true);
-      const res = await fetch(`/api/campaigns/${campaignId}`);
-      if (!res.ok) throw new Error("Failed to load campaign");
-      const data = await res.json();
-      if ((data as any).campaignId && !data.id) {
-        data.id = (data as any).campaignId;
-      }
-      setCampaign(data);
-      if (data.conversation) {
-        setConversation(data.conversation);
-      }
-      const extracted: { [key: string]: Deliverable } = {};
-      if (data.phases?.research?.insights) {
-        extracted["research"] = {
-          id: "research",
-          title: "Audience Research",
-          status: "completed",
-          agent: "Research & Audience GPT",
-          timestamp:
-            data.phases.research.insights.lastUpdated || new Date().toISOString(),
-          content: data.phases.research.insights.analysis,
-          lastUpdated: data.phases.research.insights.lastUpdated,
-        };
-      }
-      if (data.conversation) {
-        data.conversation.forEach((msg: any, index: number) => {
-          if (msg.deliverable) {
-            const id = `deliverable-${index}`;
-            extracted[id] = {
-              id,
-              title: msg.speaker || "Deliverable",
-              status: "completed",
-              agent: msg.speaker || "AI Agent",
-              timestamp: msg.timestamp || new Date().toISOString(),
-              content: msg.deliverable.analysis || msg.deliverable,
-              lastUpdated: msg.timestamp,
-            };
-          }
-        });
-      }
-      setDeliverables(extracted);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleSelectCampaign = (campaignId: string) => {
+    selectCampaign(campaignId);
   };
 
   const handleNewCampaign = () => {
-    setCampaign(null);
-    setConversation([]);
-    setDeliverables({});
-    setError(null);
+    resetCampaign();
   };
 
-  const startCampaign = async (brief: string) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const res = await fetch("/api/campaigns", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ campaignBrief: brief, orchestration: orchestrationId }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to create campaign");
-      }
-      const data = await res.json();
-      if (data.campaignId && !data.id) data.id = data.campaignId;
-      setCampaign(data);
-      setConversation(data.conversation || []);
-      setDeliverables({});
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleStartCampaign = (brief: string) => {
+    startCampaign(brief);
   };
 
   // Polling for updates
-  useEffect(() => {
-    if (campaign && campaign.status !== "completed" && campaign.status !== "failed") {
-      intervalRef.current = setInterval(async () => {
-        try {
-          const res = await fetch(`/api/campaigns/${campaign.id}`);
-          if (!res.ok) throw new Error("Failed to fetch campaign status");
-          const data = await res.json();
-          setCampaign(data);
-          setConversation(data.conversation || []);
-          const extracted: { [key: string]: Deliverable } = {};
-          if (data.conversation) {
-            data.conversation.forEach((msg: any, index: number) => {
-              if (msg.deliverable) {
-                const agentName = msg.agent || msg.speaker || "AI Agent";
-                const key = agentName.toLowerCase().replace(/\s+/g, "-");
-                extracted[key] = {
-                  id: key,
-                  title: `${agentName} Analysis`,
-                  status: "completed",
-                  agent: agentName,
-                  timestamp: msg.timestamp || new Date().toISOString(),
-                  content: msg.deliverable,
-                  lastUpdated: msg.timestamp,
-                };
-              }
-            });
-          }
-          setDeliverables(extracted);
-          setError(null);
-          if (data.status === "completed" || data.status === "failed") {
-            if (intervalRef.current) clearInterval(intervalRef.current);
-          }
-        } catch (e: any) {
-          setError("Connection lost");
-          if (intervalRef.current) clearInterval(intervalRef.current);
-        }
-      }, 3000);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [campaign]);
+  useCampaignPolling(campaign, updateFromApiData, setError);
 
-  const handleResume = async () => {
-    if (!campaign) return;
-    try {
-      setIsLoading(true);
-      const res = await fetch(`/api/campaigns/${campaign.id}/resume`, { method: "POST" });
-      if (!res.ok) throw new Error("Failed to resume campaign");
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleResume = () => {
+    resumeCampaign();
   };
 
   const handleRefine = () => setIsRefineModalOpen(true);
 
   const handleSubmitRefinement = async (instructions: string) => {
-    if (!campaign) return;
-    try {
-      setIsLoading(true);
-      const res = await fetch(`/api/campaigns/${campaign.id}/refine`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ instructions }),
-      });
-      if (!res.ok) throw new Error("Failed to refine campaign");
-      setIsRefineModalOpen(false);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsRefineModalOpen(false);
+    await refineCampaign(instructions);
   };
 
   const handleViewPhaseDeliverable = (phaseKey: string) => {
@@ -308,7 +159,7 @@ const HyattStyleOrchestrationTemplate: React.FC<
         >
           {!campaign ? (
             <CampaignForm
-              onCreate={startCampaign}
+              onCreate={handleStartCampaign}
               onCancel={handleNewCampaign}
               isLoading={isLoading}
               selectedOrchestration={orchestrationId}
