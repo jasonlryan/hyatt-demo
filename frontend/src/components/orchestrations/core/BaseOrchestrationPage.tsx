@@ -1,16 +1,31 @@
 import React, { ReactNode } from "react";
+import { Action } from "./types";
 
-interface BaseOrchestrationPageProps {
+export interface BaseOrchestrationPageProps {
+  orchestrationId: string;
   orchestrationName: string;
-  hitlReview?: boolean;
-  onToggleHitl?: () => void;
+  onNavigateToOrchestrations: () => void;
+  hitlReview: boolean;
+  onToggleHitl: () => void;
+  layout?: "single" | "sidebar" | "multi-panel";
+  theme?: "default" | "dark" | "custom";
   children: ReactNode;
+  showStatusBar?: boolean;
+  showActionPanel?: boolean;
+  customActions?: Action[];
 }
 
 const BaseOrchestrationPage: React.FC<BaseOrchestrationPageProps> = ({
   orchestrationName,
-  hitlReview = true,
+  orchestrationId,
+  onNavigateToOrchestrations,
+  hitlReview,
   onToggleHitl,
+  layout = "single",
+  theme = "default",
+  showStatusBar = false,
+  showActionPanel = false,
+  customActions,
   children,
 }) => {
   return (
@@ -20,7 +35,7 @@ const BaseOrchestrationPage: React.FC<BaseOrchestrationPageProps> = ({
         <div className="mb-6 flex items-center justify-between">
           <nav className="flex items-center space-x-2 text-sm text-gray-600">
             <button
-              onClick={() => window.history.back()}
+              onClick={onNavigateToOrchestrations}
               className="text-green-600 hover:text-green-700 transition-colors"
             >
               Orchestrations
@@ -60,6 +75,24 @@ const BaseOrchestrationPage: React.FC<BaseOrchestrationPageProps> = ({
 
         {/* Orchestration Content */}
         {children}
+
+        {showStatusBar && (
+          <div className="mt-4 text-sm text-gray-600">Status: {hitlReview ? 'HITL' : 'Auto'}</div>
+        )}
+
+        {showActionPanel && (
+          <div className="mt-4 flex gap-2">
+            {customActions?.map((action) => (
+              <button
+                key={action.id}
+                onClick={action.onClick}
+                className="px-2 py-1 text-sm bg-gray-200 rounded"
+              >
+                {action.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
