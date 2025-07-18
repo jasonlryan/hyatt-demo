@@ -21,12 +21,14 @@ interface HyattOrchestrationPageProps {
   selectedOrchestration: string | null;
   hitlReview?: boolean;
   onToggleHitl?: () => void;
+  onNavigateToOrchestrations?: () => void;
 }
 
 const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
   selectedOrchestration,
   hitlReview = true,
   onToggleHitl,
+  onNavigateToOrchestrations,
 }) => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -416,7 +418,9 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
         <div className="mb-6 flex items-center justify-between">
           <nav className="flex items-center space-x-2 text-sm text-gray-600">
             <button
-              onClick={() => window.history.back()}
+              onClick={
+                onNavigateToOrchestrations || (() => window.history.back())
+              }
               className="text-green-600 hover:text-green-700 transition-colors"
             >
               Orchestrations

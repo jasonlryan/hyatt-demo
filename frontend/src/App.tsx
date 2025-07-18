@@ -96,6 +96,7 @@ function App() {
                   setIsHitlModalOpen(true);
                 }
               }}
+              onNavigateToOrchestrations={handleNavigateToOrchestrations}
             />
           );
         case "hive":
@@ -110,6 +111,7 @@ function App() {
                   setIsHitlModalOpen(true);
                 }
               }}
+              onNavigateToOrchestrations={handleNavigateToOrchestrations}
             />
           );
         default:

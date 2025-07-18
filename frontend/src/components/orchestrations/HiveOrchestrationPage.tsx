@@ -4,12 +4,14 @@ interface HiveOrchestrationPageProps {
   selectedOrchestration: string | null;
   hitlReview?: boolean;
   onToggleHitl?: () => void;
+  onNavigateToOrchestrations?: () => void;
 }
 
 const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
   selectedOrchestration,
   hitlReview = true,
   onToggleHitl,
+  onNavigateToOrchestrations,
 }) => {
   return (
     <div className="min-h-screen">
@@ -18,7 +20,9 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
         <div className="mb-6 flex items-center justify-between">
           <nav className="flex items-center space-x-2 text-sm text-gray-600">
             <button
-              onClick={() => window.history.back()}
+              onClick={
+                onNavigateToOrchestrations || (() => window.history.back())
+              }
               className="text-green-600 hover:text-green-700 transition-colors"
             >
               Orchestrations
@@ -80,7 +84,9 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
 
           <div className="mt-8">
             <button
-              onClick={() => window.history.back()}
+              onClick={
+                onNavigateToOrchestrations || (() => window.history.back())
+              }
               className="px-6 py-2 bg-gray-600 text-white font-medium rounded hover:bg-gray-700 transition-colors"
             >
               Back to Orchestrations

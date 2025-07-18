@@ -10,9 +10,10 @@ class BrandQAAgent extends BaseAgent {
     });
   }
 
-  async reviewPrompt(basePrompt, modulars, trendInsights) {
+  async reviewPrompt(basePrompt, modulars, trendInsights, brandLens) {
     const text =
       typeof basePrompt === "string" ? basePrompt : basePrompt.promptText;
+
     const userContent = `
 Base Visual Prompt:
 ${text}
@@ -21,14 +22,30 @@ Modular Elements:
 ${JSON.stringify(modulars, null, 2)}
 
 Trend Insights:
-${trendInsights}
+${JSON.stringify(trendInsights, null, 2)}
 
-Please provide feedback on brand alignment, tone and quality, suggest edits if needed, and indicate \"approved\": true/false in JSON like {"approved": true, "feedback": "..."} (no markdown).`;
+Brand Lens:
+${JSON.stringify(brandLens, null, 2)}
+
+Review the complete campaign package for:
+1. Brand alignment and consistency
+2. Visual quality and appeal
+3. Trend relevance and timeliness
+4. Modular element effectiveness
+5. Overall campaign coherence
+
+Provide feedback on each aspect and indicate "approved": true/false in JSON format like {"approved": true, "feedback": "...", "suggestions": ["..."], "qualityScore": 85} (no markdown).`;
+
     const raw = await this.chat(userContent);
     try {
       return JSON.parse(raw);
     } catch (_) {
-      return { approved: false, feedback: raw };
+      return {
+        approved: false,
+        feedback: raw,
+        suggestions: ["Review feedback provided above"],
+        qualityScore: 70,
+      };
     }
   }
 }
