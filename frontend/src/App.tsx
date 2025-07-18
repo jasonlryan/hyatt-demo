@@ -5,6 +5,7 @@ import WorkflowsPage from "./components/WorkflowsPage";
 import OrchestrationsPage from "./components/OrchestrationsPage";
 import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrationPage";
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
+import TemplateOrchestrationPage from "./components/orchestrations/TemplateOrchestrationPage";
 import HitlReviewModal from "./components/HitlReviewModal";
 import StylePanel from "./components/StylePanel";
 import "./components/deliverableStyles.css";
@@ -97,6 +98,20 @@ function App() {
                 }
               }}
               onNavigateToOrchestrations={handleNavigateToOrchestrations}
+            />
+          );
+        case "template":
+          return (
+            <TemplateOrchestrationPage
+              orchestrationId="hyatt"
+              hitlReview={hitlReview}
+              onToggleHitl={async () => {
+                const newState = !hitlReview;
+                await updateHitlReviewState(newState);
+                if (newState) {
+                  setIsHitlModalOpen(true);
+                }
+              }}
             />
           );
         case "hive":
