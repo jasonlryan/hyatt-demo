@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import BaseOrchestrationPage from "./BaseOrchestrationPage";
+import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
 import CampaignProgress from "../CampaignProgress";
 import AgentCollaboration from "../AgentCollaboration";
@@ -457,69 +458,56 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
             </div>
           )}
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Panel - Transcript (optional) */}
-          {isSidePanelOpen && (
-            <div className="lg:col-span-3">
-              <SidePanel
-                messages={conversation}
-                isOpen={isSidePanelOpen}
-                onClose={() => setIsSidePanelOpen(false)}
-              />
-            </div>
-          )}
-
-          {/* Central Panel - Progress & Actions */}
-          <div
-            className={`${
-              isSidePanelOpen ? "lg:col-span-5" : "lg:col-span-8"
-            } space-y-6`}
-          >
-            {!campaign ? (
-              <CampaignForm
-                onCreate={startCampaign}
-                onCancel={handleNewCampaign}
-                isLoading={isLoading}
-                selectedOrchestration={selectedOrchestration}
-                onNewCampaign={handleNewCampaign}
-                onLoadCampaign={handleSelectCampaign}
-                campaigns={campaigns}
-                dropdownOpen={dropdownOpen}
-                setDropdownOpen={setDropdownOpen}
-              />
-            ) : (
-              <>
-                <CampaignProgress
-                  campaign={campaign}
-                  onViewProgress={() => setIsSidePanelOpen(true)}
-                />
-
-                <AgentCollaboration
-                  messages={conversation}
-                  campaign={campaign}
-                  onResume={handleResume}
-                  onRefine={handleRefine}
-                  onViewDeliverable={handleViewPhaseDeliverable}
-                />
-
-                {/* ReviewPanel removed - controls now integrated into phase cards */}
-              </>
-            )}
-          </div>
-
-          {/* Right Panel - Deliverables */}
-          <div className="lg:col-span-4">
+        <SharedOrchestrationLayout
+          isSidePanelOpen={isSidePanelOpen}
+          sidePanel={
+            <SidePanel
+              messages={conversation}
+              isOpen={isSidePanelOpen}
+              onClose={() => setIsSidePanelOpen(false)}
+            />
+          }
+          rightPanel={
             <CampaignDeliverables
               deliverables={Object.values(deliverables)}
               onViewDetails={(id) => {
-                const deliverable = Object.values(deliverables).find(
-                  (d) => d.id === id
-                );
+                const deliverable = Object.values(deliverables).find((d) => d.id === id);
                 if (deliverable) handleViewDetails(deliverable);
               }}
             />
-          </div>
-        </div>
+          }
+        >
+          {!campaign ? (
+            <CampaignForm
+              onCreate={startCampaign}
+              onCancel={handleNewCampaign}
+              isLoading={isLoading}
+              selectedOrchestration={selectedOrchestration}
+              onNewCampaign={handleNewCampaign}
+              onLoadCampaign={handleSelectCampaign}
+              campaigns={campaigns}
+              dropdownOpen={dropdownOpen}
+              setDropdownOpen={setDropdownOpen}
+            />
+          ) : (
+            <>
+              <CampaignProgress
+                campaign={campaign}
+                onViewProgress={() => setIsSidePanelOpen(true)}
+              />
+
+              <AgentCollaboration
+                messages={conversation}
+                campaign={campaign}
+                onResume={handleResume}
+                onRefine={handleRefine}
+                onViewDeliverable={handleViewPhaseDeliverable}
+              />
+
+              {/* ReviewPanel removed - controls now integrated into phase cards */}
+            </>
+          )}
+        </SharedOrchestrationLayout>
       </div>
 
       <DeliverableModal
