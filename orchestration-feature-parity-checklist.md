@@ -7,6 +7,10 @@ This checklist inventories the existing Hyatt orchestration UI and backend capab
   - **Left:** Transcript SidePanel with message log and agent icons
   - **Center:** Campaign progress, forms and collaboration controls
   - **Right:** Deliverable list with cards and status badges
+  - **Classes:** `grid grid-cols-1 lg:grid-cols-12 gap-6` with
+    `lg:col-span-3` for the SidePanel,
+    `lg:col-span-5` (or `lg:col-span-8` when closed) for the center column,
+    and `lg:col-span-4` for deliverables. Wrapped in `container pt-6 pb-8`.
 - Global navigation bar with links to **Orchestrations**, **Agents**, and **Workflows**
 - Breadcrumb at top of Hyatt orchestration page
 - HITL (Human‑in‑the‑loop) toggle displayed in page header
