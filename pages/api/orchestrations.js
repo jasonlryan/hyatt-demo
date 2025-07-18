@@ -31,6 +31,26 @@ export default function handler(req, res) {
           "story_angles",
         ],
       },
+      template: {
+        id: "template",
+        name: "Template Orchestrator",
+        description:
+          "Example orchestration built from the Hyatt template.",
+        enabled: true,
+        config: {
+          maxConcurrentWorkflows: 5,
+          timeout: 300000,
+          retryAttempts: 3,
+          enableLogging: true,
+        },
+        workflows: ["pr_campaign_workflow"],
+        agents: [
+          "pr_manager",
+          "research_audience",
+          "strategic_insight",
+          "trending_news",
+        ],
+      },
       hive: {
         id: "hive",
         name: "Hive Orchestrator",
