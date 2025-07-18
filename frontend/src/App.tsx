@@ -8,6 +8,7 @@ import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrati
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
 import TemplateOrchestrationPage from "./components/orchestrations/TemplateOrchestrationPage";
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
+import GenericOrchestrationPage from "./components/orchestrations/GenericOrchestrationPage";
 import HitlReviewModal from "./components/HitlReviewModal";
 import StylePanel from "./components/StylePanel";
 import "./components/deliverableStyles.css";
@@ -145,8 +146,18 @@ function App() {
           );
         default:
           return (
-            <OrchestrationsPage
-              onSelectOrchestration={handleSelectOrchestration}
+            <GenericOrchestrationPage
+              orchestrationId={selectedOrchestration}
+              orchestrationName={selectedOrchestration}
+              hitlReview={hitlReview}
+              onToggleHitl={async () => {
+                const newState = !hitlReview;
+                await updateHitlReviewState(newState);
+                if (newState) {
+                  setIsHitlModalOpen(true);
+                }
+              }}
+              onNavigateToOrchestrations={handleNavigateToOrchestrations}
             />
           );
       }

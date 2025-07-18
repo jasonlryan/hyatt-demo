@@ -3,9 +3,29 @@ export default function handler(req, res) {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
-  // Return Hyatt and Hive orchestrations
-  res.status(200).json({
-    orchestrators: {
+  try {
+    // Load generated orchestrations
+    const fs = require("fs");
+    const path = require("path");
+
+    let generatedOrchestrations = [];
+    const generatedOrchestrationsPath = path.join(
+      process.cwd(),
+      "data",
+      "generated-orchestrations.json"
+    );
+
+    if (fs.existsSync(generatedOrchestrationsPath)) {
+      const generatedData = JSON.parse(
+        fs.readFileSync(generatedOrchestrationsPath, "utf8")
+      );
+      generatedOrchestrations = Object.values(
+        generatedData.orchestrations || {}
+      );
+    }
+
+    // Base orchestrations
+    const baseOrchestrations = {
       hyatt: {
         id: "hyatt",
         name: "Hyatt Orchestrator",
@@ -34,8 +54,7 @@ export default function handler(req, res) {
       template: {
         id: "template",
         name: "Template Orchestrator",
-        description:
-          "Example orchestration built from the Hyatt template.",
+        description: "Example orchestration built from the Hyatt template.",
         enabled: true,
         config: {
           maxConcurrentWorkflows: 5,
@@ -49,6 +68,25 @@ export default function handler(req, res) {
           "research_audience",
           "strategic_insight",
           "trending_news",
+        ],
+      },
+      builder: {
+        id: "builder",
+        name: "Orchestration Builder",
+        description:
+          "AI-powered orchestration generator. Describe what you want, and it creates a custom orchestration for you.",
+        enabled: true,
+        config: {
+          maxConcurrentWorkflows: 3,
+          timeout: 300000,
+          retryAttempts: 2,
+          enableLogging: true,
+        },
+        workflows: ["orchestration_generation_workflow"],
+        agents: [
+          "orchestration_analyzer",
+          "agent_generator",
+          "workflow_designer",
         ],
       },
       hive: {
@@ -81,6 +119,25 @@ export default function handler(req, res) {
           "modular_elements_recommender",
         ],
       },
-    },
-  });
+    };
+
+    // Combine base and generated orchestrations
+    const allOrchestrations = {
+      ...baseOrchestrations,
+      ...generatedOrchestrations.reduce((acc, orchestration) => {
+        acc[orchestration.id] = orchestration;
+        return acc;
+      }, {}),
+    };
+
+    res.status(200).json({
+      orchestrators: allOrchestrations,
+    });
+  } catch (error) {
+    console.error("Error loading orchestrations:", error);
+    res.status(500).json({
+      message: "Failed to load orchestrations",
+      error: error.message,
+    });
+  }
 }

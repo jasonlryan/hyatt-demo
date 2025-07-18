@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import HyattStyleOrchestrationTemplate from "./HyattStyleOrchestrationTemplate";
-import { SharedCampaignForm, SharedModal } from "../shared";
+import GenericOrchestrationTemplate from "./GenericOrchestrationTemplate";
+import { SharedModal } from "../shared";
 
 interface OrchestrationBuilderPageProps {
   orchestrationId: string;
@@ -47,7 +47,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
     useState<OrchestrationSpec | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleGenerateOrchestration = async (description: string) => {
+  const handleGenerateOrchestration = async (brief: string) => {
     setIsGenerating(true);
 
     try {
@@ -56,7 +56,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ description }),
+        body: JSON.stringify({ description: brief }),
       });
 
       if (!response.ok) {
@@ -73,7 +73,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
       // Fallback to mock data if AI generation fails
       const mockGenerated: OrchestrationSpec = {
         name: "AI-Generated Orchestrator",
-        description: `Orchestration built for: ${description}`,
+        description: `Orchestration built for: ${brief}`,
         agents: ["research", "trending", "pr-manager"],
         workflows: ["research_workflow", "trending_workflow"],
         config: {
@@ -111,12 +111,8 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
 
       const result = await response.json();
       console.log("Orchestration saved:", result);
-
-      // Close modal and reset
       setIsBuilderModalOpen(false);
       setGeneratedOrchestration(null);
-
-      // Optionally show success message or refresh orchestrations list
       alert(
         `Orchestration "${generatedOrchestration.name}" saved successfully!\n\nComplete documentation has been generated and saved to the docs folder.`
       );
@@ -126,57 +122,95 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
     }
   };
 
-  const renderOrchestrationBuilder = () => (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-slate-800 mb-4">
-        Orchestration Builder
-      </h2>
-      <p className="text-gray-600 mb-6">
-        Describe the orchestration you want to create. The AI will generate
-        agents, workflows, and configuration.
-      </p>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-slate-600 mb-2">
-            Orchestration Description
-          </label>
-          <textarea
-            className="w-full h-32 p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-            placeholder="Describe the orchestration you want to create. For example: 'A content marketing orchestration that researches trending topics, creates blog posts, and distributes them across social media platforms.'"
-            id="orchestrationDescription"
-          />
+  const renderOrchestrationBuilder = () => {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-bold text-slate-800 mb-4">
+            Orchestration Builder
+          </h1>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Describe your orchestration needs in natural language, and our AI
+            will generate a complete orchestration configuration with agents,
+            workflows, and comprehensive documentation.
+          </p>
         </div>
 
-        <button
-          onClick={() => {
-            const description = (
-              document.getElementById(
-                "orchestrationDescription"
-              ) as HTMLTextAreaElement
-            )?.value;
-            if (description) {
-              handleGenerateOrchestration(description);
-            }
-          }}
-          disabled={isGenerating}
-          className="px-4 py-2 bg-purple-600 text-white font-medium rounded hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-        >
-          {isGenerating ? "Generating..." : "Generate Orchestration"}
-        </button>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-2xl font-bold text-slate-800 mb-4">
+            Create New Orchestration
+          </h2>
+
+          <div className="mb-4">
+            <label
+              htmlFor="orchestration-description"
+              className="block text-sm font-medium text-slate-600 mb-2"
+            >
+              Orchestration Description
+            </label>
+            <textarea
+              id="orchestration-description"
+              className="w-full h-32 p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+              placeholder="Example: Create a content marketing orchestration that researches trending topics, generates blog posts, and distributes them across social media platforms..."
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.ctrlKey) {
+                  const target = e.target as HTMLTextAreaElement;
+                  handleGenerateOrchestration(target.value);
+                }
+              }}
+            />
+          </div>
+
+          <div className="flex justify-center">
+            <button
+              onClick={() => {
+                const textarea = document.getElementById(
+                  "orchestration-description"
+                ) as HTMLTextAreaElement;
+                if (textarea && textarea.value.trim()) {
+                  handleGenerateOrchestration(textarea.value.trim());
+                } else {
+                  alert("Please enter a description for your orchestration.");
+                }
+              }}
+              disabled={isGenerating}
+              className="px-4 py-2 bg-primary text-white font-medium rounded hover:bg-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <span>Generate Orchestration</span>
+                  <span className="text-sm opacity-75">(Ctrl+Enter)</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="mt-6 text-center text-sm text-slate-500">
+            <p>
+              💡 <strong>Tip:</strong> Be specific about your use case, desired
+              agents, and expected outputs for better results.
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
-      <HyattStyleOrchestrationTemplate
+      <GenericOrchestrationTemplate
         orchestrationId={orchestrationId}
         orchestrationName="Orchestration Builder"
         hitlReview={hitlReview}
         onToggleHitl={onToggleHitl}
-        renderExtraCenter={() => renderOrchestrationBuilder()}
-      />
+      >
+        {renderOrchestrationBuilder()}
+      </GenericOrchestrationTemplate>
 
       <SharedModal
         isOpen={isBuilderModalOpen}
@@ -204,36 +238,22 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                   <h3 className="text-lg font-semibold text-slate-700 mb-2">
                     Agents
                   </h3>
-                  <div className="space-y-2">
+                  <ul className="list-disc list-inside text-gray-600 space-y-1">
                     {generatedOrchestration.agents.map((agent, index) => (
-                      <div
-                        key={index}
-                        className="px-3 py-2 bg-blue-50 border border-blue-200 rounded-md"
-                      >
-                        <span className="text-blue-800 font-medium">
-                          {agent}
-                        </span>
-                      </div>
+                      <li key={index}>{agent}</li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
 
                 <div>
                   <h3 className="text-lg font-semibold text-slate-700 mb-2">
                     Workflows
                   </h3>
-                  <div className="space-y-2">
+                  <ul className="list-disc list-inside text-gray-600 space-y-1">
                     {generatedOrchestration.workflows.map((workflow, index) => (
-                      <div
-                        key={index}
-                        className="px-3 py-2 bg-green-50 border border-green-200 rounded-md"
-                      >
-                        <span className="text-green-800 font-medium">
-                          {workflow}
-                        </span>
-                      </div>
+                      <li key={index}>{workflow}</li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
               </div>
 
@@ -241,11 +261,9 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                 <h3 className="text-lg font-semibold text-slate-700 mb-2">
                   Configuration
                 </h3>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <pre className="text-sm text-gray-700 overflow-x-auto">
-                    {JSON.stringify(generatedOrchestration.config, null, 2)}
-                  </pre>
-                </div>
+                <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">
+                  {JSON.stringify(generatedOrchestration.config, null, 2)}
+                </pre>
               </div>
 
               {generatedOrchestration.documentation && (
@@ -254,28 +272,27 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                     Documentation Preview
                   </h3>
                   <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
-                    <p className="text-blue-800 text-sm mb-2">
-                      <strong>Overview:</strong>{" "}
-                      {generatedOrchestration.documentation.overview}
+                    <h4 className="font-semibold text-blue-800 mb-2">
+                      Overview
+                    </h4>
+                    <p className="text-blue-700 text-sm mb-3">
+                      {generatedOrchestration.documentation.overview ||
+                        "Documentation will be generated and saved to the docs folder."}
                     </p>
                     {generatedOrchestration.documentation.useCases && (
-                      <div className="mb-2">
-                        <strong className="text-blue-800 text-sm">
-                          Use Cases:
-                        </strong>
-                        <ul className="text-blue-700 text-sm ml-4 mt-1">
+                      <>
+                        <h4 className="font-semibold text-blue-800 mb-2">
+                          Use Cases
+                        </h4>
+                        <ul className="list-disc list-inside text-blue-700 text-sm space-y-1">
                           {generatedOrchestration.documentation.useCases.map(
                             (useCase, index) => (
-                              <li key={index}>• {useCase}</li>
+                              <li key={index}>{useCase}</li>
                             )
                           )}
                         </ul>
-                      </div>
+                      </>
                     )}
-                    <p className="text-blue-600 text-xs">
-                      Complete documentation will be generated and saved
-                      automatically.
-                    </p>
                   </div>
                 </div>
               )}
@@ -289,7 +306,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                 </button>
                 <button
                   onClick={handleSaveOrchestration}
-                  className="px-4 py-2 bg-purple-600 text-white font-medium rounded hover:bg-purple-700 transition-colors"
+                  className="px-4 py-2 bg-primary text-white font-medium rounded hover:bg-primary-hover transition-colors"
                 >
                   Save Orchestration
                 </button>

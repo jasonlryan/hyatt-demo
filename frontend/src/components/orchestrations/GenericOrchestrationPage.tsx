@@ -1,37 +1,34 @@
-import { ReactNode, useState } from "react";
+import React, { useState } from "react";
+import { useCampaignState } from "../../hooks/useCampaignState";
+import { useCampaignPolling } from "../../hooks/useCampaignPolling";
 import BaseOrchestrationPage from "./BaseOrchestrationPage";
 import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
 import {
-  SharedCampaignForm,
   SharedProgressPanel,
   SharedDeliverablePanel,
+  SharedCampaignForm,
 } from "../shared";
 import AgentCollaboration from "../AgentCollaboration";
 import DeliverableModal from "../DeliverableModal";
 import RefineInputModal from "../RefineInputModal";
 import AudienceResearchModal from "../AudienceResearchModal";
-import { Campaign, Deliverable, AudienceResearch } from "../../types";
-import { useCampaignState } from "../../hooks/useCampaignState";
-import { useCampaignPolling } from "../../hooks/useCampaignPolling";
+import { Deliverable, AudienceResearch } from "../../types";
 
-interface HyattStyleOrchestrationTemplateProps {
+interface GenericOrchestrationPageProps {
   orchestrationId: string;
   orchestrationName: string;
   hitlReview?: boolean;
   onToggleHitl?: () => void;
-  /** Optional extra content rendered below progress & collaboration */
-  renderExtraCenter?: (campaign: Campaign | null) => ReactNode;
+  onNavigateToOrchestrations?: () => void;
 }
 
-const HyattStyleOrchestrationTemplate: React.FC<
-  HyattStyleOrchestrationTemplateProps
-> = ({
+const GenericOrchestrationPage: React.FC<GenericOrchestrationPageProps> = ({
   orchestrationId,
   orchestrationName,
   hitlReview = true,
   onToggleHitl,
-  renderExtraCenter,
+  onNavigateToOrchestrations,
 }) => {
   const {
     campaign,
@@ -184,7 +181,6 @@ const HyattStyleOrchestrationTemplate: React.FC<
                 onRefine={handleRefine}
                 onViewDeliverable={handleViewPhaseDeliverable}
               />
-              {renderExtraCenter && renderExtraCenter(campaign)}
             </>
           )}
         </SharedOrchestrationLayout>
@@ -218,4 +214,4 @@ const HyattStyleOrchestrationTemplate: React.FC<
   );
 };
 
-export default HyattStyleOrchestrationTemplate;
+export default GenericOrchestrationPage;

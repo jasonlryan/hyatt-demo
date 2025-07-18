@@ -32,103 +32,111 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
     const loadOrchestrations = async () => {
       try {
         setIsLoading(true);
-        // For now, just use the demo data directly since we're not running a separate API server
-        // TODO: Set up proper API server or use Next.js for API routes
-        setOrchestrations([
-          {
-            id: "hyatt",
-            name: "Hyatt Orchestrator",
-            description:
-              "Hyatt GPT Agents System - Collaborative AI agents for PR campaign development.",
-            enabled: true,
-            config: {
-              maxConcurrentWorkflows: 5,
-              timeout: 300000,
-              retryAttempts: 3,
-              enableLogging: true,
+
+        // Load orchestrations from API
+        const response = await fetch("/api/orchestrations");
+        if (response.ok) {
+          const data = await response.json();
+          setOrchestrations(data.orchestrators);
+        } else {
+          // Fallback to demo data if API fails
+          setOrchestrations([
+            {
+              id: "hyatt",
+              name: "Hyatt Orchestrator",
+              description:
+                "Hyatt GPT Agents System - Collaborative AI agents for PR campaign development.",
+              enabled: true,
+              config: {
+                maxConcurrentWorkflows: 5,
+                timeout: 300000,
+                retryAttempts: 3,
+                enableLogging: true,
+              },
+              workflows: [
+                "pr_campaign_workflow",
+                "content_creation_workflow",
+                "research_workflow",
+              ],
+              agents: [
+                "pr_manager",
+                "research_audience",
+                "strategic_insight",
+                "trending_news",
+                "story_angles",
+              ],
             },
-            workflows: [
-              "pr_campaign_workflow",
-              "content_creation_workflow",
-              "research_workflow",
-            ],
-            agents: [
-              "pr_manager",
-              "research_audience",
-              "strategic_insight",
-              "trending_news",
-              "story_angles",
-            ],
-          },
-          {
-            id: "template",
-            name: "Template Orchestrator",
-            description: "Example orchestration built from the Hyatt template.",
-            enabled: true,
-            config: {
-              maxConcurrentWorkflows: 5,
-              timeout: 300000,
-              retryAttempts: 3,
-              enableLogging: true,
+            {
+              id: "template",
+              name: "Template Orchestrator",
+              description:
+                "Example orchestration built from the Hyatt template.",
+              enabled: true,
+              config: {
+                maxConcurrentWorkflows: 5,
+                timeout: 300000,
+                retryAttempts: 3,
+                enableLogging: true,
+              },
+              workflows: ["pr_campaign_workflow"],
+              agents: [
+                "pr_manager",
+                "research_audience",
+                "strategic_insight",
+                "trending_news",
+              ],
             },
-            workflows: ["pr_campaign_workflow"],
-            agents: [
-              "pr_manager",
-              "research_audience",
-              "strategic_insight",
-              "trending_news",
-            ],
-          },
-          {
-            id: "builder",
-            name: "Orchestration Builder",
-            description:
-              "AI-powered orchestration generator. Describe what you want, and it creates a custom orchestration for you.",
-            enabled: true,
-            config: {
-              maxConcurrentWorkflows: 3,
-              timeout: 300000,
-              retryAttempts: 2,
-              enableLogging: true,
+            {
+              id: "builder",
+              name: "Orchestration Builder",
+              description:
+                "AI-powered orchestration generator. Describe what you want, and it creates a custom orchestration for you.",
+              enabled: true,
+              config: {
+                maxConcurrentWorkflows: 3,
+                timeout: 300000,
+                retryAttempts: 2,
+                enableLogging: true,
+              },
+              workflows: ["orchestration_generation_workflow"],
+              agents: [
+                "orchestration_analyzer",
+                "agent_generator",
+                "workflow_designer",
+              ],
             },
-            workflows: ["orchestration_generation_workflow"],
-            agents: [
-              "orchestration_analyzer",
-              "agent_generator",
-              "workflow_designer",
-            ],
-          },
-          {
-            id: "hive",
-            name: "Hive Orchestrator",
-            description:
-              "Reactive framework orchestration with parallel agent collaboration. Perfect for complex PR campaigns with multiple stakeholders.",
-            enabled: true,
-            config: {
-              maxConcurrentWorkflows: 10,
-              timeout: 600000,
-              retryAttempts: 2,
-              enableLogging: true,
-              reactiveFramework: true,
-              parallelExecution: true,
+            {
+              id: "hive",
+              name: "Hive Orchestrator",
+              description:
+                "Reactive framework orchestration with parallel agent collaboration. Perfect for complex PR campaigns with multiple stakeholders.",
+              enabled: true,
+              config: {
+                maxConcurrentWorkflows: 10,
+                timeout: 600000,
+                retryAttempts: 2,
+                enableLogging: true,
+                reactiveFramework: true,
+                parallelExecution: true,
+              },
+              workflows: [
+                "hive_pr_campaign",
+                "hive_content_creation",
+                "hive_research_collaboration",
+              ],
+              agents: [
+                "pr_manager",
+                "research_audience",
+                "strategic_insight",
+                "trending_news",
+                "story_angles",
+                "visual_prompt_generator",
+                "brand_qa",
+                "modular_elements_recommender",
+              ],
             },
-            workflows: [
-              "hive_pr_campaign",
-              "hive_content_creation",
-              "hive_research_collaboration",
-            ],
-            agents: [
-              "pr_manager",
-              "research_audience",
-              "strategic_insight",
-              "trending_news",
-              "story_angles",
-              "visual_prompt_generator",
-              "brand_qa",
-              "modular_elements_recommender",
-            ],
-          },
-        ]);
+          ]);
+        }
         setIsLoading(false);
       } catch (err: any) {
         setError(err.message);

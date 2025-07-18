@@ -1,8 +1,8 @@
+@import "./styles/design-tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import "./styles/design-tokens.css";
 
 /* ===== SIMPLIFIED DESIGN SYSTEM ===== */
 /* Only the classes you actually use! */
@@ -73,6 +73,8 @@ body {
 .btn-secondary:hover {
   border-color: #adb5bd;
 }
+
+
 
 /* Cards */
 .card {
@@ -155,6 +157,7 @@ body {
 .text-success { color: #28a745; }
 .bg-secondary { background-color: var(--color-secondary); }
 .bg-success { background-color: #28a745; }
+
 
 /* Special component */
 .agent-title {
