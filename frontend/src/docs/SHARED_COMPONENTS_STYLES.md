@@ -2,6 +2,8 @@
 
 This document lists the main Tailwind utility classes and custom CSS selectors used by the extracted shared UI components. Use it as a quick reference when creating new orchestrations.
 
+Design tokens are defined in `../styles/design-tokens.css`. For a complete list of Tailwind classes found in the project, see `../../used_classes.txt`.
+
 ## SharedCampaignForm
 - `bg-white rounded-lg shadow-md p-6` – form card container
 - `text-2xl font-bold text-slate-800 mb-4` – heading style
