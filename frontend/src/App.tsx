@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useOrchestrationNavigation } from "./hooks/useOrchestrationNavigation";
 import GlobalNav from "./components/GlobalNav";
 import AgentsPage from "./components/AgentsPage";
 import WorkflowsPage from "./components/WorkflowsPage";
@@ -11,13 +12,14 @@ import StylePanel from "./components/StylePanel";
 import "./components/deliverableStyles.css";
 
 function App() {
-  const [currentView, setCurrentView] = useState<
-    "orchestrations" | "agents" | "workflows"
-  >("orchestrations");
-
-  const [selectedOrchestration, setSelectedOrchestration] = useState<
-    string | null
-  >(null);
+  const {
+    currentView,
+    selectedOrchestration,
+    navigateToAgents,
+    navigateToWorkflows,
+    navigateToOrchestrations,
+    selectOrchestration,
+  } = useOrchestrationNavigation();
 
   const [isHitlModalOpen, setIsHitlModalOpen] = useState(false);
   const [hitlReview, setHitlReview] = useState(true);
@@ -63,22 +65,19 @@ function App() {
   }, []);
 
   const handleSelectOrchestration = (orchestrationId: string) => {
-    setSelectedOrchestration(orchestrationId);
+    selectOrchestration(orchestrationId);
   };
 
   const handleNavigateToAgents = () => {
-    setCurrentView("agents");
-    setSelectedOrchestration(null);
+    navigateToAgents();
   };
 
   const handleNavigateToWorkflows = () => {
-    setCurrentView("workflows");
-    setSelectedOrchestration(null);
+    navigateToWorkflows();
   };
 
   const handleNavigateToOrchestrations = () => {
-    setCurrentView("orchestrations");
-    setSelectedOrchestration(null);
+    navigateToOrchestrations();
   };
 
   const renderCurrentView = () => {
