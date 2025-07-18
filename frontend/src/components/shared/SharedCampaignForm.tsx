@@ -9,7 +9,7 @@ import React, { useState } from 'react';
  * - `mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md` – selected orchestration banner
  * - `block text-sm font-medium text-slate-600 mb-2` – label styling
  * - `w-full h-32 p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition` – textarea
- * - Buttons use utility classes like `px-4 py-2`, `bg-green-600`, `hover:bg-green-700`, etc.
+ * - Buttons use utility classes like `px-4 py-2`, `bg-primary`, `hover:bg-primary-hover`, etc.
  */
 export interface SharedCampaignFormProps {
   onCreate: (brief: string) => void;
@@ -73,7 +73,7 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
             <button
               type="button"
               onClick={onNewCampaign}
-              className="px-4 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 transition-colors"
+              className="px-4 py-2 bg-primary text-white font-medium rounded hover:bg-primary-hover transition-colors"
             >
               New Campaign
             </button>
@@ -124,7 +124,7 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
             <button
               type="submit"
               disabled={isLoading || !brief.trim()}
-              className="px-4 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-primary text-white font-medium rounded hover:bg-primary-hover disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {isLoading ? 'Creating...' : 'Create Campaign'}
             </button>

@@ -10,7 +10,8 @@
     "check-port": "lsof -i:3000 || echo 'Port 3000 is free'",
     "start:backend": "npm start --prefix hyatt-gpt-prototype",
     "start:frontend": "npm run dev --prefix frontend",
-    "start:all": "pkill -f 'node server.js' || true && pkill -f 'vite' || true && sleep 2 && concurrently 'npm:start:backend' 'npm:start:frontend'"
+    "start:all": "pkill -f 'node server.js' || true && pkill -f 'vite' || true && sleep 2 && concurrently 'npm:start:backend' 'npm:start:frontend'",
+    "lint:styles": "stylelint \"**/*.css\""
   },
   "private": true,
   "dependencies": {
@@ -22,6 +23,8 @@
     "autoprefixer": "^10.4.21",
     "concurrently": "^9.1.2",
     "postcss": "^8.5.3",
+    "stylelint": "^16.22.0",
+    "stylelint-config-standard": "^38.0.0",
     "tailwindcss": "^4.1.7"
   }
 }
