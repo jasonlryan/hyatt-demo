@@ -17,7 +17,7 @@ This document lists the main Tailwind utility classes and custom CSS selectors u
 - View progress button uses `bg-indigo-500 hover:bg-indigo-600 text-white rounded-md`
 
 ## SharedDeliverablePanel and Card
-The panel and card rely on styles defined in `deliverableStyles.css`:
+The panel and card rely on styles defined in `shared/sharedStyles.css` (which imports `deliverableStyles.css`):
 - `.deliverable-card`, `.deliverable-header`, `.deliverable-title-text`
 - `.deliverable-status.ready`, `.deliverable-status.reviewed`, `.deliverable-status.pending`
 - Action buttons use `.deliverable-icon-btn`

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Deliverable } from '../../types';
 import { Eye, Download } from 'lucide-react';
-import '../deliverableStyles.css';
+import './sharedStyles.css';
 
 /**
  * Card representation for a single deliverable.

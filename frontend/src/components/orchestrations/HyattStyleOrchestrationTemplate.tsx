@@ -2,10 +2,8 @@ import { ReactNode, useState } from "react";
 import BaseOrchestrationPage from "./BaseOrchestrationPage";
 import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
-import CampaignForm from "../CampaignForm";
-import CampaignProgress from "../CampaignProgress";
+import { SharedCampaignForm, SharedProgressPanel, SharedDeliverablePanel } from "../shared";
 import AgentCollaboration from "../AgentCollaboration";
-import CampaignDeliverables from "../CampaignDeliverables";
 import DeliverableModal from "../DeliverableModal";
 import RefineInputModal from "../RefineInputModal";
 import AudienceResearchModal from "../AudienceResearchModal";
@@ -148,7 +146,7 @@ const HyattStyleOrchestrationTemplate: React.FC<
             />
           }
           rightPanel={
-            <CampaignDeliverables
+            <SharedDeliverablePanel
               deliverables={Object.values(deliverables)}
               onViewDetails={(id) => {
                 const d = Object.values(deliverables).find((x) => x.id === id);
@@ -158,7 +156,7 @@ const HyattStyleOrchestrationTemplate: React.FC<
           }
         >
           {!campaign ? (
-            <CampaignForm
+            <SharedCampaignForm
               onCreate={handleStartCampaign}
               onCancel={handleNewCampaign}
               isLoading={isLoading}
@@ -171,7 +169,7 @@ const HyattStyleOrchestrationTemplate: React.FC<
             />
           ) : (
             <>
-              <CampaignProgress campaign={campaign} onViewProgress={() => setIsSidePanelOpen(true)} />
+              <SharedProgressPanel campaign={campaign} onViewProgress={() => setIsSidePanelOpen(true)} />
               <AgentCollaboration
                 messages={conversation}
                 campaign={campaign}
