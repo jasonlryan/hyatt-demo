@@ -2,7 +2,7 @@ import React from 'react';
 import { Deliverable } from '../../types';
 import SharedDeliverableCard from './SharedDeliverableCard';
 import { FileText } from 'lucide-react';
-import '../deliverableStyles.css';
+import './sharedStyles.css';
 
 /**
  * Panel listing deliverable cards in a vertical list.

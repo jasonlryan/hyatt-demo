@@ -4,12 +4,12 @@ import { useCampaignPolling } from "../../hooks/useCampaignPolling";
 import BaseOrchestrationPage from "./BaseOrchestrationPage";
 import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
-import CampaignProgress from "../CampaignProgress";
+import { SharedProgressPanel } from "../shared";
 import AgentCollaboration from "../AgentCollaboration";
-import CampaignDeliverables from "../CampaignDeliverables";
+import { SharedDeliverablePanel } from "../shared";
 import AudienceResearchModal from "../AudienceResearchModal";
 import RefineInputModal from "../RefineInputModal";
-import CampaignForm from "../CampaignForm";
+import { SharedCampaignForm } from "../shared";
 import DeliverableModal from "../DeliverableModal";
 import { Deliverable, AudienceResearch } from "../../types";
 
@@ -194,7 +194,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
             />
           }
           rightPanel={
-            <CampaignDeliverables
+            <SharedDeliverablePanel
               deliverables={Object.values(deliverables)}
               onViewDetails={(id) => {
                 const deliverable = Object.values(deliverables).find((d) => d.id === id);
@@ -204,7 +204,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
           }
         >
           {!campaign ? (
-            <CampaignForm
+            <SharedCampaignForm
               onCreate={handleStartCampaign}
               onCancel={handleNewCampaign}
               isLoading={isLoading}
@@ -217,7 +217,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
             />
           ) : (
             <>
-              <CampaignProgress
+              <SharedProgressPanel
                 campaign={campaign}
                 onViewProgress={() => setIsSidePanelOpen(true)}
               />
