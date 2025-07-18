@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
 
-interface RefineInputModalProps {
+export interface SharedRefineInputModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (instructions: string) => void;
 }
 
-const RefineInputModal: React.FC<RefineInputModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const SharedRefineInputModal: React.FC<SharedRefineInputModalProps> = ({ isOpen, onClose, onSubmit }) => {
   const [instructions, setInstructions] = useState('');
 
   if (!isOpen) return null;
@@ -51,4 +50,4 @@ const RefineInputModal: React.FC<RefineInputModalProps> = ({ isOpen, onClose, on
   );
 };
 
-export default RefineInputModal;
+export default SharedRefineInputModal;

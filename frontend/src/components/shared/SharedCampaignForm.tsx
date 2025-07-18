@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Campaign } from '../../types';
 
 /**
  * SharedCampaignForm replicates Hyatt's campaign creation form.
@@ -18,7 +19,7 @@ export interface SharedCampaignFormProps {
   selectedOrchestration?: string | null;
   onNewCampaign: () => void;
   onLoadCampaign: (campaignId: string) => void;
-  campaigns: any[];
+  campaigns: Campaign[];
   dropdownOpen: boolean;
   setDropdownOpen: (open: boolean) => void;
 }

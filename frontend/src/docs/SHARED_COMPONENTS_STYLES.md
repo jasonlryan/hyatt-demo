@@ -39,3 +39,7 @@ The panel and card rely on styles defined in `deliverableStyles.css`:
 ## SharedModal
 - Overlay `fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4`
 - Content container `bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto`
+
+## SharedDeliverableModal and SharedRefineInputModal
+- Use the same overlay and content container classes as `SharedModal`.
+- Buttons inside the footer rely on `.deliverable-btn`, `.deliverable-btn-primary`, and `.deliverable-btn-secondary` from `deliverableStyles.css`.

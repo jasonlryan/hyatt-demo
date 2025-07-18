@@ -1,10 +1,9 @@
 import React from "react";
-import { Deliverable } from "../types";
-import { X, Download, Eye, Check, Edit } from "lucide-react";
-import DeliverableContent from "./DeliverableContent";
-import "./deliverableStyles.css";
-
-interface DeliverableModalProps {
+import { Deliverable } from "../../types";
+import { X, Download, Check, Edit } from "lucide-react";
+import DeliverableContent from "../DeliverableContent";
+import "../deliverableStyles.css";
+export interface SharedDeliverableModalProps {
   deliverable: Deliverable | null;
   isOpen: boolean;
   onClose: () => void;
@@ -12,7 +11,7 @@ interface DeliverableModalProps {
   onRefine?: () => void;
 }
 
-const DeliverableModal: React.FC<DeliverableModalProps> = ({
+const SharedDeliverableModal: React.FC<SharedDeliverableModalProps> = ({
   deliverable,
   isOpen,
   onClose,
@@ -98,4 +97,4 @@ const DeliverableModal: React.FC<DeliverableModalProps> = ({
   );
 };
 
-export default DeliverableModal;
+export default SharedDeliverableModal;

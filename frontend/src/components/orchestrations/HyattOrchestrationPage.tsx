@@ -2,21 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import BaseOrchestrationPage from "./BaseOrchestrationPage";
 import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
-import CampaignProgress from "../CampaignProgress";
+import { SharedProgressPanel, SharedCampaignForm, SharedDeliverablePanel, SharedDeliverableModal, SharedRefineInputModal } from "../shared";
 import AgentCollaboration from "../AgentCollaboration";
-import CampaignDeliverables from "../CampaignDeliverables";
 import AudienceResearchModal from "../AudienceResearchModal";
-import RefineInputModal from "../RefineInputModal";
 import ReviewPanel from "../ReviewPanel";
-import CampaignForm from "../CampaignForm";
-import DeliverableModal from "../DeliverableModal";
 import {
   Campaign,
   ConversationMessage,
   Deliverable,
   AudienceResearch,
 } from "../../types";
-import { Eye } from "lucide-react";
 
 interface HyattOrchestrationPageProps {
   selectedOrchestration: string | null;
@@ -468,7 +463,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
             />
           }
           rightPanel={
-            <CampaignDeliverables
+            <SharedDeliverablePanel
               deliverables={Object.values(deliverables)}
               onViewDetails={(id) => {
                 const deliverable = Object.values(deliverables).find((d) => d.id === id);
@@ -478,7 +473,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
           }
         >
           {!campaign ? (
-            <CampaignForm
+            <SharedCampaignForm
               onCreate={startCampaign}
               onCancel={handleNewCampaign}
               isLoading={isLoading}
@@ -491,7 +486,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
             />
           ) : (
             <>
-              <CampaignProgress
+              <SharedProgressPanel
                 campaign={campaign}
                 onViewProgress={() => setIsSidePanelOpen(true)}
               />
@@ -510,7 +505,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
         </SharedOrchestrationLayout>
       </div>
 
-      <DeliverableModal
+      <SharedDeliverableModal
         deliverable={modalDeliverable}
         isOpen={isDeliverableModalOpen}
         onClose={() => {
@@ -529,7 +524,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
         />
       )}
 
-      <RefineInputModal
+      <SharedRefineInputModal
         isOpen={isRefineModalOpen}
         onClose={() => setIsRefineModalOpen(false)}
         onSubmit={handleSubmitRefinement}
