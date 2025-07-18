@@ -2,30 +2,30 @@ const fs = require("fs").promises;
 const path = require("path");
 const OpenAI = require("openai");
 
-class TrendingNewsAgent {
+class StoryAnglesAgent {
   constructor() {
-    this.name = "Trending News GPT";
-    this.promptFile = "trending_news_gpt.md";
-    this.temperature = parseFloat(process.env.TRENDING_TEMPERATURE) || 0.3;
+    this.name = "Story Angles & Headlines GPT";
+    this.promptFile = "story_angles_headlines_gpt.md";
+    this.temperature = parseFloat(process.env.STORY_TEMPERATURE) || 0.4;
     this.systemPrompt = null;
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || "your-api-key-here",
     });
     this.model =
-      process.env.TRENDING_MODEL ||
+      process.env.STORY_MODEL ||
       process.env.OPENAI_MODEL ||
       "gpt-4o-2024-08-06";
     this.maxTokens =
-      parseInt(process.env.TRENDING_MAX_TOKENS) ||
+      parseInt(process.env.STORY_MAX_TOKENS) ||
       parseInt(process.env.OPENAI_MAX_TOKENS) ||
       200;
     this.timeout =
-      parseInt(process.env.TRENDING_TIMEOUT) ||
+      parseInt(process.env.STORY_TIMEOUT) ||
       parseInt(process.env.OPENAI_TIMEOUT) ||
       30000;
 
     console.log(
-      `📈 ${this.name}: Initialized with model ${this.model} and temperature ${this.temperature}. System prompt will be loaded on demand.`
+      `✍️ ${this.name}: Initialized with model ${this.model} and temperature ${this.temperature}. System prompt will be loaded on demand.`
     );
   }
 
@@ -34,7 +34,9 @@ class TrendingNewsAgent {
       console.log("System prompt already loaded.");
       return;
     }
-    const potentialPaths = [path.join(__dirname, "../GPTs", this.promptFile)];
+    const potentialPaths = [
+      path.join(__dirname, "../prompts", this.promptFile),
+    ];
 
     for (const p of potentialPaths) {
       try {
@@ -53,34 +55,36 @@ class TrendingNewsAgent {
     throw new Error(`Failed to load system prompt: ${this.promptFile}`);
   }
 
-  async analyzeTrends(campaignBrief, researchInsights, externalData = null) {
-    // Simulate processing time - configurable via environment
-    const delay = parseInt(process.env.TRENDING_DELAY) || 5000;
-    await this.delay(delay);
+  async generateStoryAngles(campaignBrief, researchInsights, trendingData) {
+    // Simulate processing time
+    const delayDuration = parseInt(process.env.STORY_DELAY) || 4000;
+    await this.delay(delayDuration);
 
-    // Use OpenAI API with system prompt to analyze trends dynamically
-    const trends = await this.generateTrendsUsingPrompt(
+    // Use OpenAI API with system prompt to generate story angles dynamically
+    const storyAngles = await this.createStoryAnglesUsingPrompt(
       campaignBrief,
       researchInsights,
-      externalData
+      trendingData
     );
 
     return {
       agent: this.name,
       timestamp: new Date().toISOString(),
-      phase: "trending",
-      trends: trends,
-      nextPhase: "story",
+      phase: "story",
+      storyAngles: storyAngles,
+      nextPhase: "collaborative",
     };
   }
 
-  async generateTrendsUsingPrompt(
+  async createStoryAnglesUsingPrompt(
     campaignBrief,
     researchInsights,
-    externalData = null
+    trendingData
   ) {
     try {
-      console.log(`🔄 ${this.name}: Analyzing trends using Responses API...`);
+      console.log(
+        `🔄 ${this.name}: Creating story angles using Responses API...`
+      );
 
       // Simple prompt - let the centralized GPT prompt handle everything
       const prompt = `
@@ -88,16 +92,9 @@ CAMPAIGN BRIEF: ${campaignBrief}
 
 RESEARCH INSIGHTS: ${JSON.stringify(researchInsights, null, 2)}
 
-${
-  externalData
-    ? `
-EXTERNAL DATA:
-${JSON.stringify(externalData, null, 2)}
-`
-    : ""
-}
+TRENDING DATA: ${JSON.stringify(trendingData, null, 2)}
 
-MESSAGE TYPE: trends_analysis
+MESSAGE TYPE: story_development
 
 Generate the appropriate response based on your conversation scenarios in your system prompt.
 `;
@@ -112,62 +109,63 @@ Generate the appropriate response based on your conversation scenarios in your s
       });
 
       // Return raw output - let centralized prompt handle structure
-      const trends = {
-        trendsAnalysis: response.output_text,
+      const storyAngles = {
+        storyStrategy: response.output_text,
         lastUpdated: new Date().toISOString(),
-        dataQuality: externalData?.dataQuality || "responses_api_based",
       };
 
       console.log(
-        `✅ ${this.name}: Generated structured trends analysis via Responses API`
+        `✅ ${this.name}: Generated structured story strategy via Responses API`
       );
-      return trends;
+      return storyAngles;
     } catch (error) {
       console.error(
-        `❌ ${this.name}: Responses API trend analysis failed:`,
+        `❌ ${this.name}: Responses API story creation failed:`,
         error
       );
       // NO HARD-CODED FALLBACK - return minimal structure
       return {
-        trendsAnalysis: "Analysis unavailable - please retry",
-        dataQuality: "failed",
+        storyStrategy: "Story development failed - please retry",
         lastUpdated: new Date().toISOString(),
       };
     }
   }
 
-  extractTrendsFromText(content) {
+  extractStoryAnglesFromText(content) {
     // Extract structured data from unstructured text response
     return {
-      relevantTrends: [
+      primaryAngle: {
+        angle: "Dynamic story angle",
+        narrative: content.substring(0, 200) + "...",
+        emotionalHook: "Generated from OpenAI analysis",
+        proofPoints: ["Dynamic analysis"],
+      },
+      supportingAngles: [
         {
-          trend: "Dynamic trend analysis",
-          momentum: "Generated",
-          relevance: "100%",
-          description: content.substring(0, 200) + "...",
-          source: "OpenAI Analysis",
+          angle: "Supporting angle",
+          narrative: "Generated dynamically",
+          target: "Dynamic target",
         },
       ],
-      culturalMoments: ["Dynamic cultural moment analysis"],
-      mediaOpportunities: ["Dynamic media opportunity analysis"],
-      timingRecommendation: "Timing analysis generated dynamically",
-      trendAnalysis: "Dynamic analysis completed",
+      headlines: ["Dynamic headline generated"],
+      keyMessages: ["Dynamic message generated"],
       lastUpdated: new Date().toISOString(),
     };
   }
 
   async collaborativeInput(previousPhases) {
-    await this.delay(1800);
+    await this.delay(2000);
 
     const research = previousPhases.research?.insights;
     const trends = previousPhases.trending?.trends;
+    const story = previousPhases.story?.storyAngles;
 
-    if (!research || !trends) {
+    if (!research || !trends || !story) {
       return {
         agent: this.name,
         contribution:
-          "Unable to provide collaborative input without previous phase data.",
-        trendAlignment: [],
+          "Unable to provide collaborative input without complete phase data.",
+        finalRecommendations: [],
       };
     }
 
@@ -179,24 +177,20 @@ Generate the appropriate response based on your conversation scenarios in your s
       const prompt = `
 You are ${this.name} in a collaborative PR strategy session.
 
-YOUR TRENDING ANALYSIS:
-${JSON.stringify(trends, null, 2)}
+YOUR STORY ANGLES:
+${JSON.stringify(story, null, 2)}
 
 OTHER AGENTS' FINDINGS:
 - Research Insights: ${JSON.stringify(research, null, 2)}
-- Story Angles: ${JSON.stringify(
-        previousPhases.story?.storyAngles || "Not yet available",
-        null,
-        2
-      )}
+- Trending Analysis: ${JSON.stringify(trends, null, 2)}
 
 Based on ALL the insights gathered, provide your collaborative contribution that:
-1. Highlights the most relevant trends for this campaign
-2. Shows how trending topics align with audience research
-3. Identifies optimal timing and media opportunities
-4. Uses specific trend data, percentages, and momentum indicators
+1. Shows how your story angles synthesize audience insights and trends
+2. Highlights the strategic narrative that ties everything together
+3. Provides specific recommendations for campaign execution
+4. References specific angles, headlines, and emotional hooks
 
-Be concise but insightful. Reference specific trends and their relevance scores.
+Be concise but strategic. Connect your creative angles to measurable outcomes.
 `;
 
       const response = await this.openai.responses.create({
@@ -214,9 +208,10 @@ Be concise but insightful. Reference specific trends and their relevance scores.
       return {
         agent: this.name,
         contribution: response.output_text.trim(),
-        trendAlignment: [],
-        mediaRecommendation: "Media strategy provided in contribution",
-        timingInsight: "Timing recommendations provided in contribution",
+        finalRecommendations: [],
+        campaignTheme: "Campaign theme provided in contribution",
+        emotionalCore: "Emotional positioning provided in contribution",
+        strategicAlignment: "Strategic alignment provided in contribution",
       };
     } catch (error) {
       console.error(
@@ -227,10 +222,11 @@ Be concise but insightful. Reference specific trends and their relevance scores.
       // Return minimal fallback only on complete failure
       return {
         agent: this.name,
-        contribution: `Based on my trend analysis, I've identified key opportunities that align with current market movements and cultural moments.`,
-        trendAlignment: [],
-        mediaRecommendation: "Media strategy requires further analysis.",
-        timingInsight: "Timing recommendations need additional context.",
+        contribution: `Based on my story angle development, I've created narratives that bridge audience insights with trending opportunities.`,
+        finalRecommendations: [],
+        campaignTheme: "Campaign theme requires further synthesis.",
+        emotionalCore: "Emotional positioning needs refinement.",
+        strategicAlignment: "Strategic alignment pending full analysis.",
       };
     }
   }
@@ -277,9 +273,9 @@ Generate the appropriate response based on your conversation scenarios in your s
       );
 
       // Minimal fallback only
-      return `I'll be analyzing current travel industry trends and cultural moments for this campaign using real-time monitoring.`;
+      return `I'll be developing compelling story angles and headlines for this campaign using creative storytelling techniques.`;
     }
   }
 }
 
-module.exports = TrendingNewsAgent;
+module.exports = StoryAnglesAgent;

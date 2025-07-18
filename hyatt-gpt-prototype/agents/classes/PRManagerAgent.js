@@ -10,21 +10,58 @@ class PRManagerAgent {
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
-    this.model = process.env.PR_MANAGER_MODEL || "gpt-4o-mini-2024-07-18";
-    this.temperature = parseFloat(process.env.PR_MANAGER_TEMPERATURE) || 0.7;
-    this.maxTokens = parseInt(process.env.PR_MANAGER_MAX_TOKENS) || 2000;
-    this.timeout = parseInt(process.env.PR_MANAGER_TIMEOUT) || 30000;
+
+    // Load configuration from agents.config.json
+    this.loadConfiguration();
 
     console.log(`🤖 PR Manager Agent initialized with model: ${this.model}`);
   }
 
+  loadConfiguration() {
+    try {
+      const configPath = path.join(__dirname, "../agents.config.json");
+      const configData = JSON.parse(
+        require("fs").readFileSync(configPath, "utf8")
+      );
+      const agentConfig = configData.agents["pr-manager"];
+
+      if (agentConfig) {
+        this.model = agentConfig.model || "gpt-4o-mini-2024-07-18";
+        this.temperature = agentConfig.temperature || 0.7;
+        this.maxTokens = agentConfig.maxTokens || 4000;
+        this.timeout = agentConfig.timeout || 45000;
+        this.delayMs = agentConfig.delay || 3000;
+        this.enabled = agentConfig.enabled !== false;
+      } else {
+        // Fallback to environment variables if config not found
+        this.model = process.env.PR_MANAGER_MODEL || "gpt-4o-mini-2024-07-18";
+        this.temperature =
+          parseFloat(process.env.PR_MANAGER_TEMPERATURE) || 0.7;
+        this.maxTokens = parseInt(process.env.PR_MANAGER_MAX_TOKENS) || 4000;
+        this.timeout = parseInt(process.env.PR_MANAGER_TIMEOUT) || 45000;
+        this.delayMs = parseInt(process.env.PR_MANAGER_DELAY) || 3000;
+        this.enabled = true;
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to load agent configuration, using defaults:",
+        error.message
+      );
+      // Fallback to environment variables
+      this.model = process.env.PR_MANAGER_MODEL || "gpt-4o-mini-2024-07-18";
+      this.temperature = parseFloat(process.env.PR_MANAGER_TEMPERATURE) || 0.7;
+      this.maxTokens = parseInt(process.env.PR_MANAGER_MAX_TOKENS) || 4000;
+      this.timeout = parseInt(process.env.PR_MANAGER_TIMEOUT) || 45000;
+      this.delayMs = parseInt(process.env.PR_MANAGER_DELAY) || 3000;
+      this.enabled = true;
+    }
+  }
+
   async loadSystemPrompt(attempt = 1) {
     const potentialPaths = [
-      path.join(__dirname, "../GPTs", this.promptFile), // Preferred path
-      // Fallback paths (can be removed if the above is robust)
-      // path.join(process.cwd(), 'GPTs', this.promptFile),
-      // path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile),
-      // path.join(__dirname, '../../GPTs', this.promptFile) // If agents are nested deeper
+      path.join(__dirname, "../prompts", this.promptFile), // Consolidated prompts path
+      path.join(__dirname, "../GPTs", this.promptFile), // Fallback to old path
+      path.join(process.cwd(), "GPTs", this.promptFile), // Fallback to root GPTs
     ];
 
     for (const p of potentialPaths) {

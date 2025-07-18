@@ -1,19 +1,26 @@
 const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const BaseOrchestrator = require("./BaseOrchestrator");
 
-const ResearchAudienceAgent = require("./agents/ResearchAudienceAgent");
-const TrendingNewsAgent = require("./agents/TrendingNewsAgent");
-const StoryAnglesAgent = require("./agents/StoryAnglesAgent");
-const PRManagerAgent = require("./agents/PRManagerAgent");
-const StrategicInsightAgent = require("./agents/StrategicInsightAgent");
+const ResearchAudienceAgent = require("../../agents/classes/ResearchAudienceAgent");
+const TrendingNewsAgent = require("../../agents/classes/TrendingNewsAgent");
+const StoryAnglesAgent = require("../../agents/classes/StoryAnglesAgent");
+const PRManagerAgent = require("../../agents/classes/PRManagerAgent");
+const StrategicInsightAgent = require("../../agents/classes/StrategicInsightAgent");
 
 // Import new dynamic components
-const DataSourceManager = require("./utils/DataSourceManager");
-const QualityController = require("./utils/QualityController");
+const DataSourceManager = require("../../utils/DataSourceManager");
+const QualityController = require("../../utils/QualityController");
 
-class AgentOrchestrator {
-  constructor() {
+class AgentOrchestrator extends BaseOrchestrator {
+  constructor(config = {}) {
+    super({
+      name: "AgentOrchestrator",
+      version: "1.0.0",
+      ...config,
+    });
+
     this.campaigns = new Map();
     this.campaignTimers = new Map();
     this.researchAgent = new ResearchAudienceAgent();
@@ -40,21 +47,46 @@ class AgentOrchestrator {
     this.loadCampaignsFromFiles();
   }
 
-  async initializeAgents() {
+  async loadAgents() {
     try {
-      console.log("Initializing agents and loading system prompts...");
+      this.log("Loading agent system prompts...");
       await this.researchAgent.loadSystemPrompt();
       await this.trendingAgent.loadSystemPrompt();
       await this.storyAgent.loadSystemPrompt();
       await this.prManagerAgent.loadSystemPrompt();
       await this.strategicInsightAgent.loadSystemPrompt();
-      console.log("All agent system prompts loaded successfully.");
+
+      this.agents.set("research", this.researchAgent);
+      this.agents.set("trending", this.trendingAgent);
+      this.agents.set("story", this.storyAgent);
+      this.agents.set("pr_manager", this.prManagerAgent);
+      this.agents.set("strategic_insight", this.strategicInsightAgent);
+
+      this.log("All agent system prompts loaded successfully.");
     } catch (error) {
-      console.error("FATAL: Failed to initialize one or more agents:", error);
-      // Depending on desired behavior, you might want to re-throw or handle this
-      // For Vercel, a crash here would likely prevent the server from starting properly.
+      this.log(
+        `FATAL: Failed to initialize one or more agents: ${error.message}`,
+        "error"
+      );
       throw new Error(`Agent initialization failed: ${error.message}`);
     }
+  }
+
+  async loadWorkflows() {
+    // AgentOrchestrator uses campaign-based workflows rather than predefined ones
+    this.log("AgentOrchestrator uses dynamic campaign workflows");
+  }
+
+  async executeWorkflow(workflow, execution) {
+    // For AgentOrchestrator, workflows are campaign-based
+    // This method is mainly for compatibility with BaseOrchestrator
+    this.log(`AgentOrchestrator workflow execution handled by campaign system`);
+    return { status: "handled_by_campaign_system" };
+  }
+
+  async initializeAgents() {
+    // Legacy method - now calls loadAgents
+    return await this.loadAgents();
   }
 
   async startCampaign(campaignBrief) {
@@ -1322,7 +1354,7 @@ class AgentOrchestrator {
     }
 
     try {
-      const campaignsDir = path.join(__dirname, "campaigns");
+      const campaignsDir = path.join(__dirname, "../../campaigns");
       if (!fs.existsSync(campaignsDir)) {
         fs.mkdirSync(campaignsDir, { recursive: true });
       }
@@ -1355,7 +1387,7 @@ class AgentOrchestrator {
   deleteCampaignFile(campaignId) {
     if (process.env.NODE_ENV === "production") return;
     try {
-      const campaignsDir = path.join(__dirname, "campaigns");
+      const campaignsDir = path.join(__dirname, "../../campaigns");
       const filepath = path.join(campaignsDir, `campaign_${campaignId}.json`);
       if (fs.existsSync(filepath)) {
         fs.unlinkSync(filepath);
@@ -1614,7 +1646,7 @@ class AgentOrchestrator {
     }
 
     try {
-      const campaignsDir = path.join(__dirname, "campaigns");
+      const campaignsDir = path.join(__dirname, "../../campaigns");
 
       // Check if campaigns directory exists
       if (!fs.existsSync(campaignsDir)) {

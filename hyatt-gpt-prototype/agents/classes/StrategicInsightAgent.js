@@ -33,7 +33,7 @@ class StrategicInsightAgent {
       return;
     }
     const potentialPaths = [
-      path.join(__dirname, "../GPTs", this.promptFile), // Preferred path
+      path.join(__dirname, "../prompts", this.promptFile), // Consolidated prompts path
     ];
 
     for (const p of potentialPaths) {

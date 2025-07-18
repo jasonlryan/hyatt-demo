@@ -6,32 +6,79 @@ class ResearchAudienceAgent {
   constructor() {
     this.name = "Research & Audience GPT";
     this.promptFile = "research_audience_gpt.md";
-    this.temperature = parseFloat(process.env.RESEARCH_TEMPERATURE) || 0.2;
     this.systemPrompt = null;
     this.openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY || "your-api-key-here",
     });
-    this.model =
-      process.env.RESEARCH_MODEL ||
-      process.env.OPENAI_MODEL ||
-      "gpt-4o-2024-08-06";
-    this.maxTokens =
-      parseInt(process.env.RESEARCH_MAX_TOKENS) ||
-      parseInt(process.env.OPENAI_MAX_TOKENS) ||
-      200;
-    this.timeout =
-      parseInt(process.env.RESEARCH_TIMEOUT) ||
-      parseInt(process.env.OPENAI_TIMEOUT) ||
-      30000;
+
+    // Load configuration from agents.config.json
+    this.loadConfiguration();
 
     console.log(
       `🤖 ${this.name}: Using model ${this.model} with temperature ${this.temperature}`
     );
   }
 
+  loadConfiguration() {
+    try {
+      const configPath = path.join(__dirname, "../agents.config.json");
+      const configData = JSON.parse(
+        require("fs").readFileSync(configPath, "utf8")
+      );
+      const agentConfig = configData.agents["research"];
+
+      if (agentConfig) {
+        this.model = agentConfig.model || "gpt-4o-2024-08-06";
+        this.temperature = agentConfig.temperature || 0.2;
+        this.maxTokens = agentConfig.maxTokens || 2500;
+        this.timeout = agentConfig.timeout || 45000;
+        this.delayMs = agentConfig.delay || 4000;
+        this.enabled = agentConfig.enabled !== false;
+      } else {
+        // Fallback to environment variables if config not found
+        this.model =
+          process.env.RESEARCH_MODEL ||
+          process.env.OPENAI_MODEL ||
+          "gpt-4o-2024-08-06";
+        this.temperature = parseFloat(process.env.RESEARCH_TEMPERATURE) || 0.2;
+        this.maxTokens =
+          parseInt(process.env.RESEARCH_MAX_TOKENS) ||
+          parseInt(process.env.OPENAI_MAX_TOKENS) ||
+          2500;
+        this.timeout =
+          parseInt(process.env.RESEARCH_TIMEOUT) ||
+          parseInt(process.env.OPENAI_TIMEOUT) ||
+          45000;
+        this.delayMs = parseInt(process.env.RESEARCH_DELAY) || 4000;
+        this.enabled = true;
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to load agent configuration, using defaults:",
+        error.message
+      );
+      // Fallback to environment variables
+      this.model =
+        process.env.RESEARCH_MODEL ||
+        process.env.OPENAI_MODEL ||
+        "gpt-4o-2024-08-06";
+      this.temperature = parseFloat(process.env.RESEARCH_TEMPERATURE) || 0.2;
+      this.maxTokens =
+        parseInt(process.env.RESEARCH_MAX_TOKENS) ||
+        parseInt(process.env.OPENAI_MAX_TOKENS) ||
+        2500;
+      this.timeout =
+        parseInt(process.env.RESEARCH_TIMEOUT) ||
+        parseInt(process.env.OPENAI_TIMEOUT) ||
+        45000;
+      this.delayMs = parseInt(process.env.RESEARCH_DELAY) || 4000;
+      this.enabled = true;
+    }
+  }
+
   async loadSystemPrompt(attempt = 1) {
     const potentialPaths = [
-      path.join(__dirname, "../GPTs", this.promptFile), // Preferred path
+      path.join(__dirname, "../prompts", this.promptFile), // Consolidated prompts path
       // Fallback paths (can be removed if the above is robust)
       // path.join(process.cwd(), 'GPTs', this.promptFile),
       // path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile),
@@ -117,8 +164,7 @@ class ResearchAudienceAgent {
 
   async analyzeAudience(campaignBrief, externalData = null) {
     // Simulate processing time - configurable via environment
-    const delay = parseInt(process.env.RESEARCH_DELAY) || 4000;
-    await this.delay(delay);
+    await this.delay(this.delayMs);
 
     // Use OpenAI API with system prompt to analyze audience dynamically
     const insights = await this.generateInsightsUsingPrompt(

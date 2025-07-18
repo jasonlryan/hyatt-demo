@@ -1,0 +1,8 @@
+{
+  "watch": [
+    "server.js",
+    "agents/prompts/*.md",
+    "agents/**/*.js"
+  ],
+  "ext": "js md"
+} 

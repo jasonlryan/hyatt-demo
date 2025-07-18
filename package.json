@@ -3,16 +3,25 @@
   "version": "1.0.0",
   "description": "Hyatt GPT Demo - Parent Directory",
   "scripts": {
-    "start": "npm run build:client && cd hyatt-gpt-prototype && npm run smart-start",
-    "dev": "npm --prefix frontend run dev & cd hyatt-gpt-prototype && npm run dev",
+    "start": "cd hyatt-gpt-prototype && npm run smart-start",
+    "dev": "cd hyatt-gpt-prototype && npm run dev",
     "stop": "pkill -f 'node server.js'",
     "kill-port": "lsof -ti:3000 | xargs kill -9 2>/dev/null || true",
     "check-port": "lsof -i:3000 || echo 'Port 3000 is free'",
-    "build:client": "npm --prefix frontend run build"
+    "start:backend": "npm start --prefix hyatt-gpt-prototype",
+    "start:frontend": "npm run dev --prefix frontend",
+    "start:all": "pkill -f 'node server.js' || true && pkill -f 'vite' || true && sleep 2 && concurrently 'npm:start:backend' 'npm:start:frontend'"
   },
   "private": true,
   "dependencies": {
-    "lucide-react": "^0.511.0"
+    "axios": "^1.10.0",
+    "lucide-react": "^0.511.0",
+    "reactflow": "^11.11.4"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.1.7"
+  }
 }
