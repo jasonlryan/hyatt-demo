@@ -7,6 +7,7 @@ import OrchestrationsPage from "./components/OrchestrationsPage";
 import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrationPage";
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
 import TemplateOrchestrationPage from "./components/orchestrations/TemplateOrchestrationPage";
+import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
 import HitlReviewModal from "./components/HitlReviewModal";
 import StylePanel from "./components/StylePanel";
 import "./components/deliverableStyles.css";
@@ -103,6 +104,20 @@ function App() {
           return (
             <TemplateOrchestrationPage
               orchestrationId="hyatt"
+              hitlReview={hitlReview}
+              onToggleHitl={async () => {
+                const newState = !hitlReview;
+                await updateHitlReviewState(newState);
+                if (newState) {
+                  setIsHitlModalOpen(true);
+                }
+              }}
+            />
+          );
+        case "builder":
+          return (
+            <OrchestrationBuilderPage
+              orchestrationId="builder"
               hitlReview={hitlReview}
               onToggleHitl={async () => {
                 const newState = !hitlReview;
