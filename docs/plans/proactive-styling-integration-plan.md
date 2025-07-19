@@ -4,6 +4,8 @@
 
 This plan outlines how to integrate the proactive styling prompt into all generators, development workflows, and AI-powered systems in the Hive application to ensure consistent styling from day one.
 
+> **Important**: All newly generated orchestrations and pages must use the unified styling system and design tokens. Hardcoded colors are never allowed.
+
 ## 🏗️ **1. Orchestration Generator Integration**
 
 ### **Current State**

@@ -62,7 +62,7 @@ Generate a JSON response with this structure:
   }
 }
 
-Make the orchestration practical and focused on the described use case. Include comprehensive documentation that would help users understand and effectively use the orchestration.`;
+Make the orchestration practical and focused on the described use case. Include comprehensive documentation that would help users understand and effectively use the orchestration. If any UI components are generated, they must rely exclusively on the unified design token styling system with no hardcoded Tailwind colors.`;
 
     const completion = await openai.chat.completions.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
