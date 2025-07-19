@@ -50,6 +50,7 @@ export default function handler(req, res) {
           "trending_news",
           "story_angles",
         ],
+        hasDiagram: true,
       },
       template: {
         id: "template",
@@ -69,6 +70,7 @@ export default function handler(req, res) {
           "strategic_insight",
           "trending_news",
         ],
+        hasDiagram: false,
       },
       builder: {
         id: "builder",
@@ -88,6 +90,7 @@ export default function handler(req, res) {
           "agent_generator",
           "workflow_designer",
         ],
+        hasDiagram: false,
       },
       hive: {
         id: "hive",
@@ -118,6 +121,7 @@ export default function handler(req, res) {
           "brand_qa",
           "modular_elements_recommender",
         ],
+        hasDiagram: false,
       },
     };
 

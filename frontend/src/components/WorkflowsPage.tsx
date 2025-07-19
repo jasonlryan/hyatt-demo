@@ -7,6 +7,8 @@ import ReactFlow, {
   NodeProps,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { hyattDiagramConfig } from "./orchestrations/diagrams";
+import { diagramToReactFlow } from "../utils/diagramMapper";
 
 const outlinedStyle = {
   background: "#fff",
@@ -201,189 +203,7 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
-// Node positions for diamond/compass layout (PR Manager at center, agents at NE, NW, SE, SW)
-const centerX = 600;
-const centerY = 300;
-const offsetX = 220;
-const offsetY = 160;
-const hyattNodes = [
-  {
-    id: "brief",
-    type: "custom", // changed from 'input' to 'custom'
-    data: { label: "Campaign Brief", style: outlinedStyle },
-    position: { x: centerX - 2 * offsetX, y: centerY },
-  },
-  {
-    id: "pr",
-    type: "custom",
-    data: { label: "PR Manager", style: outlinedStyle },
-    position: { x: centerX, y: centerY },
-  },
-  {
-    id: "research",
-    type: "custom",
-    data: { label: "1. Research", style: outlinedStyle },
-    position: { x: centerX - offsetX, y: centerY - offsetY },
-  },
-  {
-    id: "strategy",
-    type: "custom",
-    data: { label: "2 Stratgy", style: outlinedStyle },
-    position: { x: centerX - offsetX, y: centerY + offsetY },
-  },
-  {
-    id: "trending",
-    type: "custom",
-    data: { label: "3. Trending News", style: outlinedStyle },
-    position: { x: centerX + offsetX, y: centerY - offsetY },
-  },
-  {
-    id: "story",
-    type: "custom",
-    data: { label: "4. Story Angles", style: outlinedStyle },
-    position: { x: centerX + offsetX, y: centerY + offsetY },
-  },
-  {
-    id: "final",
-    type: "custom", // changed from 'output' to 'custom'
-    data: { label: "Final Campaign Strategy", style: outlinedStyle },
-    position: { x: centerX + 2 * offsetX, y: centerY },
-  },
-];
-
-const hyattEdges = [
-  // Black dashed line for brief to PR Manager (horizontal, straight, with arrow)
-  {
-    id: "brief-pr",
-    source: "brief",
-    target: "pr",
-    style: { stroke: "#222", strokeWidth: 2, strokeDasharray: "6 4" },
-    animated: true, // Add animation
-    type: "straight",
-    sourceHandle: "source-right",
-    targetHandle: "target-left",
-  },
-  {
-    id: "pr-final",
-    source: "pr",
-    target: "final",
-    style: { stroke: "#222", strokeWidth: 2, strokeDasharray: "6 4" },
-    animated: true, // Add animation
-    type: "straight",
-    sourceHandle: "source-right",
-    targetHandle: "target-left",
-  },
-  // Research (blue, NW)
-  {
-    id: "pr-research",
-    source: "pr",
-    target: "research",
-    style: {
-      stroke: agentColors.research,
-      strokeWidth: 2,
-      strokeDasharray: "6 4",
-    },
-    animated: true,
-    type: "default",
-  },
-  {
-    id: "research-pr",
-    source: "research",
-    target: "pr",
-    style: {
-      stroke: agentColors.research,
-      strokeWidth: 2,
-      strokeDasharray: "6 4", // Make it dashed
-    },
-    animated: true, // Add animation
-    type: "default",
-    sourceHandle: "source-bottom", // From bottom of Research
-    targetHandle: "target-left", // To left side of PR Manager
-  },
-  // Strategy (pink, SW)
-  {
-    id: "pr-strategy",
-    source: "pr",
-    target: "strategy",
-    style: {
-      stroke: agentColors.strategy,
-      strokeWidth: 2,
-      strokeDasharray: "6 4",
-    },
-    animated: true,
-    type: "default",
-    sourceHandle: "source-bottom", // From bottom of PR Manager
-    targetHandle: "target-right", // To right side of Strategy
-  },
-  {
-    id: "strategy-pr",
-    source: "strategy",
-    target: "pr",
-    style: {
-      stroke: agentColors.strategy,
-      strokeWidth: 2,
-      strokeDasharray: "6 4", // Make it dashed
-    },
-    animated: true, // Add animation
-    type: "default",
-  },
-  // Trending (green, NE)
-  {
-    id: "pr-trending",
-    source: "pr",
-    target: "trending",
-    style: {
-      stroke: agentColors.trending,
-      strokeWidth: 2,
-      strokeDasharray: "6 4",
-    },
-    animated: true,
-    type: "default",
-  },
-  {
-    id: "trending-pr",
-    source: "trending",
-    target: "pr",
-    style: {
-      stroke: agentColors.trending,
-      strokeWidth: 2,
-      strokeDasharray: "6 4", // Make it dashed
-    },
-    animated: true, // Add animation
-    type: "default",
-    sourceHandle: "source-bottom", // From bottom of Trending News
-    targetHandle: "target-right", // To right side of PR Manager
-  },
-  // Story Angles (purple, SE)
-  {
-    id: "pr-story",
-    source: "pr",
-    target: "story",
-    style: {
-      stroke: agentColors.story,
-      strokeWidth: 2,
-      strokeDasharray: "6 4",
-    },
-    animated: true,
-    type: "default",
-    sourceHandle: "source-bottom", // From bottom of PR Manager
-    targetHandle: "target-left", // To left side of Story Angles
-  },
-  {
-    id: "story-pr",
-    source: "story",
-    target: "pr",
-    style: {
-      stroke: agentColors.story,
-      strokeWidth: 2,
-      strokeDasharray: "6 4", // Make it dashed
-    },
-    animated: true, // Add animation
-    type: "default",
-    sourceHandle: "source-top", // From top of Story Angles
-    targetHandle: "target-right", // To right side of PR Manager
-  },
-];
+const { nodes: hyattNodes, edges: hyattEdges } = diagramToReactFlow(hyattDiagramConfig);
 
 const WorkflowsPage: React.FC = () => {
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(
@@ -438,20 +258,28 @@ const WorkflowsPage: React.FC = () => {
   const handleGenerateDiagram = async (orchestrationId: string) => {
     setGeneratingDiagram(orchestrationId);
     try {
-      // TODO: Implement diagram generation API call
-      console.log(`Generating diagram for ${orchestrationId}`);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const res = await fetch('/api/generate-diagram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orchestrationId }),
+      });
+      if (!res.ok) throw new Error('Request failed');
 
-      // Update orchestration to show it now has a diagram
+      const data = await res.json();
+      if (data.diagram) {
+        const { nodes, edges } = diagramToReactFlow(data.diagram);
+        console.log('Generated diagram nodes:', nodes);
+        console.log('Generated diagram edges:', edges);
+      }
+
       setOrchestrations((prev) =>
         prev.map((orch) =>
           orch.id === orchestrationId ? { ...orch, hasDiagram: true } : orch
         )
       );
     } catch (error) {
-      console.error("Failed to generate diagram:", error);
-      alert("Failed to generate diagram. Please try again.");
+      console.error('Failed to generate diagram:', error);
+      alert('Failed to generate diagram. Please try again.');
     } finally {
       setGeneratingDiagram(null);
     }
