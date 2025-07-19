@@ -51,6 +51,8 @@ export default function handler(req, res) {
           "story_angles",
         ],
         hasDiagram: true,
+        hasDocumentation: true,
+        documentationPath: "docs/orchestrations/HyattOrchestrator.md",
       },
       template: {
         id: "template",
@@ -71,6 +73,7 @@ export default function handler(req, res) {
           "trending_news",
         ],
         hasDiagram: false,
+        hasDocumentation: false,
       },
       builder: {
         id: "builder",
@@ -91,6 +94,8 @@ export default function handler(req, res) {
           "workflow_designer",
         ],
         hasDiagram: false,
+        hasDocumentation: true,
+        documentationPath: "docs/orchestrations/OrchestrationBuilder.md",
       },
       hive: {
         id: "hive",
@@ -122,6 +127,7 @@ export default function handler(req, res) {
           "modular_elements_recommender",
         ],
         hasDiagram: false,
+        hasDocumentation: false,
       },
     };
 
