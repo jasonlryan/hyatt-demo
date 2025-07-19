@@ -1,4 +1,4 @@
-import React, { useState, memo } from "react";
+import React, { useState, memo, useEffect } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -7,8 +7,6 @@ import ReactFlow, {
   NodeProps,
 } from "reactflow";
 import "reactflow/dist/style.css";
-
-const workflows = [{ id: "hyatt", name: "Hyatt" }];
 
 const outlinedStyle = {
   background: "#fff",
@@ -392,6 +390,73 @@ const WorkflowsPage: React.FC = () => {
     "hyatt"
   );
 
+  // State for orchestrations and diagrams
+  const [orchestrations, setOrchestrations] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [generatingDiagram, setGeneratingDiagram] = useState<string | null>(
+    null
+  );
+
+  // Load orchestrations on component mount
+  useEffect(() => {
+    const loadOrchestrations = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/orchestrations");
+        if (response.ok) {
+          const data = await response.json();
+          setOrchestrations(Object.values(data.orchestrators || {}));
+        } else {
+          // Fallback to demo data if API fails
+          setOrchestrations([
+            { id: "hyatt", name: "Hyatt Orchestrator", hasDiagram: true },
+            { id: "hive", name: "Hive Orchestrator", hasDiagram: false },
+            {
+              id: "template",
+              name: "Template Orchestrator",
+              hasDiagram: false,
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to load orchestrations:", error);
+        // Fallback to demo data
+        setOrchestrations([
+          { id: "hyatt", name: "Hyatt Orchestrator", hasDiagram: true },
+          { id: "hive", name: "Hive Orchestrator", hasDiagram: false },
+          { id: "template", name: "Template Orchestrator", hasDiagram: false },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadOrchestrations();
+  }, []);
+
+  // Handle diagram generation
+  const handleGenerateDiagram = async (orchestrationId: string) => {
+    setGeneratingDiagram(orchestrationId);
+    try {
+      // TODO: Implement diagram generation API call
+      console.log(`Generating diagram for ${orchestrationId}`);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Update orchestration to show it now has a diagram
+      setOrchestrations((prev) =>
+        prev.map((orch) =>
+          orch.id === orchestrationId ? { ...orch, hasDiagram: true } : orch
+        )
+      );
+    } catch (error) {
+      console.error("Failed to generate diagram:", error);
+      alert("Failed to generate diagram. Please try again.");
+    } finally {
+      setGeneratingDiagram(null);
+    }
+  };
+
   // Debug logging
   console.log("Nodes:", hyattNodes);
   console.log("Edges:", hyattEdges);
@@ -401,22 +466,43 @@ const WorkflowsPage: React.FC = () => {
       {/* Left sidebar */}
       <div className="w-64 pr-6 border-r border-slate-200 bg-white rounded-l-lg flex flex-col">
         <h2 className="text-xl font-bold mb-4 mt-2">Workflows</h2>
-        <ul className="flex-1">
-          {workflows.map((wf) => (
-            <li key={wf.id}>
-              <button
-                className={`w-full text-left py-2 px-4 rounded-md font-medium transition-colors duration-200 mb-2 ${
-                  selectedWorkflow === wf.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-slate-200 text-slate-800 hover:bg-blue-100"
-                }`}
-                onClick={() => setSelectedWorkflow(wf.id)}
-              >
-                {wf.name}
-              </button>
-            </li>
-          ))}
-        </ul>
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : (
+          <ul className="flex-1">
+            {orchestrations.map((orchestration) => (
+              <li key={orchestration.id} className="mb-2">
+                <div className="flex items-center justify-between">
+                  <button
+                    className={`flex-1 text-left py-2 px-4 rounded-md font-medium transition-colors duration-200 ${
+                      selectedWorkflow === orchestration.id
+                        ? "bg-blue-600 text-white"
+                        : "bg-slate-200 text-slate-800 hover:bg-blue-100"
+                    }`}
+                    onClick={() => setSelectedWorkflow(orchestration.id)}
+                  >
+                    {orchestration.name}
+                  </button>
+                  {!orchestration.hasDiagram && (
+                    <button
+                      onClick={() => handleGenerateDiagram(orchestration.id)}
+                      disabled={generatingDiagram === orchestration.id}
+                      className="ml-2 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {generatingDiagram === orchestration.id ? (
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                      ) : (
+                        "Generate WFD"
+                      )}
+                    </button>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       {/* Right content pane */}
       <div className="flex-1 pl-6 flex flex-col">
