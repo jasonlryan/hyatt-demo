@@ -11,11 +11,11 @@ describe('diagramMapper', () => {
       const edge = createEdgeFromString(connectionString, style);
       
       expect(edge).toEqual({
-        id: 'node1-node2',
+        id: 'node1:R-node2:L',
         from: { nodeId: 'node1', connector: 'R' },
         to: { nodeId: 'node2', connector: 'L' },
         style: { color: '#2563eb', dashed: true },
-        type: 'default',
+        type: undefined,
       });
     });
 
@@ -33,7 +33,7 @@ describe('diagramMapper', () => {
       const connectionString = 'source_node:R -> target_node:L';
       const edge = createEdgeFromString(connectionString, {});
       
-      expect(edge.id).toBe('source_node-target_node');
+      expect(edge.id).toBe('source_node:R-target_node:L');
     });
 
     it('should apply custom style', () => {
@@ -81,7 +81,7 @@ describe('diagramMapper', () => {
             from: { nodeId: 'node1', connector: 'R' },
             to: { nodeId: 'node2', connector: 'L' },
             style: { color: '#2563eb' },
-            type: 'default',
+            type: undefined,
           },
         ],
       };
@@ -99,6 +99,10 @@ describe('diagramMapper', () => {
         data: {
           label: 'Node 1',
           style: { border: '2px solid #000' },
+          connectors: [
+            { id: 'node1-R', position: 'R' },
+            { id: 'node1-L', position: 'L' },
+          ],
         },
       });
 
@@ -109,8 +113,9 @@ describe('diagramMapper', () => {
         target: 'node2',
         sourceHandle: 'source-right',
         targetHandle: 'target-left',
-        style: { color: '#2563eb' },
+        style: { stroke: '#2563eb', strokeWidth: 2 },
         type: 'default',
+        animated: false,
       });
     });
 
@@ -155,7 +160,7 @@ describe('diagramMapper', () => {
             from: { nodeId: 'node1', connector: 'R' },
             to: { nodeId: 'node2', connector: 'L' },
             style: {},
-            type: 'default',
+            type: undefined,
           },
         ],
       };
@@ -188,7 +193,7 @@ describe('diagramMapper', () => {
             from: { nodeId: 'node1', connector: 'T' },
             to: { nodeId: 'node1', connector: 'B' },
             style: {},
-            type: 'default',
+            type: undefined,
           },
         ],
       };

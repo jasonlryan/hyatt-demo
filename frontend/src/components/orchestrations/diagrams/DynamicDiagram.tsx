@@ -11,6 +11,11 @@ const agentColors: Record<string, string> = {
   trending: "#22c55e",
   story: "#7c3aed",
   "pr-manager": "#64748b",
+  pr_manager: "#64748b",
+  research_audience: "#2563eb",
+  strategic_insight: "#ec4899",
+  trending_news: "#22c55e",
+  story_angles: "#7c3aed",
   visual_prompt_generator: "#f59e0b",
   modular_elements_recommender: "#06b6d4",
   trend_cultural_analyzer: "#8b5cf6",
@@ -21,7 +26,7 @@ export const calculateNodePosition = (index: number, total: number) => {
   const centerX = 600;
   const centerY = 300;
   const radius = 200;
-  if (total === 1) return { x: centerX, y: centerY };
+  if (total <= 1) return { x: centerX, y: centerY };
   const angle = (index / total) * Math.PI * 2;
   return {
     x: centerX + radius * Math.cos(angle),
