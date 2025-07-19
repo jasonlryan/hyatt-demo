@@ -462,13 +462,13 @@ const WorkflowsPage: React.FC = () => {
   console.log("Edges:", hyattEdges);
 
   return (
-    <div className="flex h-[90vh] bg-slate-50 rounded-lg shadow p-4">
+    <div className="flex h-[90vh] bg-secondary rounded-lg shadow p-4">
       {/* Left sidebar */}
-      <div className="w-64 pr-6 border-r border-slate-200 bg-white rounded-l-lg flex flex-col">
+      <div className="w-64 pr-6 border-r border-border bg-white rounded-l-lg flex flex-col">
         <h2 className="text-xl font-bold mb-4 mt-2">Workflows</h2>
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : (
           <ul className="flex-1">
@@ -478,8 +478,8 @@ const WorkflowsPage: React.FC = () => {
                   <button
                     className={`flex-1 text-left py-2 px-4 rounded-md font-medium transition-colors duration-200 ${
                       selectedWorkflow === orchestration.id
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-200 text-slate-800 hover:bg-blue-100"
+                        ? "bg-primary text-white"
+                        : "bg-secondary text-text-primary hover:bg-primary-light"
                     }`}
                     onClick={() => setSelectedWorkflow(orchestration.id)}
                   >
@@ -489,7 +489,7 @@ const WorkflowsPage: React.FC = () => {
                     <button
                       onClick={() => handleGenerateDiagram(orchestration.id)}
                       disabled={generatingDiagram === orchestration.id}
-                      className="ml-2 px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      className="ml-2 px-3 py-1 text-xs bg-success text-white rounded hover:bg-success-hover disabled:bg-secondary disabled:cursor-not-allowed transition-colors"
                     >
                       {generatingDiagram === orchestration.id ? (
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>

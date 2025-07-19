@@ -142,7 +142,7 @@ const Header: React.FC<HeaderProps> = ({
             <span className="mr-2 text-slate-300">HITL Review</span>
             <div
               className={`relative w-12 h-6 rounded-full transition-colors duration-200 ease-in-out ${
-                hitlReview ? "bg-green-500" : "bg-slate-500"
+                hitlReview ? "bg-success" : "bg-secondary"
               }`}
               onClick={onToggleHitl}
             >
