@@ -46,12 +46,18 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
   const [generatedOrchestration, setGeneratedOrchestration] =
     useState<OrchestrationSpec | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationStep, setGenerationStep] = useState<string | null>(null);
+  const [generatedPage, setGeneratedPage] = useState<string | null>(null);
+  const [generatedComponent, setGeneratedComponent] = useState<string | null>(null);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   const handleGenerateOrchestration = async (brief: string) => {
+    setGenerationError(null);
     setIsGenerating(true);
+    setGenerationStep("orchestration");
 
     try {
-      const response = await fetch("/api/generate-orchestration", {
+      const orchestrationRes = await fetch("/api/generate-orchestration", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,18 +65,55 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
         body: JSON.stringify({ description: brief }),
       });
 
-      if (!response.ok) {
+      if (!orchestrationRes.ok) {
         throw new Error(
-          `Failed to generate orchestration: ${response.statusText}`
+          `Failed to generate orchestration: ${orchestrationRes.statusText}`
         );
       }
 
-      const generatedOrchestration = await response.json();
-      setGeneratedOrchestration(generatedOrchestration);
+      const orchestrationData = await orchestrationRes.json();
+      setGeneratedOrchestration(orchestrationData);
+
+      setGenerationStep("page");
+      const pageRes = await fetch("/api/generate-page", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          pageType: "orchestration",
+          requirements: orchestrationData.description,
+          features: orchestrationData.workflows.join(", "),
+        }),
+      });
+
+      if (pageRes.ok) {
+        const pageData = await pageRes.json();
+        setGeneratedPage(pageData.page);
+      } else {
+        throw new Error(`Page generation failed: ${pageRes.statusText}`);
+      }
+
+      setGenerationStep("component");
+      const compRes = await fetch("/api/generate-component", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          componentType: "orchestration-ui",
+          requirements: orchestrationData.description,
+          orchestrationContext: orchestrationData.name,
+        }),
+      });
+
+      if (compRes.ok) {
+        const compData = await compRes.json();
+        setGeneratedComponent(compData.component);
+      } else {
+        throw new Error(`Component generation failed: ${compRes.statusText}`);
+      }
+
       setIsBuilderModalOpen(true);
-    } catch (error) {
-      console.error("Error generating orchestration:", error);
-      // Fallback to mock data if AI generation fails
+    } catch (error: any) {
+      console.error("Generation error:", error);
+      setGenerationError(error.message || "Generation failed");
       const mockGenerated: OrchestrationSpec = {
         name: "AI-Generated Orchestrator",
         description: `Orchestration built for: ${brief}`,
@@ -85,10 +128,10 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
           parallelExecution: true,
         },
       };
-
       setGeneratedOrchestration(mockGenerated);
       setIsBuilderModalOpen(true);
     } finally {
+      setGenerationStep(null);
       setIsGenerating(false);
     }
   };
@@ -179,7 +222,13 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
               {isGenerating ? (
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  <span>Generating...</span>
+                  <span>
+                    {generationStep === "page"
+                      ? "Generating Page..."
+                      : generationStep === "component"
+                      ? "Generating Component..."
+                      : "Generating..."}
+                  </span>
                 </>
               ) : (
                 <>
@@ -189,6 +238,11 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
               )}
             </button>
           </div>
+          {generationError && (
+            <p className="text-error text-sm text-center mt-2">
+              {generationError}
+            </p>
+          )}
 
           <div className="mt-6 text-center text-sm text-text-muted">
             <p>
@@ -294,6 +348,24 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                       </>
                     )}
                   </div>
+                </div>
+              )}
+
+              {generatedPage && (
+                <div>
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">Generated Page</h3>
+                  <pre className="bg-secondary p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap">
+                    {generatedPage}
+                  </pre>
+                </div>
+              )}
+
+              {generatedComponent && (
+                <div>
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">Generated Component</h3>
+                  <pre className="bg-secondary p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap">
+                    {generatedComponent}
+                  </pre>
                 </div>
               )}
 
