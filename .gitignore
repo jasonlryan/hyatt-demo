@@ -62,7 +62,7 @@ ehthumbs.db
 Thumbs.db
 
 # Campaign data (optional - remove if you want to track campaigns)
-hyatt-gpt-prototype/campaigns/*.json
+hive/campaigns/*.json
 
 # Temporary files
 *.tmp

@@ -57,7 +57,7 @@ The Hyatt GPT Agent System is a comprehensive AI-powered orchestration platform 
 
 ### 3. Orchestration Engine (Node.js)
 
-**Location**: `hyatt-gpt-prototype/`
+**Location**: `hive/`
 **Port**: 3001
 
 **Core Features**:
@@ -206,8 +206,8 @@ ENABLE_LOGGING=true
 
 ### Configuration Files
 
-- **Agent Config**: `hyatt-gpt-prototype/agents/agents.config.json`
-- **Orchestration Config**: `hyatt-gpt-prototype/orchestrations/configs/orchestrations.config.json`
+- **Agent Config**: `hive/agents/agents.config.json`
+- **Orchestration Config**: `hive/orchestrations/configs/orchestrations.config.json`
 - **Frontend Config**: `frontend/vite.config.ts`, `frontend/tailwind.config.js`
 
 ## 🔒 Security Considerations
@@ -248,7 +248,7 @@ ENABLE_LOGGING=true
 ```
 DEMO/
 ├── frontend/               # React frontend
-├── hyatt-gpt-prototype/    # Backend orchestration
+├── hive/    # Backend orchestration
 ├── pages/                  # API endpoints
 ├── docs/                   # Documentation
 └── Use cases/              # Test briefs

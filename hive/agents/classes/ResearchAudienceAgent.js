@@ -81,7 +81,7 @@ class ResearchAudienceAgent {
       path.join(__dirname, "../prompts", this.promptFile), // Consolidated prompts path
       // Fallback paths (can be removed if the above is robust)
       // path.join(process.cwd(), 'GPTs', this.promptFile),
-      // path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile),
+      // path.join(process.cwd(), 'hive', 'GPTs', this.promptFile),
       // path.join(__dirname, '../../GPTs', this.promptFile) // If agents are nested deeper
     ];
 
@@ -113,8 +113,8 @@ class ResearchAudienceAgent {
           try {
             await fs.access(promptPath);
           } catch (e) {
-            // If not found, try another common Vercel structure if GPTs is inside hyatt-gpt-prototype
-            promptPath = path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile);
+            // If not found, try another common Vercel structure if GPTs is inside hive
+            promptPath = path.join(process.cwd(), 'hive', 'GPTs', this.promptFile);
             try {
                 await fs.access(promptPath);
             } catch (e2) {
@@ -126,7 +126,7 @@ class ResearchAudienceAgent {
         // Local development: try a path relative to where AgentOrchestrator might be if it's at project root
         const localPath1 = path.join(__dirname, '../GPTs', this.promptFile); // Assumes agents/ is sibling to GPTs/
         const localPath2 = path.join(process.cwd(), 'GPTs', this.promptFile); // Assumes running from DEMO, GPTs is sibling
-        const localPath3 = path.join(process.cwd(), 'hyatt-gpt-prototype', 'GPTs', this.promptFile); // Assumes running from DEMO, then into app
+        const localPath3 = path.join(process.cwd(), 'hive', 'GPTs', this.promptFile); // Assumes running from DEMO, then into app
 
         const checkPaths = [localPath1, localPath2, localPath3, promptPath]; 
         let foundPath = false;

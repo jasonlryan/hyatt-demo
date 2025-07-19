@@ -169,7 +169,7 @@ The AI uses a comprehensive system prompt that includes:
 
 ### Generated Documentation
 
-- **Location**: `/hyatt-gpt-prototype/orchestrations/docs/`
+- **Location**: `/hive/orchestrations/docs/`
 - **Individual Files**: `{orchestration-id}.md`
 - **Main Index**: `README.md` (automatically updated)
 

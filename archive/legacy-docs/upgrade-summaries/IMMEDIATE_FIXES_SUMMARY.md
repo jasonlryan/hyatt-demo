@@ -87,7 +87,7 @@
 
 ## Testing Instructions
 
-1. Start the server: `cd hyatt-gpt-prototype && npm start`
+1. Start the server: `cd hive && npm start`
 2. Submit a detailed campaign brief with specific details about:
    - Property name and location
    - Target audience specifics
