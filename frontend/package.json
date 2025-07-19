@@ -11,6 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "lucide-react": "^0.411.0",
     "openai": "^5.10.1",
     "postcss-import": "^16.1.1",

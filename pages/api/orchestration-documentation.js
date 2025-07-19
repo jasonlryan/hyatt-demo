@@ -5,11 +5,24 @@ export default function handler(req, res) {
 
   try {
     const { id } = req.query;
-    if (!id) return res.status(400).json({ message: "Missing orchestration id" });
+    if (!id)
+      return res.status(400).json({ message: "Missing orchestration id" });
 
     const fs = require("fs");
     const path = require("path");
-    const docPath = path.join(process.cwd(), "docs", "orchestrations", `${id}.md`);
+
+    // Documentation path mapping
+    const documentationPaths = {
+      hyatt: "docs/orchestrations/HyattOrchestrator.md",
+      builder: "docs/orchestrations/OrchestrationBuilder.md",
+      template: "docs/orchestrations/TemplateOrchestrator.md",
+      hive: "docs/orchestrations/HiveOrchestrator.md",
+    };
+
+    const docPath = path.join(
+      process.cwd(),
+      documentationPaths[id] || `docs/orchestrations/${id}.md`
+    );
 
     if (!fs.existsSync(docPath)) {
       return res.status(404).json({ message: "Documentation not found" });

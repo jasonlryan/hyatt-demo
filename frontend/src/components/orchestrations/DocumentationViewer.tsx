@@ -2,19 +2,24 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useDocumentation } from "../../hooks/useDocumentation";
+import "./documentationViewer.css";
 
 interface DocumentationViewerProps {
   orchestrationId: string;
 }
 
-const DocumentationViewer: React.FC<DocumentationViewerProps> = ({ orchestrationId }) => {
+const DocumentationViewer: React.FC<DocumentationViewerProps> = ({
+  orchestrationId,
+}) => {
   const { markdown, loading, error } = useDocumentation(orchestrationId);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        <span className="ml-2 text-text-secondary">Loading documentation...</span>
+        <span className="ml-2 text-text-secondary">
+          Loading documentation...
+        </span>
       </div>
     );
   }
@@ -29,7 +34,7 @@ const DocumentationViewer: React.FC<DocumentationViewerProps> = ({ orchestration
   }
 
   return (
-    <div className="prose prose-slate max-w-none p-6">
+    <div className="documentation-viewer">
       <ReactMarkdown remarkPlugins={[remarkGfm]}>{markdown}</ReactMarkdown>
     </div>
   );
