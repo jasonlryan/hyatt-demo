@@ -1,17 +1,33 @@
 :root {
-  /* Colors */
-  --color-primary: #4CAF50;
-  --color-primary-hover: #45a049;
-  --color-secondary: #f8f9fa;
-  --color-border: #e9ecef;
-  --color-text-primary: #212529;
-  --color-text-secondary: #6c757d;
+  /* Primary Colors (Hyatt Green) */
+  --color-primary: #006241;
+  --color-primary-hover: #004d32;
+  --color-primary-light: #e6f2ef;
+  --color-primary-lighter: #f0f9f6;
+
+  /* Success Colors (Green variants) */
+  --color-success: #059669;
+  --color-success-hover: #047857;
+  --color-success-light: #d1fae5;
+  --color-success-lighter: #ecfdf5;
+
+  /* Secondary Colors (Neutral) */
+  --color-secondary: #f8fafc;
+  --color-secondary-hover: #f1f5f9;
+
+  /* Text Colors */
+  --color-text-primary: #1e293b;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+
+  /* Border Colors */
+  --color-border: #e2e8f0;
+  --color-border-focus: #006241;
 
   /* Status Colors */
-  --color-success: #28a745;
-  --color-warning: #ffc107;
-  --color-error: #dc3545;
-  --color-info: #17a2b8;
+  --color-info: #3b82f6;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
 
   /* Brand Colors */
   --color-hyatt-blue: #002d72;
