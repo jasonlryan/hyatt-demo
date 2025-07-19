@@ -15,14 +15,14 @@ const GlobalNav: React.FC<GlobalNavProps> = ({
   onNavigateToOrchestrations,
 }) => {
   return (
-    <nav className="bg-white border-b border-gray-200">
+    <nav className="bg-white border-b border-border">
       <div className="container">
         <div className="flex items-center justify-between h-[73px]">
           {/* Brand */}
           <div className="flex items-center">
             <div className="text-xl font-bold">
-              <span className="text-green-600">ZENO</span>
-              <span className="text-gray-800"> AI HIVE</span>
+              <span className="text-success">ZENO</span>
+              <span className="text-text-primary"> AI HIVE</span>
             </div>
           </div>
 
@@ -32,8 +32,8 @@ const GlobalNav: React.FC<GlobalNavProps> = ({
               <button
                 className={`px-4 py-2 text-sm font-medium rounded ${
                   currentView === "orchestrations"
-                    ? "bg-green-600 text-white"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-success text-white"
+                    : "text-text-secondary hover:text-text-primary hover:bg-secondary"
                 }`}
                 onClick={onNavigateToOrchestrations}
               >
@@ -43,8 +43,8 @@ const GlobalNav: React.FC<GlobalNavProps> = ({
               <button
                 className={`px-4 py-2 text-sm font-medium rounded flex items-center ${
                   currentView === "agents"
-                    ? "bg-green-600 text-white"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-success text-white"
+                    : "text-text-secondary hover:text-text-primary hover:bg-secondary"
                 }`}
                 onClick={onNavigateToAgents}
               >
@@ -54,8 +54,8 @@ const GlobalNav: React.FC<GlobalNavProps> = ({
               <button
                 className={`px-4 py-2 text-sm font-medium rounded ${
                   currentView === "workflows"
-                    ? "bg-green-600 text-white"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                    ? "bg-success text-white"
+                    : "text-text-secondary hover:text-text-primary hover:bg-secondary"
                 }`}
                 onClick={onNavigateToWorkflows}
               >
