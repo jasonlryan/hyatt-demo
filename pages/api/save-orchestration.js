@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import { FileGenerator } from "../../utils/fileGenerator";
+import { CodeValidator } from "../../utils/codeValidator";
 
 // Helper function to generate documentation markdown
 function generateDocumentationMarkdown(orchestration) {
@@ -311,6 +313,29 @@ export default async function handler(req, res) {
         createdAt: new Date().toISOString(),
       },
     };
+
+    if (orchestration.generatedPage) {
+      const fileGenerator = new FileGenerator();
+
+      const stylingValidation = CodeValidator.validateStyling(
+        orchestration.generatedPage
+      );
+      if (!stylingValidation.isValid) {
+        return res
+          .status(400)
+          .json({ error: "Generated code contains styling violations" });
+      }
+
+      await fileGenerator.generateOrchestrationPage(
+        uniqueId,
+        orchestration.name,
+        orchestration.generatedPage
+      );
+
+      newOrchestration.metadata.generatedPagePath =
+        `frontend/src/components/orchestrations/generated/${uniqueId}.tsx`;
+      newOrchestration.metadata.generatedPageId = uniqueId;
+    }
 
     // Save to a file (in a real app, this would go to a database)
     const orchestrationsDir = path.join(

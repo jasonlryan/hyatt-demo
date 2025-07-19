@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useOrchestrationNavigation } from "./hooks/useOrchestrationNavigation";
 import GlobalNav from "./components/GlobalNav";
 import AgentsPage from "./components/AgentsPage";
@@ -9,9 +9,60 @@ import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestration
 import TemplateOrchestrationPage from "./components/orchestrations/TemplateOrchestrationPage";
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
 import GenericOrchestrationPage from "./components/orchestrations/GenericOrchestrationPage";
+import {
+  loadOrchestrationPage,
+  GeneratedOrchestrationPageProps,
+} from "./components/orchestrations/generated";
 import HitlReviewModal from "./components/HitlReviewModal";
 import StylePanel from "./components/StylePanel";
 import "./components/deliverableStyles.css";
+
+const OrchestrationPageLoader = ({ orchestrationId, ...props }: GeneratedOrchestrationPageProps) => {
+  const [OrchestrationComponent, setOrchestrationComponent] = useState<React.ComponentType | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const loadPage = async () => {
+      try {
+        setLoading(true);
+        const Component = await loadOrchestrationPage(orchestrationId);
+        setOrchestrationComponent(() => Component);
+      } catch (err: any) {
+        console.error(`Failed to load orchestration page for ${orchestrationId}:`, err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPage();
+  }, [orchestrationId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-text-secondary">Loading orchestration...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-error mb-4">Failed to load orchestration</p>
+          <p className="text-text-secondary">Using generic template</p>
+        </div>
+      </div>
+    );
+  }
+
+  return OrchestrationComponent ? <OrchestrationComponent {...props} /> : null;
+};
 
 function App() {
   const {
@@ -146,19 +197,30 @@ function App() {
           );
         default:
           return (
-            <GenericOrchestrationPage
-              orchestrationId={selectedOrchestration}
-              orchestrationName={selectedOrchestration}
-              hitlReview={hitlReview}
-              onToggleHitl={async () => {
-                const newState = !hitlReview;
-                await updateHitlReviewState(newState);
-                if (newState) {
-                  setIsHitlModalOpen(true);
-                }
-              }}
-              onNavigateToOrchestrations={handleNavigateToOrchestrations}
-            />
+            <Suspense
+              fallback={
+                <div className="min-h-screen flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-text-secondary">Loading orchestration...</p>
+                  </div>
+                </div>
+              }
+            >
+              <OrchestrationPageLoader
+                orchestrationId={selectedOrchestration}
+                orchestrationName={selectedOrchestration}
+                hitlReview={hitlReview}
+                onToggleHitl={async () => {
+                  const newState = !hitlReview;
+                  await updateHitlReviewState(newState);
+                  if (newState) {
+                    setIsHitlModalOpen(true);
+                  }
+                }}
+                onNavigateToOrchestrations={handleNavigateToOrchestrations}
+              />
+            </Suspense>
           );
       }
     }
