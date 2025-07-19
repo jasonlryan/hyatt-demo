@@ -1,284 +1,229 @@
-# Proactive Styling Development Prompt
+# 🎨 Proactive Styling Prompt for New Development
 
-## 🎯 **Use This Prompt When Creating New Components**
+## 🎯 **Purpose**
 
-When you need to create a new React component, use this prompt to ensure it follows the unified styling system from the start:
+This prompt ensures that **all new components and features** are built using the unified styling system from the start, preventing the need for retrospective migration.
 
----
+## 📋 **Complete Proactive Styling Prompt**
 
-**"Create a new React component for [COMPONENT_NAME] that follows the unified styling system. Use ONLY design tokens (bg-primary, text-text-primary, etc.) and NEVER hardcoded colors (bg-blue-600, text-gray-900, etc.). Follow the mandatory component patterns and ensure proper hover states, focus states, and accessibility."**
+### **For New Component Development**
 
----
+```
+You are developing a new React component for the Hive application.
 
-## 🚨 **CRITICAL: Never Use Hardcoded Colors**
+CRITICAL STYLING REQUIREMENTS:
+- NEVER use hardcoded Tailwind colors (bg-blue-*, text-green-*, bg-gray-*, etc.)
+- ALWAYS use the unified design token system
+- Follow established patterns from existing components
+- Ensure accessibility and brand consistency
 
-### **❌ FORBIDDEN:**
+DESIGN TOKEN SYSTEM:
+- Primary actions: bg-primary hover:bg-primary-hover text-white
+- Success states: bg-success hover:bg-success-hover text-white
+- Text hierarchy: text-text-primary (headings), text-text-secondary (body), text-text-muted (helper)
+- Backgrounds: bg-secondary (containers), bg-bg-primary (main content)
+- Borders: border border-border (standard), border-t border-border (dividers)
+- Focus states: focus:ring-2 focus:ring-primary focus:border-primary
 
-```jsx
-// NEVER write these:
-bg-blue-500, bg-blue-600, bg-green-500, bg-green-600
-text-blue-600, text-gray-900, text-slate-800
-border-blue-200, border-gray-200
-hover:bg-blue-600, focus:ring-blue-500
+COMPONENT PATTERNS:
+- Buttons: px-4 py-2 bg-primary hover:bg-primary-hover text-white font-medium rounded transition-colors
+- Cards: bg-white rounded-lg shadow-md p-6 border border-border
+- Forms: w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition
+- Status indicators: inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success
+
+VALIDATION:
+- Before completing, verify no hardcoded colors are used
+- Ensure all colors use design tokens
+- Check hover states use token variants
+- Verify focus states are accessible
+
+Reference: docs/frontend/STYLING_SYSTEM_GUIDE.md
 ```
 
-### **✅ REQUIRED:**
+### **For Component Updates**
 
-```jsx
-// ALWAYS write these:
-bg-primary, bg-success, bg-secondary
-text-primary, text-text-primary, text-text-secondary
-border-border, border-primary
-hover:bg-primary-hover, focus:ring-primary
+```
+You are updating an existing React component in the Hive application.
+
+STYLING MIGRATION REQUIREMENTS:
+- Identify any hardcoded colors (bg-blue-*, text-green-*, bg-gray-*, etc.)
+- Replace with appropriate design tokens
+- Maintain visual consistency with existing components
+- Preserve all functionality and accessibility
+
+MIGRATION PATTERNS:
+- bg-blue-600 → bg-primary
+- bg-green-600 → bg-success
+- text-gray-900 → text-text-primary
+- text-gray-600 → text-text-secondary
+- bg-gray-50 → bg-secondary
+- border-gray-200 → border-border
+- hover:bg-blue-700 → hover:bg-primary-hover
+- focus:ring-blue-500 → focus:ring-primary
+
+VALIDATION STEPS:
+1. Find hardcoded colors: grep -r "bg-blue-\|bg-green-\|bg-gray-\|text-blue-\|text-green-\|text-gray-" [component-file]
+2. Map to design tokens using the patterns above
+3. Test visual consistency
+4. Verify accessibility compliance
+
+Reference: docs/frontend/STYLING_SYSTEM_GUIDE.md
 ```
 
-## 🎨 **Mandatory Component Templates**
+### **For Feature Development**
 
-### **Page Component Template**
+```
+You are developing a new feature for the Hive application.
 
-```jsx
-import React from 'react';
+STYLING INTEGRATION REQUIREMENTS:
+- All new components must use the unified styling system
+- Follow established design patterns from existing features
+- Ensure consistency with the overall application design
+- Maintain brand alignment and accessibility
 
-interface [ComponentName]Props {
-  // Define your props here
-}
+DESIGN SYSTEM INTEGRATION:
+- Use semantic design tokens for all colors
+- Follow component patterns from similar features
+- Implement proper hover and focus states
+- Ensure responsive design with consistent spacing
 
-const [ComponentName]: React.FC<[ComponentName]Props> = ({ /* props */ }) => {
-  return (
-    <div className="bg-secondary min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-text-primary mb-6">[Page Title]</h1>
+FEATURE-SPECIFIC PATTERNS:
+- Navigation: Use GlobalNav and Header patterns
+- Forms: Use SharedCampaignForm patterns
+- Modals: Use SharedModal patterns
+- Buttons: Use SharedActionButtons patterns
+- Progress: Use SharedProgressPanel patterns
 
-        {/* Your content here */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-border">
-          <h2 className="text-xl font-semibold text-text-primary mb-4">[Section Title]</h2>
-          <p className="text-text-secondary mb-4">[Description]</p>
+VALIDATION CHECKLIST:
+- [ ] No hardcoded colors in any new components
+- [ ] All components use design tokens
+- [ ] Visual consistency with existing features
+- [ ] Accessibility compliance verified
+- [ ] Responsive design implemented
+- [ ] Brand alignment maintained
 
-          <div className="flex gap-3">
-            <button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium">
-              Primary Action
-            </button>
-            <button className="px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-secondary-hover transition-colors font-medium">
-              Secondary Action
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default [ComponentName];
+Reference: docs/frontend/STYLING_SYSTEM_GUIDE.md
 ```
 
-### **Card Component Template**
+## 🔧 **Usage Instructions**
 
-```jsx
-import React from 'react';
+### **For Developers**
 
-interface [ComponentName]Props {
-  // Define your props here
-}
+1. **Copy the appropriate prompt** based on your task
+2. **Paste it at the beginning** of your development request
+3. **Include specific requirements** for your component/feature
+4. **Reference existing components** for patterns
 
-const [ComponentName]: React.FC<[ComponentName]Props> = ({ /* props */ }) => {
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-border">
-      <h2 className="text-xl font-semibold text-text-primary mb-4">[Card Title]</h2>
-      <p className="text-text-secondary mb-4">[Card description]</p>
+### **Example Usage**
 
-      <div className="flex gap-3">
-        <button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium">
-          Primary Action
-        </button>
-        <button className="px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-secondary-hover transition-colors font-medium">
-          Secondary Action
-        </button>
-      </div>
-    </div>
-  );
-};
+```
+[PROACTIVE STYLING PROMPT]
 
-export default [ComponentName];
+Create a new UserProfile component that displays:
+- User avatar and name
+- Email and role information
+- Edit profile button
+- Account settings link
+
+The component should:
+- Use the unified styling system
+- Follow patterns from existing profile components
+- Be responsive and accessible
+- Include proper hover and focus states
 ```
 
-### **Form Component Template**
+### **For Code Reviews**
 
-```jsx
-import React, { useState } from 'react';
+```
+[STYLING VALIDATION]
 
-interface [ComponentName]Props {
-  onSubmit: (data: any) => void;
-  onCancel: () => void;
-}
+Please review this component for styling compliance:
 
-const [ComponentName]: React.FC<[ComponentName]Props> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState({});
+CHECKLIST:
+- [ ] No hardcoded colors (bg-blue-*, text-green-*, etc.)
+- [ ] All colors use design tokens (bg-primary, text-text-primary, etc.)
+- [ ] Hover states use token variants (hover:bg-primary-hover)
+- [ ] Focus states are accessible (focus:ring-primary)
+- [ ] Visual consistency with existing components
+- [ ] Brand alignment maintained
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-border">
-      <h2 className="text-xl font-semibold text-text-primary mb-6">[Form Title]</h2>
-
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="fieldName" className="block text-sm font-medium text-text-secondary mb-2">
-            [Field Label]
-          </label>
-          <input
-            id="fieldName"
-            type="text"
-            className="w-full px-3 py-2 border border-border rounded focus:ring-2 focus:ring-primary focus:border-primary transition"
-            placeholder="[Placeholder text]"
-          />
-        </div>
-
-        <div className="flex gap-3 justify-end">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-secondary-hover transition-colors font-medium"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium"
-          >
-            Submit
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-export default [ComponentName];
+VALIDATION COMMAND:
+grep -r "bg-blue-\|bg-green-\|bg-gray-\|text-blue-\|text-green-\|text-gray-" [component-file]
 ```
 
-## 🎯 **Semantic Color Usage Guide**
+## 📚 **Reference Materials**
 
-### **Primary Actions (Main CTAs)**
+### **Design Token Quick Reference**
 
-```jsx
-// Use for main actions like Save, Submit, Create
-<button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium">
-  Save Campaign
-</button>
-```
+| Purpose         | Token                               | Example                                                             |
+| --------------- | ----------------------------------- | ------------------------------------------------------------------- |
+| Primary buttons | `bg-primary hover:bg-primary-hover` | `<button className="bg-primary hover:bg-primary-hover text-white">` |
+| Success actions | `bg-success hover:bg-success-hover` | `<button className="bg-success hover:bg-success-hover text-white">` |
+| Main headings   | `text-text-primary`                 | `<h1 className="text-text-primary">`                                |
+| Body text       | `text-text-secondary`               | `<p className="text-text-secondary">`                               |
+| Helper text     | `text-text-muted`                   | `<span className="text-text-muted">`                                |
+| Containers      | `bg-secondary`                      | `<div className="bg-secondary">`                                    |
+| Borders         | `border border-border`              | `<div className="border border-border">`                            |
+| Focus states    | `focus:ring-primary`                | `focus:ring-2 focus:ring-primary focus:border-primary`              |
 
-### **Success Actions (Positive outcomes)**
-
-```jsx
-// Use for success actions like Complete, Approve, Activate
-<button className="px-4 py-2 bg-success hover:bg-success-hover text-white rounded transition-colors font-medium">
-  Complete
-</button>
-```
-
-### **Secondary Elements (Supporting content)**
+### **Component Pattern Examples**
 
 ```jsx
-// Use for neutral backgrounds and secondary actions
-<div className="bg-secondary p-4">
-  <p className="text-text-secondary">Supporting text</p>
-</div>
-
-<button className="px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-secondary-hover transition-colors font-medium">
-  Cancel
-</button>
-```
-
-### **Text Hierarchy**
-
-```jsx
-// Main headings
-<h1 className="text-text-primary font-bold">Main Title</h1>
-
-// Secondary text
-<p className="text-text-secondary">Description text</p>
-
-// Muted text
-<span className="text-text-muted">Helper text</span>
-```
-
-## 🔍 **Quick Reference**
-
-### **Available Design Tokens**
-
-```css
-/* Background Colors */
-bg-primary, bg-primary-hover, bg-primary-light, bg-primary-lighter
-bg-success, bg-success-hover, bg-success-light, bg-success-lighter
-bg-secondary, bg-secondary-hover
-bg-warning, bg-error, bg-info
-
-/* Text Colors */
-text-primary, text-primary-light, text-primary-lighter
-text-success, text-success-light, text-success-lighter
-text-text-primary, text-text-secondary, text-text-muted
-
-/* Border Colors */
-border-border, border-border-focus, border-primary
-
-/* Focus States */
-focus:ring-primary, focus:border-primary
-
-/* Hover States */
-hover:bg-primary-hover, hover:bg-success-hover
-```
-
-### **Common Patterns**
-
-```jsx
-// Page container
-<div className="bg-secondary min-h-screen">
-  <div className="max-w-7xl mx-auto px-4 py-8">
-    {/* Content */}
-  </div>
-</div>
-
-// Card
-<div className="bg-white rounded-lg shadow-md p-6 border border-border">
-  {/* Content */}
-</div>
-
-// Button
-<button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium">
+// Button Pattern
+<button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-medium rounded transition-colors">
   Action
 </button>
 
-// Input
-<input className="w-full px-3 py-2 border border-border rounded focus:ring-2 focus:ring-primary focus:border-primary transition" />
+// Card Pattern
+<div className="bg-white rounded-lg shadow-md p-6 border border-border">
+  <h2 className="text-xl font-bold text-text-primary mb-4">Title</h2>
+  <p className="text-text-secondary">Content</p>
+</div>
 
-// Label
-<label className="block text-sm font-medium text-text-secondary mb-2">
-  Label
-</label>
+// Form Input Pattern
+<input
+  className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition"
+  placeholder="Enter text..."
+/>
+
+// Status Badge Pattern
+<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success">
+  ✓ Active
+</span>
 ```
 
-## ⚠️ **Validation Checklist**
+## 🎯 **Success Metrics**
 
-Before committing any new component:
+### **Proactive Implementation**
 
-- [ ] **NO hardcoded colors** (`bg-blue-600`, `text-gray-900`, etc.)
-- [ ] **ALL colors use design tokens** (`bg-primary`, `text-text-primary`, etc.)
-- [ ] **Consistent patterns** used throughout
-- [ ] **Hover states** included for all interactive elements
-- [ ] **Focus states** included for accessibility
-- [ ] **Semantic color choices** made appropriately
-- [ ] **Component follows established patterns**
+- ✅ **0 hardcoded colors** in new components
+- ✅ **100% design token usage** from development start
+- ✅ **Consistent visual language** across all new features
+- ✅ **Reduced migration effort** for future updates
 
-## 🚀 **Usage Instructions**
+### **Quality Assurance**
 
-1. **Copy the appropriate template** above for your component type
-2. **Replace placeholder text** with your actual content
-3. **Use design tokens** for all colors
-4. **Follow semantic color usage** guidelines
-5. **Test accessibility** and hover states
-6. **Verify no hardcoded colors** before committing
+- ✅ **Brand consistency** maintained
+- ✅ **Accessibility compliance** built-in
+- ✅ **Developer efficiency** improved
+- ✅ **Code maintainability** enhanced
 
-This approach ensures all new components follow the unified styling system from the start, preventing the need for retrospective fixes later.
+## 🚀 **Continuous Improvement**
+
+### **Prompt Evolution**
+
+- Update based on new design patterns
+- Incorporate feedback from developers
+- Add new token references as needed
+- Improve clarity and specificity
+
+### **Team Adoption**
+
+- Share successful implementations
+- Document new patterns discovered
+- Provide training on prompt usage
+- Celebrate consistent styling achievements
+
+---
+
+**Remember**: Using this proactive prompt ensures that every new component follows the unified styling system from day one, eliminating the need for future migrations and maintaining design consistency across the entire application.

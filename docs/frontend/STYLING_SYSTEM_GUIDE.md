@@ -1,331 +1,330 @@
-# Unified Styling System Guide
+# 🎨 Unified Styling System Guide
 
-## 🎯 Overview
+## 🎯 **Overview**
 
-The Hive Agent System uses a **unified styling system** based on design tokens and consistent patterns. This system eliminates styling chaos and provides a maintainable, scalable approach to UI design.
+This guide documents the **Unified Styling System** for the Hive application. The system uses **CSS custom properties (design tokens)** mapped to Tailwind CSS classes to ensure consistent, maintainable, and brand-aligned styling across the entire application.
 
-## 🏗️ Architecture
+## 🏗️ **Architecture**
 
-### **Design Tokens (Single Source of Truth)**
+### **Design Tokens → Tailwind Mapping**
 
-Located in: `frontend/src/styles/design-tokens.css`
+The system uses CSS custom properties defined in `frontend/src/styles/design-tokens.css` and mapped in `frontend/tailwind.config.js`:
 
 ```css
+/* Design Tokens (frontend/src/styles/design-tokens.css) */
 :root {
-  /* Primary Colors */
-  --color-primary: #4caf50; /* Green for actions */
-  --color-primary-hover: #45a049; /* Darker green for hover */
-  --color-secondary: #f8f9fa; /* Light background */
-  --color-border: #e9ecef; /* Borders */
+  /* Primary Colors - Hyatt Brand */
+  --color-primary: #0078d4;
+  --color-primary-hover: #106ebe;
+  --color-primary-light: #e6f3ff;
+  --color-primary-lighter: #f0f8ff;
+
+  /* Success Colors */
+  --color-success: #107c10;
+  --color-success-hover: #0e6b0e;
+  --color-success-light: #e6f4e6;
 
   /* Text Colors */
-  --color-text-primary: #212529; /* Main text */
-  --color-text-secondary: #6c757d; /* Secondary text */
+  --color-text-primary: #323130;
+  --color-text-secondary: #605e5c;
+  --color-text-muted: #8a8886;
 
-  /* Status Colors */
-  --color-success: #28a745; /* Success states */
-  --color-warning: #ffc107; /* Warning states */
-  --color-error: #dc3545; /* Error states */
-  --color-info: #17a2b8; /* Info states */
+  /* Background Colors */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f3f2f1;
+  --color-bg-secondary-hover: #edebe9;
 
-  /* Brand Colors */
-  --color-hyatt-blue: #002d72; /* Hyatt brand blue */
-  --color-hyatt-blue-hover: #0046a8; /* Hyatt blue hover */
-  --color-hyatt-gold: #d4af37; /* Hyatt brand gold */
-
-  /* Typography */
-  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-base-size: 16px;
-
-  /* Spacing */
-  --spacing-container: 2rem;
+  /* Border Colors */
+  --color-border: #edebe9;
+  --color-border-hover: #c8c6c4;
 }
 ```
 
-### **Tailwind Integration**
-
-Located in: `frontend/tailwind.config.js`
-
 ```javascript
+// Tailwind Config Mapping (frontend/tailwind.config.js)
 module.exports = {
   theme: {
     extend: {
       colors: {
-        // Primary system
-        primary: "var(--color-primary)",
-        "primary-hover": "var(--color-primary-hover)",
-        secondary: "var(--color-secondary)",
-        border: "var(--color-border)",
-
-        // Text system
+        primary: {
+          DEFAULT: "var(--color-primary)",
+          hover: "var(--color-primary-hover)",
+          light: "var(--color-primary-light)",
+          lighter: "var(--color-primary-lighter)",
+        },
+        success: {
+          DEFAULT: "var(--color-success)",
+          hover: "var(--color-success-hover)",
+          light: "var(--color-success-light)",
+        },
         "text-primary": "var(--color-text-primary)",
         "text-secondary": "var(--color-text-secondary)",
-
-        // Status system
-        success: "var(--color-success)",
-        warning: "var(--color-warning)",
-        error: "var(--color-error)",
-        info: "var(--color-info)",
-
-        // Brand colors
-        "hyatt-blue": "var(--color-hyatt-blue)",
-        "hyatt-blue-hover": "var(--color-hyatt-blue-hover)",
-        "hyatt-gold": "var(--color-hyatt-gold)",
+        "text-muted": "var(--color-text-muted)",
+        secondary: {
+          DEFAULT: "var(--color-bg-secondary)",
+          hover: "var(--color-bg-secondary-hover)",
+        },
+        border: "var(--color-border)",
+        "border-hover": "var(--color-border-hover)",
       },
     },
   },
 };
 ```
 
-## 🎨 Standard Component Patterns
+## 🎨 **Color Usage Guidelines**
 
-### **Page Structure**
+### **Primary Actions & Brand Elements**
 
 ```jsx
-<div className="bg-secondary min-h-screen">
-  <div className="max-w-7xl mx-auto px-4 py-8">
-    <h1 className="text-2xl font-bold text-text-primary mb-4">Page Title</h1>
-    {/* Content */}
-  </div>
+// ✅ CORRECT - Primary buttons, links, brand elements
+<button className="bg-primary hover:bg-primary-hover text-white">
+  Save Changes
+</button>
+
+<a className="text-primary hover:text-primary-hover">
+  Learn More
+</a>
+```
+
+### **Success States & Positive Actions**
+
+```jsx
+// ✅ CORRECT - Success messages, confirmations
+<div className="bg-success-light text-success border border-success">
+  Changes saved successfully!
 </div>
+
+<button className="bg-success hover:bg-success-hover text-white">
+  Confirm
+</button>
 ```
 
-### **Cards & Containers**
+### **Text Hierarchy**
 
-```css
-/* Standard card */
-bg-white rounded-lg shadow-md p-6 border border-border
-
-/* Page background */
-bg-secondary min-h-screen
-
-/* Modal overlay */
-bg-black bg-opacity-50
+```jsx
+// ✅ CORRECT - Text color hierarchy
+<h1 className="text-text-primary">Main Heading</h1>
+<p className="text-text-secondary">Secondary text</p>
+<span className="text-text-muted">Muted helper text</span>
 ```
 
-### **Buttons**
+### **Backgrounds & Containers**
 
-```css
-/* Primary button */
-px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover transition-colors
-
-/* Secondary button */
-px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-gray-100 transition-colors
-
-/* Disabled button */
-px-4 py-2 bg-gray-300 text-gray-500 rounded cursor-not-allowed
+```jsx
+// ✅ CORRECT - Background usage
+<div className="bg-bg-primary">Main content area</div>
+<div className="bg-secondary hover:bg-secondary-hover">Interactive container</div>
 ```
 
-### **Typography**
+### **Borders & Dividers**
 
-```css
-/* Page headers */
-text-2xl font-bold text-text-primary mb-4
+```jsx
+// ✅ CORRECT - Border usage
+<div className="border border-border">Content container</div>
+<div className="border-t border-border">Divider</div>
+```
 
-/* Section headers */
-text-xl font-semibold text-text-primary mb-3
+## ❌ **Forbidden Patterns**
 
-/* Body text */
-text-text-primary leading-relaxed
+### **Hardcoded Colors (NEVER USE)**
 
-/* Secondary text */
-text-text-secondary text-sm
+```jsx
+// ❌ FORBIDDEN - Hardcoded Tailwind colors
+<button className="bg-blue-600 hover:bg-blue-700">Save</button>
+<div className="text-gray-900">Heading</div>
+<span className="bg-green-100 text-green-800">Status</span>
+```
+
+### **Inconsistent Patterns**
+
+```jsx
+// ❌ FORBIDDEN - Mixed patterns
+<button className="bg-primary text-blue-600">Mixed colors</button>
+<div className="text-text-primary border-blue-200">Inconsistent</div>
+```
+
+## 🔧 **Component Patterns**
+
+### **Button Components**
+
+```jsx
+// Primary Button
+<button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white font-medium rounded transition-colors">
+  Primary Action
+</button>
+
+// Secondary Button
+<button className="px-4 py-2 bg-secondary hover:bg-secondary-hover text-text-primary font-medium rounded transition-colors">
+  Secondary Action
+</button>
+
+// Success Button
+<button className="px-4 py-2 bg-success hover:bg-success-hover text-white font-medium rounded transition-colors">
+  Confirm
+</button>
 ```
 
 ### **Form Elements**
 
-```css
-/* Input fields */
-w-full px-3 py-2 border border-border rounded focus:ring-2 focus:ring-primary focus:border-primary transition
+```jsx
+// Input Field
+<input
+  className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition"
+  placeholder="Enter text..."
+/>
 
-/* Labels */
-block text-sm font-medium text-text-primary mb-2
-
-/* Textareas */
-w-full h-32 p-3 border border-border rounded focus:ring-2 focus:ring-primary focus:border-primary transition
+// Label
+<label className="block text-sm font-medium text-text-secondary mb-2">
+  Field Label
+</label>
 ```
 
 ### **Status Indicators**
 
-```css
-/* Success */
-bg-success text-white px-2 py-1 rounded-full text-xs
-
-/* Warning */
-bg-warning text-black px-2 py-1 rounded-full text-xs
-
-/* Error */
-bg-error text-white px-2 py-1 rounded-full text-xs
-
-/* Info */
-bg-info text-white px-2 py-1 rounded-full text-xs
-```
-
-## 🔧 Usage Guidelines
-
-### **DO: Use Design Tokens**
-
 ```jsx
-// ✅ CORRECT - Using design tokens
-<button className="bg-primary hover:bg-primary-hover text-white">
-  Save
-</button>
+// Success Status
+<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success">
+  ✓ Active
+</span>
 
-<div className="bg-secondary min-h-screen">
-  <h1 className="text-text-primary">Title</h1>
-</div>
+// Info Status
+<span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-light text-primary">
+  ℹ Info
+</span>
 ```
 
-### **DON'T: Use Hardcoded Colors**
+## 🛡️ **Enforcement Mechanisms**
 
-```jsx
-// ❌ WRONG - Hardcoded colors
-<button className="bg-green-600 hover:bg-green-700 text-white">
-  Save
-</button>
+### **1. Cursor Rules (`.cursor/rules/styling-system.mdc`)**
 
-<div className="bg-gray-50 min-h-screen">
-  <h1 className="text-gray-900">Title</h1>
-</div>
+The Cursor IDE enforces styling standards through rules that:
+
+- **Forbid hardcoded colors** (bg-blue-_, text-green-_, etc.)
+- **Require design token usage** for all color properties
+- **Provide real-time feedback** during development
+- **Suggest correct patterns** automatically
+
+### **2. Code Review Checklist**
+
+Every component must pass these checks:
+
+- [ ] No hardcoded color values (`bg-blue-*`, `text-green-*`, etc.)
+- [ ] All colors use design tokens (`bg-primary`, `text-text-primary`, etc.)
+- [ ] Hover states use token variants (`hover:bg-primary-hover`)
+- [ ] Focus states are accessible (`focus:ring-primary`)
+- [ ] Visual consistency with existing components
+
+### **3. Automated Validation**
+
+```bash
+# Check for hardcoded colors
+grep -r "bg-blue-\|bg-green-\|bg-gray-\|text-blue-\|text-green-\|text-gray-" frontend/src/components/
+
+# Should return no results in production code
 ```
 
-### **Color Mapping Reference**
+### **4. Development Workflow**
 
-```css
-/* OLD → NEW */
-bg-green-600 → bg-primary
-bg-green-700 → bg-primary-hover
-bg-blue-600 → bg-primary (for actions)
-bg-blue-700 → bg-primary-hover
-text-gray-900 → text-text-primary
-text-gray-600 → text-text-secondary
-text-blue-600 → text-primary
-bg-gray-50 → bg-secondary
-bg-slate-50 → bg-secondary
-border-gray-200 → border-border
-border-slate-200 → border-border
-focus:ring-blue-500 → focus:ring-primary
-focus:border-blue-500 → focus:border-primary
-```
+1. **New Component Development**:
 
-## 🎯 Brand Color Usage
+   - Use design tokens from the start
+   - Follow established patterns
+   - Test with different color schemes
 
-### **Hyatt Brand Colors (For Hyatt-Specific Features Only)**
+2. **Component Updates**:
 
-```jsx
-// Hyatt orchestration features
-<div className="bg-hyatt-blue hover:bg-hyatt-blue-hover">
-  Hyatt Campaign
-</div>
+   - Migrate any hardcoded colors to tokens
+   - Maintain visual consistency
+   - Update documentation if needed
 
-// Hyatt accent elements
-<span className="text-hyatt-gold">Hyatt Brand</span>
-```
+3. **Code Review**:
+   - Verify design token usage
+   - Check accessibility compliance
+   - Ensure brand consistency
 
-### **General UI Colors (For System Features)**
+## 📚 **Reference Materials**
 
-```jsx
-// Primary actions
-<button className="bg-primary hover:bg-primary-hover">
-  Save
-</button>
+### **Design Token Reference**
 
-// Secondary elements
-<div className="bg-secondary text-text-primary">
-  Content
-</div>
-```
+| Token                 | Usage                             | Example                                  |
+| --------------------- | --------------------------------- | ---------------------------------------- |
+| `bg-primary`          | Primary buttons, brand elements   | `<button className="bg-primary">`        |
+| `bg-primary-hover`    | Primary button hover states       | `hover:bg-primary-hover`                 |
+| `bg-success`          | Success actions, confirmations    | `<button className="bg-success">`        |
+| `text-text-primary`   | Main headings, important text     | `<h1 className="text-text-primary">`     |
+| `text-text-secondary` | Secondary text, descriptions      | `<p className="text-text-secondary">`    |
+| `bg-secondary`        | Secondary backgrounds, containers | `<div className="bg-secondary">`         |
+| `border-border`       | Standard borders, dividers        | `<div className="border border-border">` |
 
-## 📋 Migration Checklist
+### **Migration Patterns**
 
-### **For Each Component:**
+| Old Pattern       | New Pattern           | Context         |
+| ----------------- | --------------------- | --------------- |
+| `bg-blue-600`     | `bg-primary`          | Primary actions |
+| `bg-green-600`    | `bg-success`          | Success states  |
+| `text-gray-900`   | `text-text-primary`   | Main text       |
+| `text-gray-600`   | `text-text-secondary` | Secondary text  |
+| `bg-gray-50`      | `bg-secondary`        | Backgrounds     |
+| `border-gray-200` | `border-border`       | Borders         |
 
-- [ ] Replace hardcoded colors with design tokens
-- [ ] Update hover states to use token variants
-- [ ] Ensure consistent spacing patterns
-- [ ] Test component in isolation
-- [ ] Test component in context
-- [ ] Update component documentation
+## 🎯 **Best Practices**
 
-### **Common Replacements:**
+### **1. Semantic Usage**
 
-```jsx
-// Buttons
-bg-blue-600 hover:bg-blue-700 → bg-primary hover:bg-primary-hover
-bg-green-600 hover:bg-green-700 → bg-primary hover:bg-primary-hover
+- Use `primary` for main actions and brand elements
+- Use `success` for positive states and confirmations
+- Use `text-*` tokens for proper text hierarchy
+- Use `secondary` for supporting elements
 
-// Text
-text-gray-900 → text-text-primary
-text-gray-600 → text-text-secondary
-text-blue-600 → text-primary
+### **2. Accessibility**
 
-// Backgrounds
-bg-gray-50 → bg-secondary
-bg-slate-50 → bg-secondary
+- Maintain proper contrast ratios
+- Use focus states for keyboard navigation
+- Ensure color isn't the only indicator of state
 
-// Borders
-border-gray-200 → border-border
-border-slate-200 → border-border
+### **3. Consistency**
 
-// Focus states
-focus:ring-blue-500 → focus:ring-primary
-focus:border-blue-500 → focus:border-primary
-```
+- Follow established patterns from existing components
+- Use the same token for similar purposes across components
+- Maintain visual hierarchy through token usage
 
-## 🔍 Testing & Validation
+### **4. Maintainability**
 
-### **Visual Consistency Check**
+- Centralize color changes in design tokens
+- Use semantic token names for clarity
+- Document any new token additions
 
-- [ ] All components use design tokens
-- [ ] No hardcoded color values
-- [ ] Consistent hover states
-- [ ] Proper contrast ratios
+## 🚀 **Getting Started**
 
-### **Accessibility Check**
+### **For New Developers**
 
-- [ ] Text contrast meets WCAG standards
-- [ ] Focus states are visible
-- [ ] Color is not the only indicator
+1. Read this guide thoroughly
+2. Review existing components for patterns
+3. Use the design token reference table
+4. Follow the enforcement mechanisms
 
-### **Cross-Browser Testing**
+### **For Component Migration**
 
-- [ ] CSS custom properties work in all browsers
-- [ ] Tailwind classes render correctly
-- [ ] Hover states function properly
+1. Identify hardcoded colors using grep
+2. Map to appropriate design tokens
+3. Test visual consistency
+4. Update documentation
 
-## 🚀 Best Practices
+### **For Design Changes**
 
-1. **Always use design tokens** - Never hardcode colors
-2. **Test in context** - Verify components work together
-3. **Document changes** - Update style guides when adding new patterns
-4. **Maintain consistency** - Use the same patterns across similar components
-5. **Consider accessibility** - Ensure proper contrast and focus states
+1. Update design tokens in `design-tokens.css`
+2. Test across all components
+3. Update this documentation
+4. Communicate changes to the team
 
-## 📚 Complete Token Reference
+## 📞 **Support**
 
-### **Color Tokens**
+- **Questions**: Review existing components for examples
+- **Issues**: Check the enforcement mechanisms
+- **Updates**: Follow the development workflow
+- **Documentation**: Keep this guide updated
 
-- `--color-primary` – primary green used for buttons and highlights
-- `--color-primary-hover` – darker primary green for hover states
-- `--color-secondary` – light gray page background
-- `--color-border` – neutral border color
-- `--color-text-primary` – default text color
-- `--color-text-secondary` – muted text color
-- `--color-success` – success states
-- `--color-warning` – warning states
-- `--color-error` – error states
-- `--color-info` – info states
-- `--color-hyatt-blue` – Hyatt brand blue
-- `--color-hyatt-blue-hover` – darker Hyatt blue for hover
-- `--color-hyatt-gold` – Hyatt brand gold
+---
 
-### **Typography Tokens**
-
-- `--font-sans` – main sans-serif font stack
-- `--font-base-size` – base font size
-
-### **Spacing Tokens**
-
-- `--spacing-container` – horizontal padding for the main container
-
-This unified styling system provides a solid foundation for consistent, maintainable UI development across the entire Hive Agent System.
+**Remember**: The unified styling system ensures consistency, maintainability, and brand alignment. Always use design tokens instead of hardcoded colors!
