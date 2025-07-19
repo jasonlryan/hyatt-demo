@@ -23,7 +23,7 @@ class BaseAgent {
       path.join(__dirname, "../../prompts", this.promptFile),
       path.join(
         process.cwd(),
-        "hyatt-gpt-prototype",
+        "hive",
         "agents",
         "prompts",
         this.promptFile

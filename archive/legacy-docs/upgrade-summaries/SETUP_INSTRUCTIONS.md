@@ -15,7 +15,7 @@ This causes:
 
 ## To Enable Real Web Searches
 
-### 1. Create a `.env` file in the `hyatt-gpt-prototype` directory:
+### 1. Create a `.env` file in the `hive` directory:
 
 ```bash
 # OpenAI Configuration (REQUIRED)

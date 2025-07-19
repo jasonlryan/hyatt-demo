@@ -345,7 +345,7 @@ export default async function handler(req, res) {
     if (orchestration.documentation) {
       const docsDir = path.join(
         process.cwd(),
-        "hyatt-gpt-prototype",
+        "hive",
         "orchestrations",
         "docs"
       );

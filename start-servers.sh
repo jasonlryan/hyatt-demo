@@ -20,7 +20,7 @@ sleep 2
 echo "🚀 Starting servers..."
 
 # Start backend in background
-cd hyatt-gpt-prototype
+cd hive
 npm run dev &
 BACKEND_PID=$!
 

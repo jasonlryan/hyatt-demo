@@ -27,12 +27,12 @@ cd ..
 1. Copy the example environment file:
 
    ```bash
-   cp hyatt-gpt-prototype/env.example hyatt-gpt-prototype/.env
+   cp hive/env.example hive/.env
    ```
 
 2. Edit the `.env` file and add your OpenAI API key:
    ```bash
-   nano hyatt-gpt-prototype/.env
+   nano hive/.env
    ```
 3. Replace `your_openai_api_key_here` with your actual API key:
    ```
@@ -94,13 +94,13 @@ pkill -f "vite"
 
 - Verify your OpenAI API key has credits
 - Check the terminal for error messages
-- Look for campaign files being created in `hyatt-gpt-prototype/campaigns/`
+- Look for campaign files being created in `hive/campaigns/`
 
 ## 💡 Tips
 
 - **Test with Brief #2**: The wellness resort campaign works well for demos
 - **Watch the Terminal**: You'll see real-time AI agent conversations
-- **Campaign Files**: Each campaign saves to `hyatt-gpt-prototype/campaigns/`
+- **Campaign Files**: Each campaign saves to `hive/campaigns/`
 - **HITL Reviews**: Campaigns pause for human review between phases
 
 That's it! The system should be working. Any issues, check the terminal output for error messages.

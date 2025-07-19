@@ -57,7 +57,7 @@ The Hyatt GPT Agent System consists of:
 DEMO/
 ├── docs/                    # This directory - comprehensive documentation
 ├── frontend/               # React frontend application
-├── hyatt-gpt-prototype/    # Backend orchestration system
+├── hive/    # Backend orchestration system
 ├── pages/                  # API endpoints
 ├── Use cases/              # Test briefs for orchestrations
 └── archive/                # Legacy documentation and artifacts

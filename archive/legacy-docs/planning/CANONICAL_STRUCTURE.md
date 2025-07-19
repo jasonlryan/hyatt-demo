@@ -30,9 +30,9 @@ The **single source of truth** for all agent-related files is now:
 
 ### Removed Duplicate Directories:
 
-- ❌ `/hyatt-gpt-prototype/agents/` (duplicate agent classes)
-- ❌ `/hyatt-gpt-prototype/agents.config.json` (duplicate config)
-- ❌ `/hyatt-gpt-prototype/GPTs/` (duplicate prompts)
+- ❌ `/hive/agents/` (duplicate agent classes)
+- ❌ `/hive/agents.config.json` (duplicate config)
+- ❌ `/hive/GPTs/` (duplicate prompts)
 - ❌ `/GPTs/` (duplicate prompts at root)
 
 ### Result:
@@ -49,7 +49,7 @@ All systems now reference the canonical `/agents/` directory:
 - **AgentsPage**: Loads config from `/api/config/agents`
 - **API calls**: Use endpoints that point to canonical structure
 
-### Backend (`/hyatt-gpt-prototype/`)
+### Backend (`/hive/`)
 
 - **server.js**: References `../agents/agents.config.json`
 - **AgentOrchestrator.js**: Imports from `../agents/classes/`
@@ -67,7 +67,7 @@ All systems now reference the canonical `/agents/` directory:
 /DEMO/
 ├── agents/                     # 🎯 CANONICAL: All agent resources
 ├── frontend/                   # React frontend application
-├── hyatt-gpt-prototype/        # Backend server and orchestration
+├── hive/        # Backend server and orchestration
 ├── Plans/                      # Project planning documents
 ├── Use cases/                  # Use case documentation
 ├── Outputs/                    # Generated campaign outputs

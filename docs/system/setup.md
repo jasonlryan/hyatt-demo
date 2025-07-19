@@ -28,7 +28,7 @@ cd frontend
 npm install
 
 # Install backend dependencies
-cd ../hyatt-gpt-prototype
+cd ../hive
 npm install
 ```
 
@@ -38,10 +38,10 @@ Create environment files for the backend:
 
 ```bash
 # Copy example environment file
-cp hyatt-gpt-prototype/env.example hyatt-gpt-prototype/.env
+cp hive/env.example hive/.env
 
 # Edit the environment file with your settings
-nano hyatt-gpt-prototype/.env
+nano hive/.env
 ```
 
 Required environment variables:
@@ -66,7 +66,7 @@ NODE_ENV=development
 
 ```bash
 # Terminal 1: Start backend
-cd hyatt-gpt-prototype
+cd hive
 npm start
 
 # Terminal 2: Start frontend
@@ -82,7 +82,7 @@ DEMO/
 │   ├── src/
 │   ├── package.json
 │   └── vite.config.ts
-├── hyatt-gpt-prototype/    # Backend orchestration (port 3001)
+├── hive/    # Backend orchestration (port 3001)
 │   ├── agents/
 │   ├── orchestrations/
 │   ├── server.js
@@ -106,8 +106,8 @@ The frontend uses Vite for development. Key configuration files:
 
 The backend orchestration system configuration:
 
-- `hyatt-gpt-prototype/agents/agents.config.json` - Agent definitions
-- `hyatt-gpt-prototype/orchestrations/configs/orchestrations.config.json` - Orchestration settings
+- `hive/agents/agents.config.json` - Agent definitions
+- `hive/orchestrations/configs/orchestrations.config.json` - Orchestration settings
 
 ## 🧪 Testing the Setup
 
@@ -145,7 +145,7 @@ npm install
 
 ```bash
 # Check environment variables
-cd hyatt-gpt-prototype
+cd hive
 cat .env
 
 # Verify OpenAI API key is valid
@@ -173,7 +173,7 @@ npm run dev -- --debug
 #### Backend Logs
 
 ```bash
-cd hyatt-gpt-prototype
+cd hive
 DEBUG=* npm start
 ```
 
@@ -191,7 +191,7 @@ DEBUG=* npm start
 2. **Backend Changes**
 
    ```bash
-   cd hyatt-gpt-prototype
+   cd hive
    npm run dev  # Uses nodemon for auto-restart
    ```
 

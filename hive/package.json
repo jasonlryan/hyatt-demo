@@ -1,5 +1,5 @@
 {
-  "name": "hyatt-gpt-prototype",
+  "name": "hive",
   "version": "1.0.0",
   "description": "Prototype of Hyatt GPT Agents System",
   "main": "server.js",

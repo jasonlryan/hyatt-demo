@@ -115,7 +115,7 @@ DYNAMIC_PROMPT_ADJUSTMENT=true
 
 ```bash
 git clone <repository>
-cd hyatt-gpt-prototype
+cd hive
 npm install
 ```
 
