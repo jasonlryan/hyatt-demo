@@ -21,21 +21,21 @@ const SharedProgressPanel: React.FC<SharedProgressPanelProps> = ({ campaign, onV
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-primary-light text-primary';
       case 'completed':
-        return 'bg-green-100 text-green-800';
+        return 'bg-success-light text-success';
       case 'failed':
-        return 'bg-red-100 text-red-800';
+        return 'bg-error text-white';
       default:
-        return 'bg-slate-100 text-slate-800';
+        return 'bg-secondary text-text-primary';
     }
   };
 
   return (
-    <div className="bg-slate-700 rounded-lg shadow-md p-6">
+    <div className="bg-primary-hover rounded-lg shadow-md p-6">
       <h2 className="text-2xl font-bold text-white mb-4">Campaign Progress</h2>
       <div className="mb-4">
-        <div className="text-sm text-slate-300 mb-1">Campaign ID: {campaign.id}</div>
+        <div className="text-sm text-text-muted mb-1">Campaign ID: {campaign.id}</div>
         <div className="flex items-center">
           <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium mr-2 ${getStatusColor(campaign.status)}`}>{campaign.status}</span>
         </div>

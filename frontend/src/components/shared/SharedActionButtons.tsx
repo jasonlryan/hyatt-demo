@@ -14,10 +14,10 @@ export interface SharedActionButtonsProps {
 
 const SharedActionButtons: React.FC<SharedActionButtonsProps> = ({ onResume, onRefine }) => (
   <div className="flex justify-center space-x-4">
-    <button className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors font-medium" onClick={onResume}>
+    <button className="px-6 py-2 bg-success hover:bg-success-hover text-white rounded-md transition-colors font-medium" onClick={onResume}>
       ✅ Resume Campaign
     </button>
-    <button className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors font-medium" onClick={onRefine}>
+    <button className="px-6 py-2 bg-primary hover:bg-primary-hover text-white rounded-md transition-colors font-medium" onClick={onRefine}>
       ✏️ Refine & Retry
     </button>
   </div>

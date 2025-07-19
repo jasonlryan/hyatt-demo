@@ -14,12 +14,12 @@ export interface SharedBreadcrumbsProps {
 }
 
 const SharedBreadcrumbs: React.FC<SharedBreadcrumbsProps> = ({ onBack, current }) => (
-  <nav className="flex items-center space-x-2 text-sm text-gray-600">
-    <button onClick={onBack} className="text-green-600 hover:text-green-700 transition-colors">
+  <nav className="flex items-center space-x-2 text-sm text-text-secondary">
+    <button onClick={onBack} className="text-success hover:text-success-hover transition-colors">
       Orchestrations
     </button>
     <span>›</span>
-    <span className="text-gray-800 font-medium">{current}</span>
+    <span className="text-text-primary font-medium">{current}</span>
   </nav>
 );
 
