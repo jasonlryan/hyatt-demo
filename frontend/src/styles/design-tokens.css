@@ -7,6 +7,17 @@
   --color-text-primary: #212529;
   --color-text-secondary: #6c757d;
 
+  /* Status Colors */
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-error: #dc3545;
+  --color-info: #17a2b8;
+
+  /* Brand Colors */
+  --color-hyatt-blue: #002d72;
+  --color-hyatt-blue-hover: #0046a8;
+  --color-hyatt-gold: #d4af37;
+
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
