@@ -1,6 +1,6 @@
-# Hyatt GPT Agent System Documentation
+# Hive Agent System Documentation
 
-Welcome to the comprehensive documentation for the Hyatt GPT Agent System. This documentation is organized by system area to help you find the information you need quickly.
+Welcome to the comprehensive documentation for the Hive Agent System. This documentation is organized by system area to help you find the information you need quickly.
 
 ## 📚 Documentation Index
 
@@ -14,9 +14,7 @@ Welcome to the comprehensive documentation for the Hyatt GPT Agent System. This 
 
 ### 🎨 Frontend
 
-- [Style Tokens Reference](./frontend/STYLE_TOKENS_REFERENCE.md) - Design tokens and CSS variables
-- [Shared Components Styles](./frontend/SHARED_COMPONENTS_STYLES.md) - Tailwind classes for shared components
-- [Unified Style Guide](./frontend/UNIFIED_STYLE_GUIDE.md) - Standard styling patterns
+- [Unified Styling System Guide](./frontend/STYLING_SYSTEM_GUIDE.md) - Complete styling system documentation
 - [Diagram Mapping Guide](./frontend/DIAGRAM_MAPPING_GUIDE.md) - Diagram system and connector notation
 
 ### ⚙️ System
@@ -34,10 +32,8 @@ Welcome to the comprehensive documentation for the Hyatt GPT Agent System. This 
 
 ### For Frontend Developers
 
-1. Check [Style Tokens Reference](./frontend/STYLE_TOKENS_REFERENCE.md) for design consistency
-2. Use [Shared Components Styles](./frontend/SHARED_COMPONENTS_STYLES.md) for UI components
-3. Review [Unified Style Guide](./frontend/UNIFIED_STYLE_GUIDE.md) for standard patterns
-4. Review [Diagram Mapping Guide](./frontend/DIAGRAM_MAPPING_GUIDE.md) for diagram features
+1. Review [Unified Styling System Guide](./frontend/STYLING_SYSTEM_GUIDE.md) for complete styling documentation
+2. Review [Diagram Mapping Guide](./frontend/DIAGRAM_MAPPING_GUIDE.md) for diagram features
 
 ### For System Administrators
 
@@ -46,7 +42,7 @@ Welcome to the comprehensive documentation for the Hyatt GPT Agent System. This 
 
 ## 🏗️ System Overview
 
-The Hyatt GPT Agent System consists of:
+The Hive Agent System consists of:
 
 1. **Orchestration Engine** - Manages AI agent workflows and campaign execution
 2. **Frontend Application** - React-based UI for campaign management and orchestration

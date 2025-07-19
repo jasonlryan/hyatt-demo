@@ -1,6 +1,6 @@
 # Orchestrations Documentation
 
-This directory contains comprehensive documentation for all orchestrations in the Hyatt GPT Agent System.
+This directory contains comprehensive documentation for all orchestrations in the Hive Agent System.
 
 ## 📚 Documentation Index
 

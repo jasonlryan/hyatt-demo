@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Hyatt GPT Agent System is a comprehensive AI-powered orchestration platform designed for PR campaign management and content creation. The system combines a React frontend with a Node.js backend orchestration engine.
+The Hive Agent System is a comprehensive AI-powered orchestration platform designed for PR campaign management and content creation. The system combines a React frontend with a Node.js backend orchestration engine.
 
 ## 🏗️ High-Level Architecture
 
@@ -266,7 +266,7 @@ DEMO/
 - **[Setup Guide](./setup.md)** - Installation and configuration
 - **[Orchestration Developer Guide](../orchestrations/ORCHESTRATION_DEVELOPER_GUIDE.md)** - Creating new orchestrations
 - **[Agent Mapping](../orchestrations/AgentMapping.md)** - Detailed agent capabilities
-- **[Frontend Style Guide](../frontend/STYLE_TOKENS_REFERENCE.md)** - UI development
+- **[Unified Styling System Guide](../frontend/STYLING_SYSTEM_GUIDE.md)** - UI development
 
 ---
 

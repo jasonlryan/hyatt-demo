@@ -1,0 +1,216 @@
+# Unified Styling System Rule
+
+## 🎯 Objective
+
+Enforce the unified styling system across all new pages and components. This rule ensures consistent, maintainable styling that follows the established design tokens and patterns.
+
+## 📋 Core Principles
+
+### **ALWAYS Use Design Tokens**
+
+- Use `bg-primary`, `text-primary`, `border-primary` instead of hardcoded colors
+- Use `bg-secondary`, `text-text-primary`, `text-text-secondary` for neutral elements
+- Use `bg-success`, `bg-warning`, `bg-error`, `bg-info` for status indicators
+
+### **NEVER Use Hardcoded Colors**
+
+- ❌ `bg-blue-600`, `bg-green-600`, `bg-gray-50`
+- ❌ `text-blue-600`, `text-gray-900`, `text-slate-800`
+- ❌ `border-blue-500`, `border-gray-200`
+
+### **Use Standard Component Patterns**
+
+- Follow established patterns for cards, buttons, forms, typography
+- Maintain consistent spacing and layout
+- Use proper hover states and transitions
+
+## 🎨 Required Patterns
+
+### **Page Structure**
+
+```jsx
+<div className="bg-secondary min-h-screen">
+  <div className="max-w-7xl mx-auto px-4 py-8">
+    <h1 className="text-2xl font-bold text-text-primary mb-4">Page Title</h1>
+    {/* Content */}
+  </div>
+</div>
+```
+
+### **Cards**
+
+```jsx
+<div className="bg-white rounded-lg shadow-md p-6 border border-border">
+  <h2 className="text-xl font-semibold text-text-primary mb-3">Card Title</h2>
+  <p className="text-text-secondary">Card content</p>
+</div>
+```
+
+### **Primary Buttons**
+
+```jsx
+<button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors">
+  Action Button
+</button>
+```
+
+### **Secondary Buttons**
+
+```jsx
+<button className="px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-gray-100 transition-colors">
+  Secondary Action
+</button>
+```
+
+### **Form Elements**
+
+```jsx
+<input
+  className="w-full px-3 py-2 border border-border rounded focus:ring-2 focus:ring-primary focus:border-primary transition"
+  placeholder="Enter text"
+/>
+```
+
+### **Status Indicators**
+
+```jsx
+<span className="bg-success text-white px-2 py-1 rounded-full text-xs">
+  Success
+</span>
+```
+
+## 🔧 Implementation Rules
+
+### **For New Components:**
+
+1. **Import design tokens**: Ensure `../index.css` is imported
+2. **Use semantic class names**: `bg-primary` not `bg-green-600`
+3. **Follow spacing patterns**: Use consistent padding and margins
+4. **Include hover states**: Always add hover variants for interactive elements
+5. **Test accessibility**: Ensure proper contrast ratios
+
+### **For Existing Components:**
+
+1. **Migrate gradually**: Replace hardcoded colors with design tokens
+2. **Maintain functionality**: Don't break existing features
+3. **Test thoroughly**: Verify visual consistency
+4. **Update documentation**: Keep style guides current
+
+### **Color Mapping Reference**
+
+```css
+/* OLD → NEW */
+bg-green-600 → bg-primary
+bg-green-700 → bg-primary-hover
+bg-blue-600 → bg-primary (for actions)
+bg-blue-700 → bg-primary-hover
+text-gray-900 → text-text-primary
+text-gray-600 → text-text-secondary
+text-blue-600 → text-primary
+bg-gray-50 → bg-secondary
+bg-slate-50 → bg-secondary
+border-gray-200 → border-border
+border-slate-200 → border-border
+focus:ring-blue-500 → focus:ring-primary
+focus:border-blue-500 → focus:border-primary
+```
+
+## 🎯 Brand Color Usage
+
+### **Hyatt Brand Colors (For Hyatt-Specific Features Only)**
+
+```jsx
+// Hyatt orchestration features
+<div className="bg-hyatt-blue hover:bg-hyatt-blue-hover">
+  Hyatt Campaign
+</div>
+
+// Hyatt accent elements
+<span className="text-hyatt-gold">Hyatt Brand</span>
+```
+
+### **General UI Colors (For System Features)**
+
+```jsx
+// Primary actions
+<button className="bg-primary hover:bg-primary-hover">
+  Save
+</button>
+
+// Secondary elements
+<div className="bg-secondary text-text-primary">
+  Content
+</div>
+```
+
+## ⚠️ Common Mistakes to Avoid
+
+### **❌ Don't Do This:**
+
+```jsx
+// Hardcoded colors
+<button className="bg-blue-600 hover:bg-blue-700">
+  Save
+</button>
+
+// Inconsistent patterns
+<div className="bg-gray-50 p-4">
+  <h1 className="text-slate-800">Title</h1>
+</div>
+
+// Missing hover states
+<button className="bg-green-600 text-white">
+  Action
+</button>
+```
+
+### **✅ Do This Instead:**
+
+```jsx
+// Design tokens
+<button className="bg-primary hover:bg-primary-hover text-white">
+  Save
+</button>
+
+// Consistent patterns
+<div className="bg-secondary p-4">
+  <h1 className="text-text-primary">Title</h1>
+</div>
+
+// Proper hover states
+<button className="bg-primary hover:bg-primary-hover text-white transition-colors">
+  Action
+</button>
+```
+
+## 🔍 Validation Checklist
+
+Before committing any new component or page:
+
+- [ ] All colors use design tokens (`bg-primary`, `text-primary`, etc.)
+- [ ] No hardcoded color values (`bg-blue-600`, `text-gray-900`)
+- [ ] Consistent spacing patterns used
+- [ ] Hover states included for interactive elements
+- [ ] Proper focus states for accessibility
+- [ ] Component follows established patterns
+- [ ] Visual consistency with existing components
+
+## 📚 Reference Documentation
+
+- [Unified Styling System Guide](../docs/frontend/STYLING_SYSTEM_GUIDE.md) - Complete styling system documentation
+
+## 🚀 Best Practices
+
+1. **Start with design tokens** - Always use `bg-primary` instead of hardcoded colors
+2. **Follow established patterns** - Use the same structure for similar components
+3. **Test in context** - Verify components work together visually
+4. **Document changes** - Update style guides when adding new patterns
+5. **Consider accessibility** - Ensure proper contrast and focus states
+6. **Maintain consistency** - Use the same approach across all components
+
+This rule ensures all new development follows the unified styling system and maintains visual consistency across the Hive Agent System.
+description:
+globs:
+alwaysApply: false
+
+---

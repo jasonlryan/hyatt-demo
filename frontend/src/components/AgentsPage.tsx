@@ -195,16 +195,16 @@ const AgentsPage: React.FC = () => {
   };
 
   const getModelTypeColor = (model: string) => {
-    if (model.includes("gpt-4o")) return "bg-blue-100 text-blue-800";
-    if (model.includes("gpt-4")) return "bg-green-100 text-green-800";
+    if (model.includes("gpt-4o")) return "bg-slate-100 text-slate-800";
+    if (model.includes("gpt-4")) return "bg-primary text-white";
     if (model.includes("mini")) return "bg-amber-100 text-amber-800";
     return "bg-gray-100 text-gray-800";
   };
 
   const getTemperatureColor = (temperature: number) => {
-    if (temperature <= 0.3) return "text-blue-600";
-    if (temperature <= 0.6) return "text-green-600";
-    return "text-orange-600";
+    if (temperature <= 0.3) return "text-primary";
+    if (temperature <= 0.6) return "text-success";
+    return "text-warning";
   };
 
   const capriSunContext = {
@@ -265,7 +265,7 @@ const AgentsPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-slate-600 mx-auto mb-4"></div>
           <p className="text-slate-600">Loading agents configuration...</p>
         </div>
       </div>
@@ -335,8 +335,8 @@ const AgentsPage: React.FC = () => {
             </button>
           </div>
           {hiveDemoLoading && (
-            <div className="flex items-center space-x-2 text-blue-600 font-medium mb-8">
-              <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></span>
+            <div className="flex items-center space-x-2 text-slate-600 font-medium mb-8">
+              <span className="animate-spin rounded-full h-6 w-6 border-b-2 border-slate-600"></span>
               <span>Generating visual prompt...</span>
             </div>
           )}
@@ -419,7 +419,7 @@ const AgentsPage: React.FC = () => {
                     <div className="flex items-center mb-2">
                       <span
                         className={`text-xl mr-2 ${
-                          agent.enabled ? "text-blue-600" : "text-slate-500"
+                          agent.enabled ? "text-primary" : "text-slate-500"
                         }`}
                       >
                         <Bot className="w-6 h-6" />
@@ -468,7 +468,7 @@ const AgentsPage: React.FC = () => {
                         <button
                           onClick={handleSaveConfiguration}
                           disabled={saving}
-                          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg flex items-center transition-colors font-medium shadow-sm"
+                          className="bg-primary hover:bg-primary-hover disabled:bg-gray-400 text-white px-6 py-3 rounded-lg flex items-center transition-colors font-medium shadow-sm"
                         >
                           <Save className="w-4 h-4 mr-2" />
                           {saving ? "Saving..." : "Save"}
@@ -506,7 +506,7 @@ const AgentsPage: React.FC = () => {
                                     e.target.value
                                   )
                                 }
-                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                               >
                                 {config.models.available.map((model) => (
                                   <option key={model.id} value={model.id}>
@@ -533,7 +533,7 @@ const AgentsPage: React.FC = () => {
                                     parseFloat(e.target.value)
                                   )
                                 }
-                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                               />
                             </div>
                             <div>
@@ -550,7 +550,7 @@ const AgentsPage: React.FC = () => {
                                     parseInt(e.target.value)
                                   )
                                 }
-                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                               />
                             </div>
                             <div>
@@ -567,7 +567,7 @@ const AgentsPage: React.FC = () => {
                                     parseInt(e.target.value)
                                   )
                                 }
-                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                               />
                             </div>
                             <div>
@@ -584,7 +584,7 @@ const AgentsPage: React.FC = () => {
                                     parseInt(e.target.value)
                                   )
                                 }
-                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                               />
                             </div>
                           </div>

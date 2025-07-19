@@ -1,7 +1,7 @@
 {
   "name": "hyatt-gpt-demo",
   "version": "1.0.0",
-  "description": "Hyatt GPT Demo - Parent Directory",
+  "description": "Hive Demo - Parent Directory",
   "scripts": {
     "start": "cd hive && npm run smart-start",
     "dev": "cd hive && npm run dev",

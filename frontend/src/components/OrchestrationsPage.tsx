@@ -49,7 +49,7 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
               id: "hyatt",
               name: "Hyatt Orchestrator",
               description:
-                "Hyatt GPT Agents System - Collaborative AI agents for PR campaign development.",
+                "Hive Agents System - Collaborative AI agents for PR campaign development.",
               enabled: true,
               config: {
                 maxConcurrentWorkflows: 5,

@@ -191,7 +191,7 @@ bg-info text-white px-2 py-1 rounded-full text-xs
 - [ ] Expand `src/styles/design-tokens.css` with complete color system
 - [ ] Add status colors (success, warning, error, info)
 - [ ] Ensure all tokens have proper contrast ratios
-- [ ] Document token usage in `STYLE_TOKENS_REFERENCE.md`
+- [ ] Document token usage in `STYLING_SYSTEM_GUIDE.md`
 
 #### **1.2 Update Tailwind Config**
 
@@ -205,7 +205,7 @@ bg-info text-white px-2 py-1 rounded-full text-xs
 - [ ] Document standard component patterns
 - [ ] Create visual examples for each pattern
 - [ ] Establish naming conventions
-- [ ] Create `UNIFIED_STYLE_GUIDE.md`
+- [ ] Update `STYLING_SYSTEM_GUIDE.md`
 
 ### **Phase 2: Core Components (Week 2)**
 

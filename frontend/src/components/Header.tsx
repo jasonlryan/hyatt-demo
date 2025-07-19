@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({
           </div>
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-slate-100">
-              Hyatt GPT Agents System
+              Hive Agents System
             </h1>
             <p className="text-slate-300 text-sm">
               Collaborative AI agents for PR campaign development

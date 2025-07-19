@@ -28,7 +28,7 @@ const orchestrator = createOrchestrator("agent");
     // Only start server if not in Vercel environment AND after successful initialization
     if (process.env.NODE_ENV !== "production") {
       app.listen(port, () => {
-        console.log(`🚀 Hyatt GPT Agent system running on port ${port}`);
+        console.log(`🚀 Hive Agent system running on port ${port}`);
         console.log(`📊 Health check: http://localhost:${port}/health`);
         console.log(`🌐 Frontend: http://localhost:${port}`);
         console.log(`📡 API: http://localhost:${port}/api/campaigns`);
@@ -68,7 +68,7 @@ app.get("/health", (req, res) => {
   res.json({
     status: "healthy",
     timestamp: new Date().toISOString(),
-    service: "Hyatt GPT Agents System",
+    service: "Hive Agents System",
   });
 });
 

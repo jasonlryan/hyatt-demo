@@ -5,7 +5,7 @@ This guide explains how to create new orchestration pages using the shared layou
 ## 1. Prerequisites
 
 - Familiarity with the repo structure and React + TypeScript in `/frontend/src`.
-- The shared components must already be installed and up to date. See `SHARED_COMPONENTS_STYLES.md` for style references.
+- The shared components must already be installed and up to date. See `STYLING_SYSTEM_GUIDE.md` for style references.
 - Review the **Feature Parity Checklist** (`../../orchestration-feature-parity-checklist.md`). New pages should not omit any item unless it is intentionally replaced with an improved equivalent.
 
 ## 2. Creating a New Orchestration
@@ -17,7 +17,7 @@ This guide explains how to create new orchestration pages using the shared layou
    - Wrap page content in `SharedOrchestrationLayout`. This provides the three‑column grid used by Hyatt.
 3. **Use Shared Components**
    - Forms, progress panels, deliverable lists and breadcrumbs should come from `shared/components/`.
-   - Refer to `SHARED_COMPONENTS_STYLES.md` for required Tailwind classes.
+   - Refer to `STYLING_SYSTEM_GUIDE.md` for required Tailwind classes.
 4. **Hook Up Utilities**
    - Use the shared hooks (`useCampaignPolling`, `useCampaignState`, `useOrchestrationNavigation`) for API calls and navigation logic.
 5. **Style Only What’s Unique**
@@ -43,6 +43,6 @@ When migrating an existing orchestration to this system, follow the plan outline
 
 - [Feature Parity Checklist](../../orchestration-feature-parity-checklist.md)
 - [Orchestration Consistency & Enablement Plan](../../Plans/orchestration_consistency_enablement_plan.md)
-- [Shared Components Style Reference](SHARED_COMPONENTS_STYLES.md)
+- [Unified Styling System Guide](STYLING_SYSTEM_GUIDE.md)
 
 By following this guide and the referenced documents, developers can create new orchestrations quickly while preserving Hyatt’s established user experience.

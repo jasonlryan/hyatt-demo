@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers the setup and installation of the Hyatt GPT Agent System, including both the frontend React application and the backend orchestration system.
+This guide covers the setup and installation of the Hive Agent System, including both the frontend React application and the backend orchestration system.
 
 ## Prerequisites
 
@@ -215,7 +215,7 @@ After setup, explore:
 
 1. **[Orchestration Developer Guide](../orchestrations/ORCHESTRATION_DEVELOPER_GUIDE.md)** - Create new orchestrations
 2. **[Agent Mapping](../orchestrations/AgentMapping.md)** - Understand available agents
-3. **[Style Tokens Reference](../frontend/STYLE_TOKENS_REFERENCE.md)** - Frontend styling
+3. **[Unified Styling System Guide](../frontend/STYLING_SYSTEM_GUIDE.md)** - Frontend styling
 4. **[Test Briefs](../../Use cases/briefs.md)** - Test orchestrations
 
 ## 🆘 Getting Help
