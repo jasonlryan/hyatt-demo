@@ -287,7 +287,7 @@ const AgentsPage: React.FC = () => {
   );
 
   return (
-    <div className="bg-slate-100 min-h-screen flex flex-col">
+    <div className="bg-slate-50 min-h-screen flex flex-col">
       <div className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-8">
           {/* Quick Image Gen Test */}

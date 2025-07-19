@@ -37,7 +37,11 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
         const response = await fetch("/api/orchestrations");
         if (response.ok) {
           const data = await response.json();
-          setOrchestrations(data.orchestrators);
+          // Convert orchestrators object to array
+          const orchestrationsArray = Object.values(
+            data.orchestrators || {}
+          ) as Orchestration[];
+          setOrchestrations(orchestrationsArray);
         } else {
           // Fallback to demo data if API fails
           setOrchestrations([
