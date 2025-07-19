@@ -9,6 +9,8 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { hyattDiagramConfig } from "./orchestrations/diagrams";
 import { diagramToReactFlow } from "../utils/diagramMapper";
+import DocumentationViewer from "./orchestrations/DocumentationViewer";
+import OrchestrationEditor from "./orchestrations/OrchestrationEditor";
 
 // Removed unused variables: outlinedStyle and agentColors
 
@@ -245,6 +247,14 @@ const WorkflowsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"workflow" | "details" | "edit">(
     "workflow"
   );
+  const [lastActiveTab, setLastActiveTab] = useState<Record<string, string>>({});
+
+  const handleTabChange = (tab: "workflow" | "details" | "edit") => {
+    setActiveTab(tab);
+    if (selectedWorkflow) {
+      setLastActiveTab((prev) => ({ ...prev, [selectedWorkflow]: tab }));
+    }
+  };
 
   // State for orchestrations and diagrams
   const [orchestrations, setOrchestrations] = useState<any[]>([]);
@@ -289,6 +299,14 @@ const WorkflowsPage: React.FC = () => {
 
     loadOrchestrations();
   }, []);
+
+  useEffect(() => {
+    if (selectedWorkflow && lastActiveTab[selectedWorkflow]) {
+      setActiveTab(lastActiveTab[selectedWorkflow] as any);
+    } else {
+      setActiveTab("workflow");
+    }
+  }, [selectedWorkflow, lastActiveTab]);
 
   // Handle diagram generation
   const handleGenerateDiagram = async (orchestrationId: string) => {
@@ -382,7 +400,7 @@ const WorkflowsPage: React.FC = () => {
       <div className="flex-1 pl-6 flex flex-col">
         {selectedWorkflow ? (
           <>
-            <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+            <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
             {activeTab === "workflow" && (
               hasDiagramForDisplay(selectedWorkflow) ? (
                 <div className="border rounded-lg p-6 bg-white shadow flex-1">
@@ -440,13 +458,26 @@ const WorkflowsPage: React.FC = () => {
               )
             )}
             {activeTab === "details" && (
-              <div className="border rounded-lg p-6 bg-white shadow flex-1 flex items-center justify-center">
-                <span className="text-text-secondary">Documentation loading...</span>
+              <div className="border rounded-lg p-6 bg-white shadow flex-1 overflow-y-auto">
+                <DocumentationViewer
+                  orchestrationId={
+                    (
+                      orchestrations.find((o) => o.id === selectedWorkflow)
+                        ?.documentationPath || selectedWorkflow
+                    )
+                      .replace(/.*\/(.*)\.md$/, "$1")
+                  }
+                />
               </div>
             )}
             {activeTab === "edit" && (
-              <div className="border rounded-lg p-6 bg-white shadow flex-1 flex items-center justify-center">
-                <span className="text-text-secondary">Edit functionality coming soon</span>
+              <div className="border rounded-lg p-6 bg-white shadow flex-1 overflow-y-auto">
+                <OrchestrationEditor
+                  orchestrationId={selectedWorkflow}
+                  orchestration={
+                    orchestrations.find((o) => o.id === selectedWorkflow) || {}
+                  }
+                />
               </div>
             )}
           </>
