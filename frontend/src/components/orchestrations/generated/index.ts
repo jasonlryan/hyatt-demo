@@ -1,6 +1,7 @@
 // Dynamic orchestration page loader
 export const loadOrchestrationPage = async (orchestrationId: string) => {
   try {
+    // @vite-ignore
     const module = await import(`./${orchestrationId}.tsx`);
     return module.default;
   } catch (error) {
