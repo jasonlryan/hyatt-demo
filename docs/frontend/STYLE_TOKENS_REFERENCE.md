@@ -9,6 +9,13 @@ Design tokens live in `src/styles/design-tokens.css` to keep colors, spacing and
 - `--color-border` – neutral border color
 - `--color-text-primary` – default text color
 - `--color-text-secondary` – muted text color
+- `--color-success` – success states
+- `--color-warning` – warning states
+- `--color-error` – error states
+- `--color-info` – info states
+- `--color-hyatt-blue` – Hyatt brand blue
+- `--color-hyatt-blue-hover` – darker Hyatt blue for hover
+- `--color-hyatt-gold` – Hyatt brand gold
 
 ## Typography Tokens
 - `--font-sans` – main sans-serif font stack

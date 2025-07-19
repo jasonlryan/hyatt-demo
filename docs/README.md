@@ -16,6 +16,7 @@ Welcome to the comprehensive documentation for the Hyatt GPT Agent System. This 
 
 - [Style Tokens Reference](./frontend/STYLE_TOKENS_REFERENCE.md) - Design tokens and CSS variables
 - [Shared Components Styles](./frontend/SHARED_COMPONENTS_STYLES.md) - Tailwind classes for shared components
+- [Unified Style Guide](./frontend/UNIFIED_STYLE_GUIDE.md) - Standard styling patterns
 - [Diagram Mapping Guide](./frontend/DIAGRAM_MAPPING_GUIDE.md) - Diagram system and connector notation
 
 ### ⚙️ System
@@ -35,7 +36,8 @@ Welcome to the comprehensive documentation for the Hyatt GPT Agent System. This 
 
 1. Check [Style Tokens Reference](./frontend/STYLE_TOKENS_REFERENCE.md) for design consistency
 2. Use [Shared Components Styles](./frontend/SHARED_COMPONENTS_STYLES.md) for UI components
-3. Review [Diagram Mapping Guide](./frontend/DIAGRAM_MAPPING_GUIDE.md) for diagram features
+3. Review [Unified Style Guide](./frontend/UNIFIED_STYLE_GUIDE.md) for standard patterns
+4. Review [Diagram Mapping Guide](./frontend/DIAGRAM_MAPPING_GUIDE.md) for diagram features
 
 ### For System Administrators
 
