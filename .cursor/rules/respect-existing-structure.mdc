@@ -1,0 +1,108 @@
+# 🛡️ RESPECT EXISTING STRUCTURE RULE
+
+## 🚨 CRITICAL: ALWAYS CHECK BEFORE CREATING
+
+**NEVER create new directories, files, or structures without first examining what already exists.**
+
+## 🔍 MANDATORY CHECKLIST BEFORE ANY CREATION
+
+### **1. Directory Structure Analysis**
+
+- **ALWAYS** use `list_dir` to examine existing directory structure
+- **ALWAYS** check for existing subdirectories before creating new ones
+- **ALWAYS** look for existing organization patterns
+- **NEVER** assume a directory doesn't exist
+
+### **2. File Organization Patterns**
+
+- **ALWAYS** examine existing file naming conventions
+- **ALWAYS** check for existing categorization systems
+- **ALWAYS** respect established folder hierarchies
+- **NEVER** create duplicate organizational structures
+
+### **3. Archive Structure Respect**
+
+- **ALWAYS** check `archive/` directory structure first
+- **ALWAYS** examine existing `legacy-docs/` organization
+- **ALWAYS** look for existing `implementation-plans/` subdirectories
+- **NEVER** create new archive structures without checking existing ones
+
+## ✅ REQUIRED WORKFLOW
+
+### **Before Creating ANY New Structure:**
+
+1. **EXAMINE** existing directory with `list_dir`
+2. **ANALYZE** existing file organization patterns
+3. **IDENTIFY** appropriate existing location
+4. **USE** existing structure if it exists
+5. **ONLY CREATE** if no appropriate location exists
+
+### **Example Workflow:**
+
+```bash
+# ✅ CORRECT: Check first
+list_dir archive/legacy-docs/implementation-plans/
+# If "completed" subdirectory exists, use it
+# If not, then create it
+
+# ❌ WRONG: Blind creation
+mkdir -p archive/legacy-docs/implementation-plans/completed/
+# This assumes structure doesn't exist
+```
+
+## 🎯 SPECIFIC RULES FOR THIS PROJECT
+
+### **Archive Organization:**
+
+- **Plans go in**: `archive/legacy-docs/implementation-plans/`
+- **Summaries go in**: `archive/legacy-docs/upgrade-summaries/`
+- **Planning docs go in**: `archive/legacy-docs/planning/`
+- **Check for existing subdirectories** before creating new ones
+
+### **Active Plans:**
+
+- **Current plans stay in**: `docs/plans/`
+- **Completed plans move to**: `archive/legacy-docs/implementation-plans/`
+- **Check for existing "completed" subdirectory** before creating
+
+### **File Naming:**
+
+- **Respect existing naming conventions**
+- **Use consistent date/version patterns**
+- **Follow established categorization**
+
+## 🚨 CONSEQUENCES OF VIOLATION
+
+**If you violate this rule:**
+
+1. **Stop immediately** when called out
+2. **Examine existing structure** properly
+3. **Use existing organization** if available
+4. **Only create new structure** if truly needed
+5. **Apologize for not checking first**
+
+## 🎯 SUCCESS METRICS
+
+### **Respectful Development:**
+
+- ✅ **Always check existing structure first**
+- ✅ **Use existing organization when available**
+- ✅ **Only create new structures when necessary**
+- ✅ **Maintain consistency with existing patterns**
+- ✅ **Preserve established workflows**
+
+### **Efficient Organization:**
+
+- ✅ **No duplicate directory structures**
+- ✅ **Consistent file organization**
+- ✅ **Logical categorization**
+- ✅ **Easy navigation and maintenance**
+
+---
+
+**Remember: The existing structure was built for a reason. Respect it, understand it, and work within it. Only create new structures when the existing ones truly don't meet the need.**
+description:
+globs:
+alwaysApply: false
+
+---

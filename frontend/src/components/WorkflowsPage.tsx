@@ -275,6 +275,16 @@ const WorkflowsPage: React.FC = () => {
     }
   };
 
+  // Check if a diagram exists for display
+  const hasDiagramForDisplay = (orchestrationId: string): boolean => {
+    // Hyatt has a hardcoded diagram
+    if (orchestrationId === "hyatt") return true;
+
+    // Check if orchestration has diagram flag
+    const orchestration = orchestrations.find((o) => o.id === orchestrationId);
+    return orchestration?.hasDiagram || false;
+  };
+
   // Debug logging
   console.log("Nodes:", hyattNodes);
   console.log("Edges:", hyattEdges);
@@ -303,7 +313,7 @@ const WorkflowsPage: React.FC = () => {
                   >
                     {orchestration.name}
                   </button>
-                  {!orchestration.hasDiagram && (
+                  {!hasDiagramForDisplay(orchestration.id) && (
                     <button
                       onClick={() => handleGenerateDiagram(orchestration.id)}
                       disabled={generatingDiagram === orchestration.id}
@@ -324,10 +334,12 @@ const WorkflowsPage: React.FC = () => {
       </div>
       {/* Right content pane */}
       <div className="flex-1 pl-6 flex flex-col">
-        {selectedWorkflow === "hyatt" && (
+        {selectedWorkflow && hasDiagramForDisplay(selectedWorkflow) ? (
           <div className="border rounded-lg p-6 bg-white shadow flex-1">
             <h3 className="text-xl font-semibold mb-4">
-              Hyatt Workflow Diagram
+              {orchestrations.find((o) => o.id === selectedWorkflow)?.name ||
+                selectedWorkflow}{" "}
+              Workflow Diagram
             </h3>
             <div style={{ width: "100%", height: "800px", minWidth: "1400px" }}>
               <ReactFlow
@@ -348,6 +360,38 @@ const WorkflowsPage: React.FC = () => {
                 <Controls showInteractive={false} />
               </ReactFlow>
             </div>
+          </div>
+        ) : selectedWorkflow ? (
+          <div className="border rounded-lg p-6 bg-white shadow flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <h3 className="text-xl font-semibold mb-4">
+                {orchestrations.find((o) => o.id === selectedWorkflow)?.name ||
+                  selectedWorkflow}
+              </h3>
+              <p className="text-text-muted mb-4">
+                No workflow diagram available for this orchestration.
+              </p>
+              <button
+                onClick={() => handleGenerateDiagram(selectedWorkflow)}
+                disabled={generatingDiagram === selectedWorkflow}
+                className="px-4 py-2 bg-success text-white rounded hover:bg-success-hover disabled:bg-secondary disabled:cursor-not-allowed transition-colors"
+              >
+                {generatingDiagram === selectedWorkflow ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>Generating Diagram...</span>
+                  </div>
+                ) : (
+                  "Generate Workflow Diagram"
+                )}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="border rounded-lg p-6 bg-white shadow flex-1 flex items-center justify-center">
+            <p className="text-text-muted">
+              Select an orchestration to view its workflow diagram.
+            </p>
           </div>
         )}
       </div>
