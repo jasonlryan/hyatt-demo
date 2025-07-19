@@ -126,10 +126,10 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-slate-800 mb-4">
+          <h1 className="text-2xl font-bold text-text-primary mb-4">
             Orchestration Builder
           </h1>
-          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+          <p className="text-lg text-text-secondary max-w-2xl mx-auto">
             Describe your orchestration needs in natural language, and our AI
             will generate a complete orchestration configuration with agents,
             workflows, and comprehensive documentation.
@@ -137,20 +137,20 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-2xl font-bold text-slate-800 mb-4">
+          <h2 className="text-2xl font-bold text-text-primary mb-4">
             Create New Orchestration
           </h2>
 
           <div className="mb-4">
             <label
               htmlFor="orchestration-description"
-              className="block text-sm font-medium text-slate-600 mb-2"
+              className="block text-sm font-medium text-text-secondary mb-2"
             >
               Orchestration Description
             </label>
             <textarea
               id="orchestration-description"
-              className="w-full h-32 p-3 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+              className="w-full h-32 p-3 border border-border rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
               placeholder="Example: Create a content marketing orchestration that researches trending topics, generates blog posts, and distributes them across social media platforms..."
               onKeyDown={(e) => {
                 if (e.key === "Enter" && e.ctrlKey) {
@@ -190,7 +190,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
             </button>
           </div>
 
-          <div className="mt-6 text-center text-sm text-slate-500">
+          <div className="mt-6 text-center text-sm text-text-muted">
             <p>
               💡 <strong>Tip:</strong> Be specific about your use case, desired
               agents, and expected outputs for better results.
@@ -219,26 +219,26 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
       >
         {generatedOrchestration && (
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-slate-800 mb-4">
+            <h2 className="text-2xl font-bold text-text-primary mb-4">
               Generated Orchestration: {generatedOrchestration.name}
             </h2>
 
             <div className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
                   Description
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-text-secondary">
                   {generatedOrchestration.description}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">
                     Agents
                   </h3>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                  <ul className="list-disc list-inside text-text-secondary space-y-1">
                     {generatedOrchestration.agents.map((agent, index) => (
                       <li key={index}>{agent}</li>
                     ))}
@@ -246,10 +246,10 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">
                     Workflows
                   </h3>
-                  <ul className="list-disc list-inside text-gray-600 space-y-1">
+                  <ul className="list-disc list-inside text-text-secondary space-y-1">
                     {generatedOrchestration.workflows.map((workflow, index) => (
                       <li key={index}>{workflow}</li>
                     ))}
@@ -258,33 +258,33 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
                   Configuration
                 </h3>
-                <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">
+                <pre className="bg-secondary p-3 rounded text-sm overflow-x-auto">
                   {JSON.stringify(generatedOrchestration.config, null, 2)}
                 </pre>
               </div>
 
               {generatedOrchestration.documentation && (
                 <div>
-                  <h3 className="text-lg font-semibold text-slate-700 mb-2">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">
                     Documentation Preview
                   </h3>
-                  <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
-                    <h4 className="font-semibold text-blue-800 mb-2">
+                  <div className="bg-primary-light p-4 rounded-md border border-border">
+                    <h4 className="font-semibold text-primary mb-2">
                       Overview
                     </h4>
-                    <p className="text-blue-700 text-sm mb-3">
+                    <p className="text-primary text-sm mb-3">
                       {generatedOrchestration.documentation.overview ||
                         "Documentation will be generated and saved to the docs folder."}
                     </p>
                     {generatedOrchestration.documentation.useCases && (
                       <>
-                        <h4 className="font-semibold text-blue-800 mb-2">
+                        <h4 className="font-semibold text-primary mb-2">
                           Use Cases
                         </h4>
-                        <ul className="list-disc list-inside text-blue-700 text-sm space-y-1">
+                        <ul className="list-disc list-inside text-primary text-sm space-y-1">
                           {generatedOrchestration.documentation.useCases.map(
                             (useCase, index) => (
                               <li key={index}>{useCase}</li>
@@ -300,7 +300,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
               <div className="flex justify-end space-x-3 pt-4 border-t">
                 <button
                   onClick={() => setIsBuilderModalOpen(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 bg-secondary text-text-primary font-medium rounded hover:bg-secondary-hover transition-colors"
                 >
                   Cancel
                 </button>

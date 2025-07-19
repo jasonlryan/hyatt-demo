@@ -17,16 +17,16 @@ export interface AgentStyle {
 
 export const agentStyles: Record<string, AgentStyle> = {
   "PR Manager": {
-    icon: <Briefcase size={18} className="text-blue-500" />,
-    accent: "border-l-blue-500",
+    icon: <Briefcase size={18} className="text-primary" />,
+    accent: "border-l-primary",
   },
   "Research & Audience GPT": {
-    icon: <Search size={18} className="text-green-500" />,
-    accent: "border-l-green-500",
+    icon: <Search size={18} className="text-success" />,
+    accent: "border-l-success",
   },
   "Research & Audience": {
-    icon: <Search size={18} className="text-green-500" />,
-    accent: "border-l-green-500",
+    icon: <Search size={18} className="text-success" />,
+    accent: "border-l-success",
   },
   "Trending News GPT": {
     icon: <Newspaper size={18} className="text-orange-500" />,

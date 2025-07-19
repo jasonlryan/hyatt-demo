@@ -264,7 +264,7 @@ body {
       {/* Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 z-50"
+        className="fixed bottom-4 right-4 bg-primary text-white p-3 rounded-full shadow-lg hover:bg-primary-hover z-50"
         style={{ fontSize: "24px" }}
       >
         🎨
@@ -279,7 +279,7 @@ body {
                 <h2 className="text-2xl font-bold">Style Designer</h2>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-text-secondary hover:text-text-primary"
                 >
                   ✕
                 </button>
@@ -376,7 +376,7 @@ body {
                         }
                         className="w-full"
                       />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-text-secondary">
                         {styles.borderRadius}
                       </span>
                     </div>
@@ -398,7 +398,7 @@ body {
                         }
                         className="w-full"
                       />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-text-secondary">
                         {styles.spacing}
                       </span>
                     </div>
@@ -420,7 +420,7 @@ body {
                         }
                         className="w-full"
                       />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm text-text-secondary">
                         {styles.fontSize}
                       </span>
                     </div>
@@ -449,8 +449,8 @@ body {
                       onClick={() => setPreviewElement("button")}
                       className={`px-3 py-1 rounded text-sm ${
                         previewElement === "button"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-gray-100"
+                          ? "bg-primary-light text-primary"
+                          : "bg-secondary"
                       }`}
                     >
                       Button
@@ -459,8 +459,8 @@ body {
                       onClick={() => setPreviewElement("card")}
                       className={`px-3 py-1 rounded text-sm ${
                         previewElement === "card"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-gray-100"
+                          ? "bg-primary-light text-primary"
+                          : "bg-secondary"
                       }`}
                     >
                       Card
@@ -469,15 +469,15 @@ body {
                       onClick={() => setPreviewElement("modal")}
                       className={`px-3 py-1 rounded text-sm ${
                         previewElement === "modal"
-                          ? "bg-blue-100 text-blue-700"
-                          : "bg-gray-100"
+                          ? "bg-primary-light text-primary"
+                          : "bg-secondary"
                       }`}
                     >
                       Modal
                     </button>
                   </div>
 
-                  <div className="border rounded-lg p-4 bg-gray-50">
+                  <div className="border rounded-lg p-4 bg-secondary">
                     {previewElement === "button" && (
                       <div className="space-y-3">
                         <button className="btn btn-primary">
@@ -492,7 +492,7 @@ body {
                     {previewElement === "card" && (
                       <div className="card">
                         <h4 className="font-semibold mb-2">Sample Card</h4>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-text-secondary">
                           This is how your cards will look with the current
                           styles.
                         </p>

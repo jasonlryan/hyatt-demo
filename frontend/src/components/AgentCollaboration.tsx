@@ -99,8 +99,8 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-md">
-      <div className="p-4 border-b border-slate-200">
-        <h2 className="text-xl font-bold text-slate-800">Campaign Progress</h2>
+      <div className="p-4 border-b border-border">
+        <h2 className="text-xl font-bold text-text-primary">Campaign Progress</h2>
       </div>
       <div className="p-6">
         {/* Current Status */}
@@ -108,7 +108,7 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-3">
               {currentPhase.status === "active" && (
-                <div className="flex items-center gap-2 text-blue-600">
+                <div className="flex items-center gap-2 text-primary">
                   <Play size={16} />
                   <span className="font-semibold">Active</span>
                 </div>
@@ -120,19 +120,19 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
                 </div>
               )}
               {currentPhase.status === "completed" && (
-                <div className="flex items-center gap-2 text-green-600">
+                <div className="flex items-center gap-2 text-success">
                   <CheckCircle size={16} />
                   <span className="font-semibold">Completed</span>
                 </div>
               )}
             </div>
-            <p className="text-slate-700">{currentPhase.message}</p>
+            <p className="text-text-primary">{currentPhase.message}</p>
           </div>
         )}
 
         {/* Progress Steps */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-slate-800 mb-3">Campaign Phases</h3>
+          <h3 className="font-semibold text-text-primary mb-3">Campaign Phases</h3>
 
           {[
             { key: "research", label: "Audience Research", icon: "🔍" },
@@ -167,16 +167,16 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
                 <div className="flex items-center gap-3 mb-3">
                   <div className="text-lg">{phase.icon}</div>
                   <div className="flex-1">
-                    <span className="font-medium text-slate-700">
+                    <span className="font-medium text-text-primary">
                       {phase.label}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {isCompleted && (
-                      <CheckCircle size={16} className="text-green-500" />
+                      <CheckCircle size={16} className="text-success" />
                     )}
                     {isCurrent && (
-                      <div className="flex items-center gap-1 text-blue-500">
+                      <div className="flex items-center gap-1 text-primary">
                         <Clock size={14} />
                         <span className="text-xs">Working...</span>
                       </div>
@@ -203,21 +203,21 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
                       {onViewDeliverable && (
                         <button
                           onClick={() => onViewDeliverable(phase.key)}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors text-sm font-medium"
+                          className="flex items-center gap-2 px-4 py-2 bg-secondary text-text-primary rounded-md hover:bg-secondary-hover transition-colors text-sm font-medium"
                         >
                           <Eye size={16} /> View Deliverable
                         </button>
                       )}
                       <button
                         onClick={onResume}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-success text-white rounded-md hover:bg-success-hover transition-colors text-sm"
                       >
                         <Check size={16} />
                         Resume Campaign
                       </button>
                       <button
                         onClick={onRefine}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm"
+                        className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-hover transition-colors text-sm"
                       >
                         <Edit size={16} />
                         Refine & Retry
@@ -232,11 +232,11 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
 
         {/* Campaign Info */}
         {campaign && (
-          <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-            <h4 className="font-semibold text-slate-800 mb-2">
+          <div className="mt-6 p-4 bg-secondary rounded-lg">
+            <h4 className="font-semibold text-text-primary mb-2">
               Campaign Details
             </h4>
-            <div className="text-sm text-slate-600 space-y-1">
+            <div className="text-sm text-text-secondary space-y-1">
               <div>
                 <strong>ID:</strong> {campaign.id}
               </div>
