@@ -18,15 +18,15 @@ const BaseOrchestrationPage: React.FC<BaseOrchestrationPageProps> = ({
       <div className="container pt-3 pb-8">
         {/* Breadcrumb and HITL Toggle */}
         <div className="mb-6 flex items-center justify-between">
-          <nav className="flex items-center space-x-2 text-sm text-gray-600">
+          <nav className="flex items-center space-x-2 text-sm text-text-secondary">
             <button
               onClick={() => window.history.back()}
-              className="text-green-600 hover:text-green-700 transition-colors"
+              className="text-success hover:text-success-hover transition-colors"
             >
               Orchestrations
             </button>
             <span>›</span>
-            <span className="text-gray-800 font-medium">
+            <span className="text-text-primary font-medium">
               {orchestrationName}
             </span>
           </nav>
@@ -34,11 +34,11 @@ const BaseOrchestrationPage: React.FC<BaseOrchestrationPageProps> = ({
           {/* HITL Review Toggle */}
           {onToggleHitl && (
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">HITL Review</span>
+              <span className="text-sm text-text-secondary">HITL Review</span>
               <button
                 onClick={onToggleHitl}
                 className={`relative inline-flex h-6 w-12 items-center rounded-full ${
-                  hitlReview ? "bg-green-600" : "bg-gray-300"
+                  hitlReview ? "bg-success" : "bg-secondary"
                 }`}
               >
                 <span
@@ -48,7 +48,7 @@ const BaseOrchestrationPage: React.FC<BaseOrchestrationPageProps> = ({
                 />
                 <span
                   className={`absolute text-xs font-medium ${
-                    hitlReview ? "text-white left-1" : "text-gray-600 right-1"
+                    hitlReview ? "text-white left-1" : "text-text-secondary right-1"
                   }`}
                 >
                   {hitlReview ? "ON" : "OFF"}
