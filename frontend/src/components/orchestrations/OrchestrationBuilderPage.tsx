@@ -140,12 +140,18 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
     if (!generatedOrchestration) return;
 
     try {
+      const saveData = {
+        ...generatedOrchestration,
+        generatedPage: generatedPage,
+        generatedComponent: generatedComponent,
+      };
+
       const response = await fetch("/api/save-orchestration", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(generatedOrchestration),
+        body: JSON.stringify(saveData),
       });
 
       if (!response.ok) {
@@ -156,8 +162,10 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
       console.log("Orchestration saved:", result);
       setIsBuilderModalOpen(false);
       setGeneratedOrchestration(null);
+      setGeneratedPage(null);
+      setGeneratedComponent(null);
       alert(
-        `Orchestration "${generatedOrchestration.name}" saved successfully!\n\nComplete documentation has been generated and saved to the docs folder.`
+        `Orchestration "${generatedOrchestration.name}" saved successfully!\n\nComplete documentation and UI components have been generated and saved.`
       );
     } catch (error) {
       console.error("Error saving orchestration:", error);
