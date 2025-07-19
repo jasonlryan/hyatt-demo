@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useCampaignState } from "../../hooks/useCampaignState";
 import { useCampaignPolling } from "../../hooks/useCampaignPolling";
-import BaseOrchestrationPage from "./BaseOrchestrationPage";
+// Removed unused import: BaseOrchestrationPage
 import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
 import { SharedProgressPanel } from "../shared";
@@ -31,7 +31,6 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
     campaigns,
     conversation,
     deliverables,
-    error,
     isLoading,
     setError,
     updateFromApiData,
@@ -57,7 +56,6 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
   // Track which deliverable is being reviewed from phase card
   const [reviewPhaseKey, setReviewPhaseKey] = useState<string | null>(null);
 
-
   const handleViewDetails = (deliverable: Deliverable) => {
     if (deliverable.title === "Audience Research") {
       const dummyResearch: AudienceResearch = {
@@ -81,7 +79,6 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
       setIsDeliverableModalOpen(true);
     }
   };
-
 
   const handleSelectCampaign = (campaignId: string) => {
     selectCampaign(campaignId);
@@ -175,7 +172,9 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
                 />
                 <span
                   className={`absolute text-xs font-medium ${
-                    hitlReview ? "text-white left-1" : "text-text-secondary right-1"
+                    hitlReview
+                      ? "text-white left-1"
+                      : "text-text-secondary right-1"
                   }`}
                 >
                   {hitlReview ? "ON" : "OFF"}
@@ -197,7 +196,9 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
             <SharedDeliverablePanel
               deliverables={Object.values(deliverables)}
               onViewDetails={(id) => {
-                const deliverable = Object.values(deliverables).find((d) => d.id === id);
+                const deliverable = Object.values(deliverables).find(
+                  (d) => d.id === id
+                );
                 if (deliverable) handleViewDetails(deliverable);
               }}
             />
@@ -223,7 +224,6 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
               />
 
               <AgentCollaboration
-                messages={conversation}
                 campaign={campaign}
                 onResume={handleResume}
                 onRefine={handleRefine}

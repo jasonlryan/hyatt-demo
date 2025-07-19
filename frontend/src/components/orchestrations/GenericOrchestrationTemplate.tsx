@@ -5,7 +5,6 @@ import SidePanel from "../SidePanel";
 import { ConversationMessage } from "../../types";
 
 interface GenericOrchestrationTemplateProps {
-  orchestrationId: string;
   orchestrationName: string;
   hitlReview?: boolean;
   onToggleHitl?: () => void;
@@ -22,7 +21,6 @@ interface GenericOrchestrationTemplateProps {
 const GenericOrchestrationTemplate: React.FC<
   GenericOrchestrationTemplateProps
 > = ({
-  orchestrationId,
   orchestrationName,
   hitlReview = true,
   onToggleHitl,

@@ -1,5 +1,5 @@
 import React from "react";
-import { ConversationMessage, Campaign } from "../types";
+import { Campaign } from "../types";
 import {
   Clock,
   CheckCircle,
@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 
 interface AgentCollaborationProps {
-  messages: ConversationMessage[];
   campaign?: Campaign | null;
   onResume?: () => void;
   onRefine?: () => void;
@@ -20,7 +19,6 @@ interface AgentCollaborationProps {
 }
 
 const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
-  messages,
   campaign,
   onResume,
   onRefine,
@@ -100,7 +98,9 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md">
       <div className="p-4 border-b border-border">
-        <h2 className="text-xl font-bold text-text-primary">Campaign Progress</h2>
+        <h2 className="text-xl font-bold text-text-primary">
+          Campaign Progress
+        </h2>
       </div>
       <div className="p-6">
         {/* Current Status */}
@@ -132,7 +132,9 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
 
         {/* Progress Steps */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-text-primary mb-3">Campaign Phases</h3>
+          <h3 className="font-semibold text-text-primary mb-3">
+            Campaign Phases
+          </h3>
 
           {[
             { key: "research", label: "Audience Research", icon: "🔍" },

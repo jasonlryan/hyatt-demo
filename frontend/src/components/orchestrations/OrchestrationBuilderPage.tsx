@@ -38,7 +38,6 @@ interface OrchestrationSpec {
 }
 
 const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
-  orchestrationId,
   hitlReview = true,
   onToggleHitl,
 }) => {
@@ -48,7 +47,9 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState<string | null>(null);
   const [generatedPage, setGeneratedPage] = useState<string | null>(null);
-  const [generatedComponent, setGeneratedComponent] = useState<string | null>(null);
+  const [generatedComponent, setGeneratedComponent] = useState<string | null>(
+    null
+  );
   const [generationError, setGenerationError] = useState<string | null>(null);
 
   const handleGenerateOrchestration = async (brief: string) => {
@@ -266,7 +267,6 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
   return (
     <>
       <GenericOrchestrationTemplate
-        orchestrationId={orchestrationId}
         orchestrationName="Orchestration Builder"
         hitlReview={hitlReview}
         onToggleHitl={onToggleHitl}
@@ -330,7 +330,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
 
               {generatedOrchestration.documentation && (
                 <div>
-                <h3 className="text-lg font-semibold text-text-primary mb-2">
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">
                     Documentation Preview
                   </h3>
                   <div className="bg-primary-light p-4 rounded-md border border-border">
@@ -361,7 +361,9 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
 
               {generatedPage && (
                 <div>
-                  <h3 className="text-lg font-semibold text-text-primary mb-2">Generated Page</h3>
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">
+                    Generated Page
+                  </h3>
                   <pre className="bg-secondary p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap">
                     {generatedPage}
                   </pre>
@@ -370,7 +372,9 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
 
               {generatedComponent && (
                 <div>
-                  <h3 className="text-lg font-semibold text-text-primary mb-2">Generated Component</h3>
+                  <h3 className="text-lg font-semibold text-text-primary mb-2">
+                    Generated Component
+                  </h3>
                   <pre className="bg-secondary p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap">
                     {generatedComponent}
                   </pre>

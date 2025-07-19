@@ -1,6 +1,6 @@
 import React from "react";
 import { Deliverable } from "../types";
-import { X, Download, Eye, Check, Edit } from "lucide-react";
+import { X, Download, Check, Edit } from "lucide-react";
 import DeliverableContent from "./DeliverableContent";
 import "./deliverableStyles.css";
 

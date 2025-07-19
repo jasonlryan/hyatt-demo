@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 interface HiveOrchestrationPageProps {
   selectedOrchestration: string | null;
@@ -8,7 +8,6 @@ interface HiveOrchestrationPageProps {
 }
 
 const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
-  selectedOrchestration,
   hitlReview = true,
   onToggleHitl,
   onNavigateToOrchestrations,
@@ -28,7 +27,9 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
               Orchestrations
             </button>
             <span>›</span>
-            <span className="text-text-primary font-medium">Hive Orchestrator</span>
+            <span className="text-text-primary font-medium">
+              Hive Orchestrator
+            </span>
           </nav>
 
           {/* HITL Review Toggle */}
@@ -48,7 +49,9 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
                 />
                 <span
                   className={`absolute text-xs font-medium ${
-                    hitlReview ? "text-white left-1" : "text-text-secondary right-1"
+                    hitlReview
+                      ? "text-white left-1"
+                      : "text-text-secondary right-1"
                   }`}
                 >
                   {hitlReview ? "ON" : "OFF"}

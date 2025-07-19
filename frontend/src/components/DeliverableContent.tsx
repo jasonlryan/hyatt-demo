@@ -1,7 +1,7 @@
 import React from "react";
 
 interface DeliverableContentProps {
-  content: string | Record<string, any>;
+  content: string | Record<string, unknown>;
   className?: string;
 }
 
@@ -25,7 +25,7 @@ const DeliverableContent: React.FC<DeliverableContentProps> = ({
     }
   };
 
-  const renderJSON = (data: any) => {
+  const renderJSON = (data: Record<string, unknown>) => {
     return (
       <div className="deliverable-json">
         <pre className="json-content">

@@ -1,20 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Bot,
-  Settings,
-  FileText,
-  Database,
-  Cpu,
-  Clock,
-  Thermometer,
-  Edit2,
-  Save,
-  X,
-  Power,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import GlobalNav from "./GlobalNav";
+import { Bot, Save, Power, ChevronDown, ChevronUp } from "lucide-react";
 import "../index.css";
 
 interface AgentConfig {
@@ -88,17 +73,28 @@ interface AgentsConfiguration {
   };
 }
 
+interface HiveDemoResult {
+  error?: string;
+  promptText?: string;
+  imageUrl?: string;
+  modulars?: unknown;
+  trendInsights?: unknown;
+  qaResult?: unknown;
+}
+
 const AgentsPage: React.FC = () => {
   const [config, setConfig] = useState<AgentsConfiguration | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editingAgent, setEditingAgent] = useState<string | null>(null);
+  const [, setEditingAgent] = useState<string | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [editedConfig, setEditedConfig] = useState<AgentsConfiguration | null>(
     null
   );
   const [settingsOpen, setSettingsOpen] = useState(true);
-  const [hiveDemoResult, setHiveDemoResult] = useState<any>(null);
+  const [hiveDemoResult, setHiveDemoResult] = useState<HiveDemoResult | null>(
+    null
+  );
   const [hiveDemoLoading, setHiveDemoLoading] = useState(false);
   const [imgPrompt, setImgPrompt] = useState("");
   const [imgLoading, setImgLoading] = useState(false);
@@ -177,7 +173,7 @@ const AgentsPage: React.FC = () => {
   const handleAgentConfigChange = (
     agentId: string,
     field: keyof AgentConfig,
-    value: any
+    value: string | number | boolean
   ) => {
     if (!editedConfig) return;
 
@@ -192,19 +188,6 @@ const AgentsPage: React.FC = () => {
       },
     };
     setEditedConfig(updatedConfig);
-  };
-
-  const getModelTypeColor = (model: string) => {
-    if (model.includes("gpt-4o")) return "bg-slate-100 text-slate-800";
-    if (model.includes("gpt-4")) return "bg-primary text-white";
-    if (model.includes("mini")) return "bg-amber-100 text-amber-800";
-    return "bg-gray-100 text-gray-800";
-  };
-
-  const getTemperatureColor = (temperature: number) => {
-    if (temperature <= 0.3) return "text-primary";
-    if (temperature <= 0.6) return "text-success";
-    return "text-warning";
   };
 
   const capriSunContext = {
@@ -234,8 +217,10 @@ const AgentsPage: React.FC = () => {
       });
       const data = await res.json();
       setHiveDemoResult(data);
-    } catch (err: any) {
-      setHiveDemoResult({ error: err.message });
+    } catch (err: unknown) {
+      setHiveDemoResult({
+        error: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setHiveDemoLoading(false);
     }
@@ -254,8 +239,8 @@ const AgentsPage: React.FC = () => {
       const data = await res.json();
       if (data.imageUrl) setImgUrl(data.imageUrl);
       else alert(data.error || "No image URL returned");
-    } catch (err: any) {
-      alert(err.message || "Image generation failed");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Image generation failed");
     } finally {
       setImgLoading(false);
     }

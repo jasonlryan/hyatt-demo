@@ -142,8 +142,8 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
           ]);
         }
         setIsLoading(false);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : String(err));
         setIsLoading(false);
       }
     };
@@ -225,7 +225,9 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
                     <div className="text-lg font-bold text-primary">
                       {orchestration.config.maxConcurrentWorkflows}
                     </div>
-                    <div className="text-xs text-text-secondary">Max Workflows</div>
+                    <div className="text-xs text-text-secondary">
+                      Max Workflows
+                    </div>
                   </div>
                   <div className="text-center p-2 bg-secondary rounded-lg">
                     <div className="text-lg font-bold text-success">

@@ -28,14 +28,12 @@ const GenericOrchestrationPage: React.FC<GenericOrchestrationPageProps> = ({
   orchestrationName,
   hitlReview = true,
   onToggleHitl,
-  onNavigateToOrchestrations,
 }) => {
   const {
     campaign,
     campaigns,
     conversation,
     deliverables,
-    error,
     isLoading,
     updateFromApiData,
     selectCampaign,
@@ -57,7 +55,7 @@ const GenericOrchestrationPage: React.FC<GenericOrchestrationPageProps> = ({
     null
   );
   const [reviewPhaseKey, setReviewPhaseKey] = useState<string | null>(null);
-  const [pollingError, setPollingError] = useState<any>(null);
+  const [, setPollingError] = useState<unknown>(null);
 
   const handleViewDetails = (deliverable: Deliverable) => {
     if (deliverable.title === "Audience Research") {
@@ -175,7 +173,6 @@ const GenericOrchestrationPage: React.FC<GenericOrchestrationPageProps> = ({
                 onViewProgress={() => setIsSidePanelOpen(true)}
               />
               <AgentCollaboration
-                messages={conversation}
                 campaign={campaign}
                 onResume={handleResume}
                 onRefine={handleRefine}

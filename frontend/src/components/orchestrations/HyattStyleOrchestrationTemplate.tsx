@@ -38,7 +38,6 @@ const HyattStyleOrchestrationTemplate: React.FC<
     campaigns,
     conversation,
     deliverables,
-    error,
     isLoading,
     updateFromApiData,
     selectCampaign,
@@ -60,7 +59,7 @@ const HyattStyleOrchestrationTemplate: React.FC<
     null
   );
   const [reviewPhaseKey, setReviewPhaseKey] = useState<string | null>(null);
-  const [pollingError, setPollingError] = useState<any>(null);
+  const [, setPollingError] = useState<unknown>(null);
 
   const handleViewDetails = (deliverable: Deliverable) => {
     if (deliverable.title === "Audience Research") {
@@ -178,7 +177,6 @@ const HyattStyleOrchestrationTemplate: React.FC<
                 onViewProgress={() => setIsSidePanelOpen(true)}
               />
               <AgentCollaboration
-                messages={conversation}
                 campaign={campaign}
                 onResume={handleResume}
                 onRefine={handleRefine}

@@ -10,18 +10,7 @@ import "reactflow/dist/style.css";
 import { hyattDiagramConfig } from "./orchestrations/diagrams";
 import { diagramToReactFlow } from "../utils/diagramMapper";
 
-const outlinedStyle = {
-  background: "#fff",
-  border: "2px solid #64748b",
-  color: "#222",
-};
-
-const agentColors = {
-  research: "#2563eb", // blue
-  strategy: "#ec4899", // pink
-  trending: "#22c55e", // green
-  story: "#7c3aed", // purple
-};
+// Removed unused variables: outlinedStyle and agentColors
 
 const CustomNode = memo(({ data, id }: NodeProps) => {
   // Special case for brief and final nodes
@@ -203,7 +192,8 @@ const nodeTypes = {
   custom: CustomNode,
 };
 
-const { nodes: hyattNodes, edges: hyattEdges } = diagramToReactFlow(hyattDiagramConfig);
+const { nodes: hyattNodes, edges: hyattEdges } =
+  diagramToReactFlow(hyattDiagramConfig);
 
 const WorkflowsPage: React.FC = () => {
   const [selectedWorkflow, setSelectedWorkflow] = useState<string | null>(
@@ -258,18 +248,18 @@ const WorkflowsPage: React.FC = () => {
   const handleGenerateDiagram = async (orchestrationId: string) => {
     setGeneratingDiagram(orchestrationId);
     try {
-      const res = await fetch('/api/generate-diagram', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/generate-diagram", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: orchestrationId }),
       });
-      if (!res.ok) throw new Error('Request failed');
+      if (!res.ok) throw new Error("Request failed");
 
       const data = await res.json();
       if (data.diagram) {
         const { nodes, edges } = diagramToReactFlow(data.diagram);
-        console.log('Generated diagram nodes:', nodes);
-        console.log('Generated diagram edges:', edges);
+        console.log("Generated diagram nodes:", nodes);
+        console.log("Generated diagram edges:", edges);
       }
 
       setOrchestrations((prev) =>
@@ -278,8 +268,8 @@ const WorkflowsPage: React.FC = () => {
         )
       );
     } catch (error) {
-      console.error('Failed to generate diagram:', error);
-      alert('Failed to generate diagram. Please try again.');
+      console.error("Failed to generate diagram:", error);
+      alert("Failed to generate diagram. Please try again.");
     } finally {
       setGeneratingDiagram(null);
     }

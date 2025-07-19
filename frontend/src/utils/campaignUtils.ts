@@ -16,7 +16,7 @@ export function extractDeliverables(data: any): { [key: string]: Deliverable } {
   }
 
   if (data.conversation) {
-    data.conversation.forEach((msg: any, index: number) => {
+    data.conversation.forEach((msg: any) => {
       if (msg.deliverable) {
         const agentName = msg.agent || msg.speaker || 'AI Agent';
         const key = agentName.toLowerCase().replace(/\s+/g, '-');

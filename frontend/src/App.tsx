@@ -8,17 +8,19 @@ import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrati
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
 import TemplateOrchestrationPage from "./components/orchestrations/TemplateOrchestrationPage";
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
-import GenericOrchestrationPage from "./components/orchestrations/GenericOrchestrationPage";
-import {
-  loadOrchestrationPage,
-  GeneratedOrchestrationPageProps,
-} from "./components/orchestrations/generated";
+// Removed unused import: GenericOrchestrationPage
+import { loadOrchestrationPage } from "./components/orchestrations/generated";
+import { OrchestrationPageProps } from "./components/orchestrations/generated/types";
 import HitlReviewModal from "./components/HitlReviewModal";
 import StylePanel from "./components/StylePanel";
 import "./components/deliverableStyles.css";
 
-const OrchestrationPageLoader = ({ orchestrationId, ...props }: GeneratedOrchestrationPageProps) => {
-  const [OrchestrationComponent, setOrchestrationComponent] = useState<React.ComponentType | null>(null);
+const OrchestrationPageLoader = ({
+  orchestrationId,
+  ...props
+}: OrchestrationPageProps) => {
+  const [OrchestrationComponent, setOrchestrationComponent] =
+    useState<React.ComponentType<OrchestrationPageProps> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -28,9 +30,12 @@ const OrchestrationPageLoader = ({ orchestrationId, ...props }: GeneratedOrchest
         setLoading(true);
         const Component = await loadOrchestrationPage(orchestrationId);
         setOrchestrationComponent(() => Component);
-      } catch (err: any) {
-        console.error(`Failed to load orchestration page for ${orchestrationId}:`, err);
-        setError(err);
+      } catch (err: unknown) {
+        console.error(
+          `Failed to load orchestration page for ${orchestrationId}:`,
+          err
+        );
+        setError(err instanceof Error ? err : new Error(String(err)));
       } finally {
         setLoading(false);
       }
@@ -61,7 +66,9 @@ const OrchestrationPageLoader = ({ orchestrationId, ...props }: GeneratedOrchest
     );
   }
 
-  return OrchestrationComponent ? <OrchestrationComponent {...props} /> : null;
+  return OrchestrationComponent ? (
+    <OrchestrationComponent {...props} orchestrationId={orchestrationId} />
+  ) : null;
 };
 
 function App() {
@@ -202,7 +209,9 @@ function App() {
                 <div className="min-h-screen flex items-center justify-center">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-text-secondary">Loading orchestration...</p>
+                    <p className="text-text-secondary">
+                      Loading orchestration...
+                    </p>
                   </div>
                 </div>
               }
