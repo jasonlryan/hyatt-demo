@@ -4,7 +4,7 @@
  */
 
 const BaseOrchestrator = require("./classes/BaseOrchestrator");
-const AgentOrchestrator = require("./classes/AgentOrchestrator");
+const HyattOrchestrator = require("./classes/HyattOrchestrator");
 const HiveOrchestrator = require("./classes/HiveOrchestrator");
 const orchestrationsConfig = require("./configs/orchestrations.config.json");
 
@@ -17,7 +17,7 @@ const orchestrationsConfig = require("./configs/orchestrations.config.json");
 function createOrchestrator(type, config = {}) {
   switch (type.toLowerCase()) {
     case "agent":
-      return new AgentOrchestrator(config);
+      return new HyattOrchestrator(config);
     case "hive":
       return new HiveOrchestrator(config);
     default:
@@ -44,7 +44,7 @@ function getOrchestratorConfig(type) {
 
 module.exports = {
   BaseOrchestrator,
-  AgentOrchestrator,
+  HyattOrchestrator,
   HiveOrchestrator,
   createOrchestrator,
   getAvailableOrchestrators,

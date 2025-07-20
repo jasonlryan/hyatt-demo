@@ -9,7 +9,13 @@ import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestration
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
 // Removed unused import: GenericOrchestrationPage
 import { loadOrchestrationPage } from "./components/orchestrations/generated";
-import { OrchestrationPageProps } from "./components/orchestrations/generated/types";
+type OrchestrationPageProps = {
+  orchestrationId: string;
+  orchestrationName: string;
+  hitlReview?: boolean;
+  onToggleHitl?: () => void;
+  onNavigateToOrchestrations?: () => void;
+};
 import HitlReviewModal from "./components/HitlReviewModal";
 import StylePanel from "./components/StylePanel";
 import "./components/deliverableStyles.css";
@@ -155,7 +161,6 @@ function App() {
                   setIsHitlModalOpen(true);
                 }
               }}
-              onNavigateToOrchestrations={handleNavigateToOrchestrations}
             />
           );
         case "builder":
@@ -175,7 +180,7 @@ function App() {
         case "hive":
           return (
             <HiveOrchestrationPage
-              selectedOrchestration={selectedOrchestration}
+              orchestrationId={selectedOrchestration}
               hitlReview={hitlReview}
               onToggleHitl={async () => {
                 const newState = !hitlReview;
@@ -184,7 +189,6 @@ function App() {
                   setIsHitlModalOpen(true);
                 }
               }}
-              onNavigateToOrchestrations={handleNavigateToOrchestrations}
             />
           );
         default:

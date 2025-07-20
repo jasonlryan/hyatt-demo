@@ -12,7 +12,6 @@ interface HiveOrchestratorProps {
   orchestrationId: string;
   hitlReview?: boolean;
   onToggleHitl?: () => void;
-  onNavigateToOrchestrations?: () => void;
 }
 
 // Sample agent data
@@ -25,9 +24,7 @@ const agents: AgentStatus[] = [
 ];
 
 // Hive Orchestrator Component (for renderExtraCenter)
-const HiveOrchestrator: React.FC<{ campaign: Campaign | null }> = ({
-  campaign,
-}) => {
+const HiveOrchestrator: React.FC<{ campaign: Campaign | null }> = () => {
   return (
     <div className="space-y-6">
       <section className="bg-white rounded-lg shadow-md p-6 border border-border">
@@ -110,7 +107,6 @@ const HiveOrchestrationPage: React.FC<HiveOrchestratorProps> = ({
   orchestrationId,
   hitlReview = true,
   onToggleHitl,
-  onNavigateToOrchestrations,
 }) => {
   return (
     <OrchestrationPageTemplate
