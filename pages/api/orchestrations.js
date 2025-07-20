@@ -64,28 +64,6 @@ export default function handler(req, res) {
         hasDiagram: false,
         hasDocumentation: false,
       },
-      builder: {
-        id: "builder",
-        name: "Orchestration Builder",
-        description:
-          "AI-powered orchestration generator. Describe what you want, and it creates a custom orchestration for you.",
-        enabled: true,
-        config: {
-          maxConcurrentWorkflows: 3,
-          timeout: 300000,
-          retryAttempts: 2,
-          enableLogging: true,
-        },
-        workflows: ["orchestration_generation_workflow"],
-        agents: [
-          "orchestration_analyzer",
-          "agent_generator",
-          "workflow_designer",
-        ],
-        hasDiagram: false,
-        hasDocumentation: true,
-        documentationPath: "docs/orchestrations/OrchestrationBuilder.md",
-      },
       hive: {
         id: "hive",
         name: "Hive Orchestrator",
