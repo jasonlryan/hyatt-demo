@@ -6,7 +6,6 @@ import WorkflowsPage from "./components/WorkflowsPage";
 import OrchestrationsPage from "./components/OrchestrationsPage";
 import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrationPage";
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
-import TemplateOrchestrationPage from "./components/orchestrations/TemplateOrchestrationPage";
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
 // Removed unused import: GenericOrchestrationPage
 import { loadOrchestrationPage } from "./components/orchestrations/generated";
@@ -157,20 +156,6 @@ function App() {
                 }
               }}
               onNavigateToOrchestrations={handleNavigateToOrchestrations}
-            />
-          );
-        case "template":
-          return (
-            <TemplateOrchestrationPage
-              orchestrationId="hyatt"
-              hitlReview={hitlReview}
-              onToggleHitl={async () => {
-                const newState = !hitlReview;
-                await updateHitlReviewState(newState);
-                if (newState) {
-                  setIsHitlModalOpen(true);
-                }
-              }}
             />
           );
         case "builder":

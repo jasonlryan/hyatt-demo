@@ -8,7 +8,6 @@ This directory contains comprehensive documentation for all orchestrations in th
 
 - [Hyatt Orchestrator](./HyattOrchestrator.md) - Primary PR campaign orchestration
 - [Hive Orchestrator](./HiveOrchestrator.md) - Reactive framework orchestration
-- [Template Orchestrator](./TemplateOrchestrator.md) - Example orchestration template
 
 ### Meta-Orchestrations
 
@@ -39,7 +38,6 @@ orchestrations/
 │   ├── README.md           # This file
 │   ├── HyattOrchestrator.md
 │   ├── HiveOrchestrator.md
-│   ├── TemplateOrchestrator.md
 │   ├── OrchestrationBuilder.md
 │   ├── FeatureParityChecklist.md
 │   ├── AgentMapping.md

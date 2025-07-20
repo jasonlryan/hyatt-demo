@@ -150,7 +150,6 @@ const AgentsPage: React.FC = () => {
     const colors: { [key: string]: string } = {
       "Hyatt Orchestrator": "bg-blue-100 text-blue-800 border-blue-200",
       "Hive Orchestrator": "bg-purple-100 text-purple-800 border-purple-200",
-      "Template Orchestrator": "bg-gray-100 text-gray-800 border-gray-200",
       "Orchestration Builder": "bg-green-100 text-green-800 border-green-200",
     };
     return (
