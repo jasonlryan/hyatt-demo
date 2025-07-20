@@ -187,6 +187,14 @@ class ResearchAudienceAgent {
         `🔄 ${this.name}: Analyzing audience using built-in knowledge + campaign brief...`
       );
 
+      // Ensure system prompt is loaded before making API call
+      if (!this.systemPrompt) {
+        console.log(
+          `🔄 ${this.name}: System prompt not loaded, loading now...`
+        );
+        await this.loadSystemPrompt();
+      }
+
       // Simple prompt - let the centralized GPT prompt handle everything
       const prompt = `
 CAMPAIGN BRIEF TO ANALYZE:
@@ -209,6 +217,9 @@ Generate the appropriate response based on your conversation scenarios in your s
       console.log(`🔍 ATTEMPTING REAL OPENAI API CALL...`);
       console.log(`🔍 API Key: ${this.openai.apiKey ? "SET" : "MISSING"}`);
       console.log(`🔍 Model: ${this.model}`);
+      console.log(
+        `🔍 System Prompt Loaded: ${this.systemPrompt ? "YES" : "NO"}`
+      );
 
       const response = await this.openai.responses.create({
         model: this.model,
@@ -287,6 +298,14 @@ Generate the appropriate response based on your conversation scenarios in your s
       console.log(
         `🔄 ${this.name}: Generating collaborative input via Responses API...`
       );
+
+      // Ensure system prompt is loaded before making API call
+      if (!this.systemPrompt) {
+        console.log(
+          `🔄 ${this.name}: System prompt not loaded, loading now...`
+        );
+        await this.loadSystemPrompt();
+      }
 
       const prompt = `
 You are ${this.name} in a collaborative PR strategy session.
@@ -376,6 +395,14 @@ Generate the appropriate response based on your conversation scenarios in your s
 `;
 
     try {
+      // Ensure system prompt is loaded before making API call
+      if (!this.systemPrompt) {
+        console.log(
+          `🔄 ${this.name}: System prompt not loaded, loading now...`
+        );
+        await this.loadSystemPrompt();
+      }
+
       const response = await this.openai.responses.create({
         model: this.model,
         input: [

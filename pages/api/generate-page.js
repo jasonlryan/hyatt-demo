@@ -57,9 +57,9 @@ Generate a React component that:
 
 Return the component as a complete, ready-to-use React TypeScript function component.`;
 
-    const completion = await openai.chat.completions.create({
+    const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
-      messages: [
+      input: [
         {
           role: "system",
           content: systemPrompt,
@@ -70,10 +70,9 @@ Return the component as a complete, ready-to-use React TypeScript function compo
         },
       ],
       temperature: 0.3,
-      max_tokens: 3000,
     });
 
-    const generatedComponent = completion.choices[0].message.content;
+    const generatedComponent = response.output_text;
 
     // Validate styling compliance
     const StylingValidator = require("../../utils/stylingValidator");

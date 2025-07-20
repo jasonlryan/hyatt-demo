@@ -87,6 +87,14 @@ class PRManagerAgent {
         `🔄 PR Manager generating campaign introduction via Responses API...`
       );
 
+      // Ensure system prompt is loaded before making API call
+      if (!this.systemPrompt) {
+        console.log(
+          `🔄 ${this.name}: System prompt not loaded, loading now...`
+        );
+        await this.loadSystemPrompt();
+      }
+
       const prompt = `
 ORIGINAL CAMPAIGN BRIEF:
 ${campaignBrief}
@@ -147,6 +155,14 @@ Be specific to THIS campaign - reference the actual campaign details, objectives
       console.log(
         `🔄 PR Manager generating handoff to ${nextPhase} via Responses API...`
       );
+
+      // Ensure system prompt is loaded before making API call
+      if (!this.systemPrompt) {
+        console.log(
+          `🔄 ${this.name}: System prompt not loaded, loading now...`
+        );
+        await this.loadSystemPrompt();
+      }
 
       const prompt = `
 ORIGINAL CAMPAIGN BRIEF:
@@ -214,6 +230,14 @@ Be specific to THIS campaign - avoid generic language. Reference the actual camp
       console.log(
         `🔄 PR Manager generating final delivery via Responses API...`
       );
+
+      // Ensure system prompt is loaded before making API call
+      if (!this.systemPrompt) {
+        console.log(
+          `🔄 ${this.name}: System prompt not loaded, loading now...`
+        );
+        await this.loadSystemPrompt();
+      }
 
       const prompt = `
 ORIGINAL CAMPAIGN BRIEF:

@@ -5,7 +5,7 @@ import { useCampaignPolling } from "../../hooks/useCampaignPolling";
 import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
 import SidePanel from "../SidePanel";
 import { SharedProgressPanel } from "../shared";
-import AgentCollaboration from "../AgentCollaboration";
+import { SharedAgentCollaboration } from "../shared";
 import { SharedDeliverablePanel } from "../shared";
 import AudienceResearchModal from "../AudienceResearchModal";
 import RefineInputModal from "../RefineInputModal";
@@ -223,7 +223,7 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
                 onViewProgress={() => setIsSidePanelOpen(true)}
               />
 
-              <AgentCollaboration
+              <SharedAgentCollaboration
                 campaign={campaign}
                 onResume={handleResume}
                 onRefine={handleRefine}

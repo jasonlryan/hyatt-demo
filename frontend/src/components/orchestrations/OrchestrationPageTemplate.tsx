@@ -7,7 +7,7 @@ import {
   SharedProgressPanel,
   SharedDeliverablePanel,
 } from "../shared";
-import AgentCollaboration from "../AgentCollaboration";
+import { SharedAgentCollaboration } from "../shared";
 import DeliverableModal from "../DeliverableModal";
 import RefineInputModal from "../RefineInputModal";
 import AudienceResearchModal from "../AudienceResearchModal";
@@ -174,7 +174,7 @@ const OrchestrationPageTemplate: React.FC<OrchestrationPageTemplateProps> = ({
                 campaign={campaign}
                 onViewProgress={() => setIsSidePanelOpen(true)}
               />
-              <AgentCollaboration
+              <SharedAgentCollaboration
                 campaign={campaign}
                 onResume={handleResume}
                 onRefine={handleRefine}

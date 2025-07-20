@@ -21,13 +21,7 @@ class BaseAgent {
     const searchPaths = [
       path.join(__dirname, "../prompts", this.promptFile),
       path.join(__dirname, "../../prompts", this.promptFile),
-      path.join(
-        process.cwd(),
-        "hive",
-        "agents",
-        "prompts",
-        this.promptFile
-      ),
+      path.join(process.cwd(), "hive", "agents", "prompts", this.promptFile),
     ];
     for (const p of searchPaths) {
       try {
@@ -52,19 +46,15 @@ class BaseAgent {
     }
 
     try {
-      const completion = await this.openai.chat.completions.create({
+      const response = await this.openai.responses.create({
         model: this.model,
-        messages: [
+        input: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: userContent },
         ],
         temperature: this.temperature,
-        max_tokens: this.maxTokens,
       });
-      return (
-        completion.choices?.[0]?.message?.content?.trim() ||
-        "[No content returned]"
-      );
+      return response.output_text?.trim() || "[No content returned]";
     } catch (err) {
       console.warn(`OpenAI request failed (${this.id}):`, err?.message || err);
       return "[Placeholder response – OpenAI error]";

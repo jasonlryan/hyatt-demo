@@ -21,14 +21,16 @@ Welcome to the comprehensive documentation for the Hive Agent System. This docum
 
 - [Setup Guide](./system/setup.md) - System setup and installation
 - [Architecture Overview](./system/architecture.md) - System architecture and components
+- [🚀 Responses API Requirement](./system/responses-api-requirement.md) - **MANDATORY** OpenAI API usage requirements
 
 ## 🚀 Quick Start
 
 ### For Orchestration Developers
 
-1. Read the [Orchestration Developer Guide](./orchestrations/ORCHESTRATION_DEVELOPER_GUIDE.md)
-2. Review [Agent Mapping](./orchestrations/AgentMapping.md) to understand available capabilities
-3. Use the [Feature Parity Checklist](./orchestrations/FeatureParityChecklist.md) for migrations
+1. **🚀 FIRST**: Read [Responses API Requirement](./system/responses-api-requirement.md) - **MANDATORY**
+2. Read the [Orchestration Developer Guide](./orchestrations/ORCHESTRATION_DEVELOPER_GUIDE.md)
+3. Review [Agent Mapping](./orchestrations/AgentMapping.md) to understand available capabilities
+4. Use the [Feature Parity Checklist](./orchestrations/FeatureParityChecklist.md) for migrations
 
 ### For Frontend Developers
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Campaign } from "../types";
+import { Campaign } from "../../types";
 import {
   Clock,
   CheckCircle,
@@ -18,7 +18,7 @@ interface AgentCollaborationProps {
   onViewDeliverable?: (phaseKey: string) => void;
 }
 
-const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
+const SharedAgentCollaboration: React.FC<AgentCollaborationProps> = ({
   campaign,
   onResume,
   onRefine,
@@ -35,8 +35,8 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
       };
     }
 
-    // Check for active phases by looking at the phases object
-    if (campaign.phases?.research && !campaign.phases?.strategic_insight) {
+    // Check campaign.status first to determine active phase immediately
+    if (campaign.status === "research") {
       return {
         phase: "research",
         status: "active",
@@ -44,7 +44,7 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
       };
     }
 
-    if (campaign.phases?.strategic_insight && !campaign.phases?.trending) {
+    if (campaign.status === "strategic_insight") {
       return {
         phase: "strategic_insight",
         status: "active",
@@ -52,7 +52,7 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
       };
     }
 
-    if (campaign.phases?.trending && !campaign.phases?.story) {
+    if (campaign.status === "trending") {
       return {
         phase: "trending",
         status: "active",
@@ -60,7 +60,7 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
       };
     }
 
-    if (campaign.phases?.story && !campaign.phases?.collaborative) {
+    if (campaign.status === "story") {
       return {
         phase: "story",
         status: "active",
@@ -68,7 +68,7 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
       };
     }
 
-    if (campaign.phases?.collaborative) {
+    if (campaign.status === "collaborative") {
       return {
         phase: "collaborative",
         status: "active",
@@ -179,8 +179,22 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
                     )}
                     {isCurrent && (
                       <div className="flex items-center gap-1 text-primary">
-                        <Clock size={14} />
+                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
                         <span className="text-xs">Working...</span>
+                        {campaign?.agentModels &&
+                          campaign.agentModels[
+                            phase.key as keyof typeof campaign.agentModels
+                          ] && (
+                            <span className="text-xs text-text-secondary ml-1">
+                              (
+                              {
+                                campaign.agentModels[
+                                  phase.key as keyof typeof campaign.agentModels
+                                ]
+                              }
+                              )
+                            </span>
+                          )}
                       </div>
                     )}
                     {isPaused && (
@@ -263,4 +277,4 @@ const AgentCollaboration: React.FC<AgentCollaborationProps> = ({
   );
 };
 
-export default AgentCollaboration;
+export default SharedAgentCollaboration;

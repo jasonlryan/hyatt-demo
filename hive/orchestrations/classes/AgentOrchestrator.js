@@ -23,53 +23,48 @@ class AgentOrchestrator extends BaseOrchestrator {
 
     this.campaigns = new Map();
     this.campaignTimers = new Map();
-    this.researchAgent = new ResearchAudienceAgent();
-    this.trendingAgent = new TrendingNewsAgent();
-    this.storyAgent = new StoryAnglesAgent();
-    this.prManagerAgent = new PRManagerAgent();
-    this.strategicInsightAgent = new StrategicInsightAgent();
+
+    // Use agents from config instead of hardcoded creation
+    this.agents = config.agents || new Map();
+
+    // Set up agent references for backward compatibility
+    this.researchAgent = this.agents.get("research");
+    this.trendingAgent = this.agents.get("trending");
+    this.storyAgent = this.agents.get("story");
+    this.prManagerAgent = this.agents.get("pr_manager");
+    this.strategicInsightAgent = this.agents.get("strategic_insight");
 
     // Initialize dynamic components
     this.dataSourceManager = new DataSourceManager();
     this.qualityController = new QualityController();
 
     // Dynamic flow configuration
-    this.enableDynamicFlow = process.env.ENABLE_DYNAMIC_FLOW === "true";
-    this.enableQualityControl = process.env.ENABLE_QUALITY_CONTROL === "true";
+    this.enableDynamicFlow =
+      config.settings?.enableDynamicFlow ??
+      process.env.ENABLE_DYNAMIC_FLOW === "true";
+    this.enableQualityControl =
+      config.settings?.enableQualityControl ??
+      process.env.ENABLE_QUALITY_CONTROL === "true";
     this.enableAgentInteraction =
+      config.settings?.enableAgentInteraction ??
       process.env.ENABLE_AGENT_INTERACTION === "true";
     // Manual review mode - on by default
-    this.enableManualReview = process.env.ENABLE_MANUAL_REVIEW !== "false";
+    this.enableManualReview =
+      config.settings?.enableManualReview ??
+      process.env.ENABLE_MANUAL_REVIEW !== "false";
     // Require final sign-off even if manual review is disabled
-    this.requireFinalSignoff = process.env.REQUIRE_FINAL_SIGNOFF !== "false";
+    this.requireFinalSignoff =
+      config.settings?.requireFinalSignoff ??
+      process.env.REQUIRE_FINAL_SIGNOFF !== "false";
 
     // Synchronous part of setup
     this.loadCampaignsFromFiles();
   }
 
   async loadAgents() {
-    try {
-      this.log("Loading agent system prompts...");
-      await this.researchAgent.loadSystemPrompt();
-      await this.trendingAgent.loadSystemPrompt();
-      await this.storyAgent.loadSystemPrompt();
-      await this.prManagerAgent.loadSystemPrompt();
-      await this.strategicInsightAgent.loadSystemPrompt();
-
-      this.agents.set("research", this.researchAgent);
-      this.agents.set("trending", this.trendingAgent);
-      this.agents.set("story", this.storyAgent);
-      this.agents.set("pr_manager", this.prManagerAgent);
-      this.agents.set("strategic_insight", this.strategicInsightAgent);
-
-      this.log("All agent system prompts loaded successfully.");
-    } catch (error) {
-      this.log(
-        `FATAL: Failed to initialize one or more agents: ${error.message}`,
-        "error"
-      );
-      throw new Error(`Agent initialization failed: ${error.message}`);
-    }
+    // Agents are now loaded by OrchestrationManager and passed via config
+    this.log("Agents already loaded by OrchestrationManager");
+    return Promise.resolve();
   }
 
   async loadWorkflows() {
@@ -107,6 +102,13 @@ class AgentOrchestrator extends BaseOrchestrator {
       manualReview: this.enableManualReview,
       pendingPhase: null,
       awaitingReview: null,
+      agentModels: {
+        research: this.researchAgent.model,
+        strategic_insight: this.strategicInsightAgent.model,
+        trending: this.trendingAgent.model,
+        story: this.storyAgent.model,
+        pr_manager: this.prManagerAgent.model,
+      },
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
     };

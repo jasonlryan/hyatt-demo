@@ -9,7 +9,7 @@ import {
   SharedDeliverablePanel,
   SharedCampaignForm,
 } from "../shared";
-import AgentCollaboration from "../AgentCollaboration";
+import { SharedAgentCollaboration } from "../shared";
 import DeliverableModal from "../DeliverableModal";
 import RefineInputModal from "../RefineInputModal";
 import AudienceResearchModal from "../AudienceResearchModal";
@@ -172,7 +172,7 @@ const GenericOrchestrationPage: React.FC<GenericOrchestrationPageProps> = ({
                 campaign={campaign}
                 onViewProgress={() => setIsSidePanelOpen(true)}
               />
-              <AgentCollaboration
+              <SharedAgentCollaboration
                 campaign={campaign}
                 onResume={handleResume}
                 onRefine={handleRefine}

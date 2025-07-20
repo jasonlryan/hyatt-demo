@@ -3,11 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
-const { createOrchestrator } = require("./orchestrations");
-const VisualPromptGeneratorAgent = require("./agents/classes/VisualPromptGeneratorAgent");
-const ModularElementsRecommenderAgent = require("./agents/classes/ModularElementsRecommenderAgent");
-const TrendCulturalAnalyzerAgent = require("./agents/classes/TrendCulturalAnalyzerAgent");
-const BrandQAAgent = require("./agents/classes/BrandQAAgent");
+const OrchestrationManager = require("./orchestrations/OrchestrationManager");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -21,14 +17,61 @@ if (fs.existsSync(frontendDist)) {
 }
 app.use(express.static("public"));
 
-// Initialize orchestrator
-const orchestrator = createOrchestrator("agent");
+// Initialize orchestration manager
+const orchestrationManager = new OrchestrationManager();
 
-// ASYNCHRONOUS IIFE (Immediately Invoked Function Expression) to initialize agents
+// Helper function to get orchestration for a campaign
+async function getOrchestrationForCampaign(campaignId) {
+  // For now, default to hyatt orchestration
+  // In the future, this could be stored with the campaign data
+  return await orchestrationManager.getOrchestration("hyatt");
+}
+
+// Helper function to load campaigns from files
+function loadCampaignsFromFiles() {
+  const campaigns = [];
+  const campaignsDir = path.join(__dirname, "data");
+
+  if (fs.existsSync(campaignsDir)) {
+    const campaignFiles = fs
+      .readdirSync(campaignsDir)
+      .filter((file) => file.endsWith(".json"));
+
+    for (const file of campaignFiles) {
+      try {
+        const campaignPath = path.join(campaignsDir, file);
+        const campaign = JSON.parse(fs.readFileSync(campaignPath, "utf8"));
+        campaigns.push(campaign);
+      } catch (error) {
+        console.warn(`Failed to load campaign from ${file}:`, error.message);
+      }
+    }
+  }
+
+  return campaigns;
+}
+
+// Load existing campaigns
+const existingCampaigns = loadCampaignsFromFiles();
+
+// ASYNCHRONOUS IIFE (Immediately Invoked Function Expression) to initialize system
 (async () => {
   try {
-    await orchestrator.loadAgents();
-    console.log("✅ Orchestrator and agents initialized successfully.");
+    console.log("🚀 Hive system starting...");
+
+    // Load existing campaigns from files (if any)
+    if (existingCampaigns.length > 0) {
+      console.log(
+        `📚 Loaded ${existingCampaigns.length} existing campaigns from files`
+      );
+    }
+
+    console.log("✅ Core system initialized successfully");
+    console.log(
+      `🌐 Available orchestrations: ${orchestrationManager
+        .getAvailableOrchestrations()
+        .join(", ")}`
+    );
 
     // Only start server if not in Vercel environment AND after successful initialization
     if (process.env.NODE_ENV !== "production") {
@@ -37,21 +80,14 @@ const orchestrator = createOrchestrator("agent");
         console.log(`📊 Health check: http://localhost:${port}/health`);
         console.log(`🌐 Frontend: http://localhost:${port}`);
         console.log(`📡 API: http://localhost:${port}/api/campaigns`);
+        console.log(`🎯 Ready for orchestration requests`);
       });
     }
   } catch (error) {
-    console.error(
-      "❌ Server failed to start due to agent initialization error:",
-      error
-    );
-    // Prevent server from starting or Vercel function from becoming healthy if agents fail to init
-    // For Vercel, this error should appear in the runtime logs if it occurs during deployment initialization.
+    console.error("❌ Server failed to start:", error);
     if (process.env.NODE_ENV === "production") {
-      // In a Vercel environment, re-throwing will cause the function to fail deployment/startup
       throw error;
     }
-    // For local, you might choose to exit or let it run without agents (though it would be broken)
-    // process.exit(1); // Optionally exit if local startup fails critically
   }
 })();
 
@@ -59,13 +95,14 @@ const orchestrator = createOrchestrator("agent");
 
 // Manual review status
 app.get("/api/manual-review", (req, res) => {
-  res.json({ enabled: orchestrator.enableManualReview });
+  // Default to enabled for now
+  res.json({ enabled: true });
 });
 
 app.post("/api/manual-review", (req, res) => {
   const { enabled } = req.body;
-  orchestrator.enableManualReview = !!enabled;
-  res.json({ enabled: orchestrator.enableManualReview });
+  // This would need to be stored per orchestration in the future
+  res.json({ enabled: !!enabled });
 });
 
 // Health check
@@ -74,13 +111,14 @@ app.get("/health", (req, res) => {
     status: "healthy",
     timestamp: new Date().toISOString(),
     service: "Hive Agents System",
+    orchestrations: orchestrationManager.getStatus(),
   });
 });
 
 // Create a new campaign
 app.post("/api/campaigns", async (req, res) => {
   try {
-    const { campaignBrief } = req.body;
+    const { campaignBrief, orchestrationId = "hyatt" } = req.body;
 
     if (!campaignBrief || campaignBrief.trim().length === 0) {
       return res.status(400).json({
@@ -89,11 +127,15 @@ app.post("/api/campaigns", async (req, res) => {
     }
 
     console.log(
-      "Creating new campaign with brief:",
+      `Creating new campaign with ${orchestrationId} orchestration, brief:`,
       campaignBrief.substring(0, 100) + "..."
     );
 
-    const campaign = await orchestrator.startCampaign(campaignBrief);
+    // Load orchestration on-demand
+    const orchestration = await orchestrationManager.getOrchestration(
+      orchestrationId
+    );
+    const campaign = await orchestration.startCampaign(campaignBrief);
 
     res.status(201).json(campaign);
   } catch (error) {
@@ -109,7 +151,21 @@ app.post("/api/campaigns", async (req, res) => {
 app.get("/api/campaigns/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const campaign = orchestrator.getCampaign(id);
+
+    // First check existing campaigns from files
+    let campaign = existingCampaigns.find((c) => c.id === id);
+
+    // If not found in files, check if it's an active campaign in any orchestration
+    if (!campaign) {
+      for (const orchestrationId of orchestrationManager.getAvailableOrchestrations()) {
+        const orchestration =
+          orchestrationManager.getLoadedOrchestration(orchestrationId);
+        if (orchestration) {
+          campaign = orchestration.getCampaign(id);
+          if (campaign) break;
+        }
+      }
+    }
 
     if (!campaign) {
       return res.status(404).json({
@@ -242,8 +298,26 @@ app.get("/api/campaigns/:id/final", async (req, res) => {
 // List all campaigns
 app.get("/api/campaigns", async (req, res) => {
   try {
-    const campaigns = orchestrator.getAllCampaigns();
-    res.json(campaigns);
+    // Combine campaigns from files and active orchestrations
+    let allCampaigns = [...existingCampaigns];
+
+    // Add active campaigns from loaded orchestrations
+    for (const orchestrationId of orchestrationManager.getAvailableOrchestrations()) {
+      const orchestration =
+        orchestrationManager.getLoadedOrchestration(orchestrationId);
+      if (orchestration) {
+        const activeCampaigns = orchestration.getAllCampaigns();
+        allCampaigns = allCampaigns.concat(activeCampaigns);
+      }
+    }
+
+    // Remove duplicates based on campaign ID
+    const uniqueCampaigns = allCampaigns.filter(
+      (campaign, index, self) =>
+        index === self.findIndex((c) => c.id === campaign.id)
+    );
+
+    res.json(uniqueCampaigns);
   } catch (error) {
     console.error("List campaigns error:", error);
     res.status(500).json({
@@ -254,34 +328,85 @@ app.get("/api/campaigns", async (req, res) => {
 });
 
 // Cancel and remove a campaign
-app.delete("/api/campaigns/:id", (req, res) => {
-  const { id } = req.params;
-  const cancelled = orchestrator.cancelCampaign(id);
-  if (!cancelled) {
+app.delete("/api/campaigns/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Try to cancel in loaded orchestrations
+    for (const orchestrationId of orchestrationManager.getAvailableOrchestrations()) {
+      const orchestration =
+        orchestrationManager.getLoadedOrchestration(orchestrationId);
+      if (orchestration) {
+        const cancelled = orchestration.cancelCampaign(id);
+        if (cancelled) {
+          return res.json({ status: "cancelled", campaignId: id });
+        }
+      }
+    }
+
     return res.status(404).json({ error: "Campaign not found" });
+  } catch (error) {
+    console.error("Cancel campaign error:", error);
+    res.status(500).json({
+      error: "Failed to cancel campaign",
+      details: error.message,
+    });
   }
-  res.json({ status: "cancelled", campaignId: id });
 });
 
 // Resume a paused campaign
-app.post("/api/campaigns/:id/resume", (req, res) => {
-  const { id } = req.params;
-  const resumed = orchestrator.resumeCampaign(id);
-  if (!resumed) {
+app.post("/api/campaigns/:id/resume", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Try to resume in loaded orchestrations
+    for (const orchestrationId of orchestrationManager.getAvailableOrchestrations()) {
+      const orchestration =
+        orchestrationManager.getLoadedOrchestration(orchestrationId);
+      if (orchestration) {
+        const resumed = orchestration.resumeCampaign(id);
+        if (resumed) {
+          return res.json({ status: "resumed", campaignId: id });
+        }
+      }
+    }
+
     return res.status(400).json({ error: "Unable to resume campaign" });
+  } catch (error) {
+    console.error("Resume campaign error:", error);
+    res.status(500).json({
+      error: "Failed to resume campaign",
+      details: error.message,
+    });
   }
-  res.json({ status: "resumed", campaignId: id });
 });
 
 // Apply refinement and rerun the current phase
-app.post("/api/campaigns/:id/refine", (req, res) => {
-  const { id } = req.params;
-  const { instructions } = req.body;
-  const refined = orchestrator.refineCampaign(id, instructions || "");
-  if (!refined) {
+app.post("/api/campaigns/:id/refine", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { instructions } = req.body;
+
+    // Try to refine in loaded orchestrations
+    for (const orchestrationId of orchestrationManager.getAvailableOrchestrations()) {
+      const orchestration =
+        orchestrationManager.getLoadedOrchestration(orchestrationId);
+      if (orchestration) {
+        const refined = orchestration.refineCampaign(id, instructions || "");
+        if (refined) {
+          return res.json({ status: "refining", campaignId: id });
+        }
+      }
+    }
+
     return res.status(400).json({ error: "Unable to refine campaign" });
+  } catch (error) {
+    console.error("Refine campaign error:", error);
+    res.status(500).json({
+      error: "Failed to refine campaign",
+      details: error.message,
+    });
   }
-  res.json({ status: "refining", campaignId: id });
 });
 
 // Get agents configuration
@@ -719,9 +844,9 @@ app.post("/api/generate-orchestration", async (req, res) => {
     const { OpenAI } = require("openai");
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
     const systemPrompt = `You are an AI orchestration architect. Based on a description, generate a complete orchestration specification including agents, workflows, configuration, and comprehensive documentation.`;
-    const completion = await openai.chat.completions.create({
+    const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
-      messages: [
+      input: [
         { role: "system", content: systemPrompt },
         {
           role: "user",
@@ -729,10 +854,8 @@ app.post("/api/generate-orchestration", async (req, res) => {
         },
       ],
       temperature: 0.3,
-      max_tokens: 2000,
-      response_format: { type: "json_object" },
     });
-    const generated = JSON.parse(completion.choices[0].message.content);
+    const generated = JSON.parse(response.output_text);
     if (!generated.name || !generated.agents || !generated.workflows) {
       throw new Error("Invalid orchestration structure generated");
     }
@@ -936,9 +1059,9 @@ Generate a complete React page that:
 
 Return the page as a complete, ready-to-use React TypeScript file.`;
 
-    const completion = await openai.chat.completions.create({
+    const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
-      messages: [
+      input: [
         {
           role: "system",
           content: systemPrompt,
@@ -949,10 +1072,9 @@ Return the page as a complete, ready-to-use React TypeScript file.`;
         },
       ],
       temperature: 0.3,
-      max_tokens: 3000,
     });
 
-    const generatedPage = completion.choices[0].message.content;
+    const generatedPage = response.output_text;
 
     res.status(200).json({
       page: generatedPage,
@@ -1018,9 +1140,9 @@ Generate a complete React component that:
 
 Return the component as a complete, ready-to-use React TypeScript file.`;
 
-    const completion = await openai.chat.completions.create({
+    const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
-      messages: [
+      input: [
         {
           role: "system",
           content: systemPrompt,
@@ -1031,10 +1153,9 @@ Return the component as a complete, ready-to-use React TypeScript file.`;
         },
       ],
       temperature: 0.3,
-      max_tokens: 2000,
     });
 
-    const generatedComponent = completion.choices[0].message.content;
+    const generatedComponent = response.output_text;
 
     res.status(200).json({
       component: generatedComponent,

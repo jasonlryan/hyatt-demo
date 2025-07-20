@@ -13,6 +13,7 @@ This plan addresses the **fundamental architectural flaws** in the orchestration
 - **Orchestration Builder UI** - User-friendly interface with progress tracking
 - **Configuration Generation** - Structured JSON output with agent selection
 - **Page Generation with Styling Validation** - Fixed styling system with automated validation
+- **🚀 Responses API Integration** - All orchestrations use OpenAI Responses API for faster, more reliable performance
 
 ### **❌ What's Broken (50% of Investment)**
 
@@ -36,6 +37,92 @@ This plan addresses the **fundamental architectural flaws** in the orchestration
 8. **🚨 CRITICAL: Broken API Endpoints** - New agents can't be accessed until manual config updates
 
 ## 🚨 **PRODUCTION-READY SOLUTIONS**
+
+### **🚀 Responses API Integration Requirement**
+
+**MANDATORY**: All orchestrations MUST use the OpenAI Responses API (`responses.create()`) instead of the regular chat completions API (`chat.completions.create()`).
+
+#### **✅ Why Responses API is Required**
+
+1. **Performance**: Responses API is designed for faster, more structured outputs
+2. **Consistency**: All existing agents already use Responses API
+3. **Reliability**: Better error handling and response formatting
+4. **Integration**: Seamless integration with existing orchestration system
+5. **Speed**: Significantly faster response times for orchestration workflows
+
+#### **🔧 Responses API Implementation**
+
+**API Call Pattern**:
+
+```javascript
+// ✅ CORRECT - Use Responses API
+const response = await openai.responses.create({
+  model: "gpt-4o-2024-08-06",
+  input: [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userContent },
+  ],
+  temperature: 0.3,
+});
+
+const result = response.output_text;
+
+// ❌ INCORRECT - Don't use Chat Completions API
+const completion = await openai.chat.completions.create({
+  model: "gpt-4o-2024-08-06",
+  messages: [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userContent },
+  ],
+  temperature: 0.3,
+  max_tokens: 2000,
+});
+
+const result = completion.choices[0].message.content;
+```
+
+**Key Differences**:
+
+- `messages` → `input`
+- `completion.choices[0].message.content` → `response.output_text`
+- No `max_tokens` parameter needed
+- No `response_format` parameter needed
+
+#### **📋 Files Already Updated to Responses API**
+
+✅ **All Agent Classes**:
+
+- `StrategicInsightAgent.js`
+- `PRManagerAgent.js`
+- `ResearchAudienceAgent.js`
+- `StoryAnglesAgent.js`
+- `TrendingNewsAgent.js`
+- `BaseAgent.js`
+
+✅ **All API Endpoints**:
+
+- `pages/api/generate-orchestration.js`
+- `pages/api/generate-page.js`
+- `pages/api/generate-component.js`
+- `hive/server.js` (all instances)
+
+#### **🎯 Integration Requirements**
+
+**For New Orchestration Generation**:
+
+1. **Agent Generation**: All generated agents MUST use `responses.create()`
+2. **Page Generation**: All generated pages MUST use `responses.create()`
+3. **Component Generation**: All generated components MUST use `responses.create()`
+4. **Orchestration Generation**: All orchestration logic MUST use `responses.create()`
+
+**Validation Rules**:
+
+- ❌ No `chat.completions.create()` calls allowed
+- ❌ No `messages` parameter allowed
+- ❌ No `max_tokens` parameter allowed
+- ✅ Must use `input` parameter
+- ✅ Must use `response.output_text`
+- ✅ Must follow established patterns
 
 ### **🎯 Critical Production Problem: Manual Fixes Required**
 
@@ -1076,6 +1163,8 @@ User Acceptance → Validates real-world usage
 
 **Purpose**: Generate complete agent implementations
 
+**CRITICAL REQUIREMENT**: All generated agents MUST use OpenAI Responses API (`responses.create()`) - NO chat completions API allowed.
+
 **System Prompt**:
 
 ```
@@ -1103,6 +1192,13 @@ AVAILABLE AGENT PATTERNS:
 - trend_cultural_analyzer: Cultural trend analysis
 - brand_qa: Brand alignment and quality assurance
 - brand_lens: Brand perspective and guidelines
+
+OPENAI API REQUIREMENTS:
+- MUST use openai.responses.create() NOT openai.chat.completions.create()
+- MUST use 'input' parameter NOT 'messages'
+- MUST use response.output_text NOT completion.choices[0].message.content
+- NO max_tokens parameter needed
+- NO response_format parameter needed
 
 Generate JSON with:
 {
@@ -1150,6 +1246,27 @@ class AgentValidator {
     // Check for proper exports
     if (!classCode.includes("module.exports")) {
       errors.push("Agent must export the class");
+    }
+
+    // 🚀 CRITICAL: Check for Responses API usage
+    if (classCode.includes("chat.completions.create")) {
+      errors.push(
+        "Agent MUST use responses.create() NOT chat.completions.create()"
+      );
+    }
+
+    if (!classCode.includes("responses.create")) {
+      errors.push("Agent MUST use openai.responses.create() API");
+    }
+
+    if (classCode.includes('"messages"')) {
+      errors.push("Agent MUST use 'input' parameter NOT 'messages'");
+    }
+
+    if (classCode.includes("choices[0].message.content")) {
+      errors.push(
+        "Agent MUST use response.output_text NOT completion.choices[0].message.content"
+      );
     }
 
     return { isValid: errors.length === 0, errors };
@@ -1275,6 +1392,8 @@ class FileGenerator {
 #### **2.1 Fix Styling System Integration**
 
 **Update**: `pages/api/generate-page.js`
+
+**CRITICAL REQUIREMENT**: Page generation MUST use OpenAI Responses API (`responses.create()`) - NO chat completions API allowed.
 
 **System Prompt** (Using Proactive Styling Prompt):
 
@@ -1432,6 +1551,8 @@ res.status(200).json({
 #### **2.2 Fix Component Architecture**
 
 **Update**: `pages/api/generate-component.js`
+
+**CRITICAL REQUIREMENT**: Component generation MUST use OpenAI Responses API (`responses.create()`) - NO chat completions API allowed.
 
 **System Prompt**:
 
@@ -1950,6 +2071,8 @@ class RollbackManager {
 
 - [ ] Create `/api/generate-agents.js` with proper validation
 - [ ] Implement `AgentValidator` class
+- [ ] **🚀 NEW: Add Responses API validation to AgentValidator**
+- [ ] **🚀 NEW: Ensure all generated agents use responses.create()**
 - [ ] **NEW: Implement `ConfigMaintenanceManager` class**
 - [ ] **NEW: Add automatic server.js allowedFiles updates**
 - [ ] **NEW: Add automatic agent config updates**
@@ -1960,16 +2083,21 @@ class RollbackManager {
 - [ ] Add agent generation to orchestration builder
 - [ ] Test agent generation with sample agents
 - [ ] **NEW: Test config maintenance with new agents**
+- [ ] **🚀 NEW: Test Responses API integration in generated agents**
 
 ### **Phase 2: Page/Component Fixes (Week 2)**
 
 - [x] Update page generator with design token system (IMPLEMENTED)
 - [x] Add automated styling validation (IMPLEMENTED)
 - [x] Integrate validation into page generator (IMPLEMENTED)
+- [x] **🚀 Update page generator to use Responses API (IMPLEMENTED)**
 - [ ] Update component generator with correct imports
+- [ ] **🚀 NEW: Ensure component generator uses Responses API**
 - [ ] Implement `ComponentValidator` class
+- [ ] **🚀 NEW: Add Responses API validation to ComponentValidator**
 - [ ] Fix styling system integration
 - [ ] Test generated components against existing patterns
+- [ ] **🚀 NEW: Test Responses API integration in generated components**
 
 ### **Phase 3: Workflow Integration (Week 3)**
 
@@ -2068,6 +2196,12 @@ class RollbackManager {
 - **100%** design token compliance in generated code
 - **0** hardcoded colors in generated components
 - **< 30 seconds** styling validation per generated page
+- **🚀 Responses API Metrics**
+- **100%** of generated agents use Responses API
+- **0** chat.completions.create() calls in generated code
+- **100%** API consistency across all generated components
+- **< 2 seconds** average response time for generated agents
+- **100%** integration compatibility with existing orchestration system
 
 ## 🔄 **Future Enhancements**
 

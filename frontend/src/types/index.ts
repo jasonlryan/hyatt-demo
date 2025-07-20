@@ -38,7 +38,7 @@ export interface Campaign {
   id: string;
   campaignId?: string; // Backend sometimes returns this instead of id
   brief: string;
-  status: 'initializing' | 'active' | 'completed' | 'failed' | 'paused';
+  status: 'initializing' | 'active' | 'completed' | 'failed' | 'paused' | 'research' | 'strategic_insight' | 'trending' | 'story' | 'collaborative';
   conversation: ConversationMessage[];
   deliverables: { [agentName: string]: Deliverable };
   createdAt: string;
@@ -71,6 +71,13 @@ export interface Campaign {
       synthesisQuality?: any;
       finalStrategy?: any;
     };
+  };
+  agentModels?: {
+    research?: string;
+    strategic_insight?: string;
+    trending?: string;
+    story?: string;
+    pr_manager?: string;
   };
 }
 
