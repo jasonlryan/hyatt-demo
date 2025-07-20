@@ -217,33 +217,36 @@ module.exports = function (app, { orchestrationManager }) {
       const { pageType, requirements, features } = req.body;
       const { OpenAI } = require("openai");
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const systemPrompt = `You are a React page generator for the Hive application.
-CRITICAL STYLING REQUIREMENTS:
-- NEVER use hardcoded Tailwind colors (bg-blue-*, text-green-*, bg-gray-*, etc.)
-- ALWAYS use the unified design token system
-- Follow established patterns from existing pages
-- Ensure accessibility and brand consistency
-DESIGN TOKEN SYSTEM:
-- Primary actions: bg-primary hover:bg-primary-hover text-white
-- Success states: bg-success hover:bg-success-hover text-white
-- Text hierarchy: text-text-primary (headings), text-text-secondary (body), text-text-muted (helper)
-- Backgrounds: bg-secondary (containers), bg-bg-primary (main content)
-- Borders: border border-border (standard), border-t border-border (dividers)
-- Focus states: focus:ring-2 focus:ring-primary focus:border-primary
-PAGE PATTERNS:
-- Page container: bg-secondary min-h-screen
-- Main content: max-w-7xl mx-auto px-4 py-8
-- Page header: text-2xl font-bold text-text-primary mb-6
-- Content cards: bg-white rounded-lg shadow-md p-6 border border-border
-- Action buttons: px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium
-Generate a complete React page that:
-1. Uses ONLY design tokens for styling
-2. Follows established page patterns from the Hive application
-3. Includes proper TypeScript interfaces
-4. Has proper accessibility features
-5. Is responsive and well-structured
-6. Integrates with existing shared components when appropriate
-Return the page as a complete, ready-to-use React TypeScript file.`;
+      const systemPrompt = `You are a React component generator for the Hive OrchestrationPageTemplate.
+
+CRITICAL REQUIREMENTS:
+- Generate ONLY a component for renderExtraCenter prop
+- Component signature: (campaign: Campaign | null) => ReactNode
+- NO layout code (no bg-secondary, min-h-screen, max-w-7xl, etc.)
+- NO navigation (handled by template)
+- NO side panels (handled by template)
+- Focus ONLY on orchestration-specific content
+
+TEMPLATE INTEGRATION:
+- Your component will be used as: renderExtraCenter={(campaign) => <YourComponent campaign={campaign} />}
+- Campaign type: Campaign | null (from ../../types)
+- Return only the component content, not a full page
+
+COMPONENT STRUCTURE:
+const YourComponent: React.FC<{ campaign: Campaign | null }> = ({ campaign }) => {
+  return (
+    <div className="space-y-6">
+      {/* Your orchestration-specific content here */}
+    </div>
+  );
+};
+
+DESIGN TOKENS ONLY:
+- bg-primary, bg-success, bg-error, bg-secondary
+- text-text-primary, text-text-secondary, text-text-muted
+- border-border, focus:ring-primary
+
+Generate ONLY the component content, no imports, no wrapper.`;
       const response = await openai.responses.create({
         model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
         input: [
@@ -281,23 +284,27 @@ Return the page as a complete, ready-to-use React TypeScript file.`;
       const { OpenAI } = require("openai");
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
       const systemPrompt = `You are a React component generator for the Hive application.
-CRITICAL STYLING REQUIREMENTS:
-- NEVER use hardcoded Tailwind colors (bg-blue-*, text-green-*, bg-gray-*, etc.)
+
+CRITICAL REQUIREMENTS:
+- NEVER use hardcoded Tailwind colors
 - ALWAYS use the unified design token system
-- Follow established patterns from existing components
-- Ensure accessibility and brand consistency
-DESIGN TOKEN SYSTEM:
+- Use correct import patterns for shared components
+- Follow existing component interfaces
+
+DESIGN TOKENS ONLY:
 - Primary actions: bg-primary hover:bg-primary-hover text-white
 - Success states: bg-success hover:bg-success-hover text-white
 - Text hierarchy: text-text-primary (headings), text-text-secondary (body), text-text-muted (helper)
 - Backgrounds: bg-secondary (containers), bg-bg-primary (main content)
 - Borders: border border-border (standard), border-t border-border (dividers)
 - Focus states: focus:ring-2 focus:ring-primary focus:border-primary
-COMPONENT PATTERNS:
-- Buttons: px-4 py-2 bg-primary hover:bg-primary-hover text-white font-medium rounded transition-colors
-- Cards: bg-white rounded-lg shadow-md p-6 border border-border
-- Forms: w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition
-- Status indicators: inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-success-light text-success
+
+SHARED COMPONENT INTEGRATION:
+- Import from "../shared": import { ComponentName } from "../shared"
+- Available components: SharedCampaignForm, SharedProgressPanel, SharedDeliverablePanel, SharedHitlToggle, SharedActionButtons, SharedBreadcrumbs
+- Follow existing component interfaces exactly
+- Use proper TypeScript types
+
 Generate a complete React component that:
 1. Uses ONLY design tokens for styling
 2. Follows established patterns from the Hive application
@@ -305,6 +312,8 @@ Generate a complete React component that:
 4. Has proper accessibility features
 5. Includes hover and focus states
 6. Is responsive and well-structured
+7. Integrates with existing shared components correctly
+
 Return the component as a complete, ready-to-use React TypeScript file.`;
       const response = await openai.responses.create({
         model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",

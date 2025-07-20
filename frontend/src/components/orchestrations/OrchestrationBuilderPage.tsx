@@ -46,6 +46,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
     useState<OrchestrationSpec | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState<string | null>(null);
+  const [pipelineProgress, setPipelineProgress] = useState<string[]>([]);
   const [generatedComponent, setGeneratedComponent] = useState<string | null>(
     null
   );
@@ -54,48 +55,26 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
   const handleGenerateOrchestration = async (brief: string) => {
     setGenerationError(null);
     setIsGenerating(true);
-    setGenerationStep("orchestration");
+    setGenerationStep("pipeline");
+    setPipelineProgress([]);
 
     try {
-      const orchestrationRes = await fetch("/api/generate-orchestration", {
+      const pipelineRes = await fetch("/api/generate-orchestration-pipeline", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ description: brief }),
       });
 
-      if (!orchestrationRes.ok) {
-        throw new Error(
-          `Failed to generate orchestration: ${orchestrationRes.statusText}`
-        );
-      }
+      const result = await pipelineRes.json();
 
-      const orchestrationData = await orchestrationRes.json();
-      setGeneratedOrchestration(orchestrationData);
-
-      setGenerationStep("component");
-      const pageRes = await fetch("/api/generate-page", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pageType: "orchestration",
-          requirements: orchestrationData.description,
-          features: orchestrationData.workflows.join(", "),
-        }),
-      });
-
-      if (pageRes.ok) {
-        const pageData = await pageRes.json();
-        setGeneratedComponent(pageData.component);
+      if (pipelineRes.ok && result.success) {
+        setGeneratedOrchestration(result.orchestration);
+        setGeneratedComponent(result.orchestration.page?.page);
+        setPipelineProgress(result.pipeline?.steps || []);
+        setIsBuilderModalOpen(true);
       } else {
-        throw new Error(`Component generation failed: ${pageRes.statusText}`);
+        throw new Error(result.error || "Pipeline generation failed");
       }
-
-      // Component generation is now handled by the page generator
-      // No additional component generation needed
-
-      setIsBuilderModalOpen(true);
     } catch (error: any) {
       console.error("Generation error:", error);
       setGenerationError(error.message || "Generation failed");
@@ -231,6 +210,19 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
             <p className="text-error text-sm text-center mt-2">
               {generationError}
             </p>
+          )}
+
+          {pipelineProgress.length > 0 && (
+            <div className="mt-4 text-left text-sm">
+              <h3 className="font-medium text-text-primary mb-1">
+                Pipeline Progress
+              </h3>
+              <ol className="list-decimal list-inside text-text-secondary space-y-1">
+                {pipelineProgress.map((step, idx) => (
+                  <li key={idx}>{step}</li>
+                ))}
+              </ol>
+            </div>
           )}
 
           <div className="mt-6 text-center text-sm text-text-muted">
