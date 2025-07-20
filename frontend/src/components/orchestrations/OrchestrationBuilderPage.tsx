@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GenericOrchestrationTemplate from "./GenericOrchestrationTemplate";
+import OrchestrationPageTemplate from "./OrchestrationPageTemplate";
 import { SharedModal } from "../shared";
 
 interface OrchestrationBuilderPageProps {
@@ -46,7 +46,6 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
     useState<OrchestrationSpec | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationStep, setGenerationStep] = useState<string | null>(null);
-  const [generatedPage, setGeneratedPage] = useState<string | null>(null);
   const [generatedComponent, setGeneratedComponent] = useState<string | null>(
     null
   );
@@ -75,7 +74,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
       const orchestrationData = await orchestrationRes.json();
       setGeneratedOrchestration(orchestrationData);
 
-      setGenerationStep("page");
+      setGenerationStep("component");
       const pageRes = await fetch("/api/generate-page", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,28 +87,13 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
 
       if (pageRes.ok) {
         const pageData = await pageRes.json();
-        setGeneratedPage(pageData.page);
+        setGeneratedComponent(pageData.component);
       } else {
-        throw new Error(`Page generation failed: ${pageRes.statusText}`);
+        throw new Error(`Component generation failed: ${pageRes.statusText}`);
       }
 
-      setGenerationStep("component");
-      const compRes = await fetch("/api/generate-component", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          componentType: "orchestration-ui",
-          requirements: orchestrationData.description,
-          orchestrationContext: orchestrationData.name,
-        }),
-      });
-
-      if (compRes.ok) {
-        const compData = await compRes.json();
-        setGeneratedComponent(compData.component);
-      } else {
-        throw new Error(`Component generation failed: ${compRes.statusText}`);
-      }
+      // Component generation is now handled by the page generator
+      // No additional component generation needed
 
       setIsBuilderModalOpen(true);
     } catch (error: any) {
@@ -143,7 +127,6 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
     try {
       const saveData = {
         ...generatedOrchestration,
-        generatedPage: generatedPage,
         generatedComponent: generatedComponent,
       };
 
@@ -163,7 +146,6 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
       console.log("Orchestration saved:", result);
       setIsBuilderModalOpen(false);
       setGeneratedOrchestration(null);
-      setGeneratedPage(null);
       setGeneratedComponent(null);
       alert(
         `Orchestration "${generatedOrchestration.name}" saved successfully!\n\nComplete documentation and UI components have been generated and saved.`
@@ -232,9 +214,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                 <>
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                   <span>
-                    {generationStep === "page"
-                      ? "Generating Page..."
-                      : generationStep === "component"
+                    {generationStep === "component"
                       ? "Generating Component..."
                       : "Generating..."}
                   </span>
@@ -266,13 +246,13 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
 
   return (
     <>
-      <GenericOrchestrationTemplate
+      <OrchestrationPageTemplate
+        orchestrationId="builder"
         orchestrationName="Orchestration Builder"
         hitlReview={hitlReview}
         onToggleHitl={onToggleHitl}
-      >
-        {renderOrchestrationBuilder()}
-      </GenericOrchestrationTemplate>
+        renderExtraCenter={() => renderOrchestrationBuilder()}
+      />
 
       <SharedModal
         isOpen={isBuilderModalOpen}
@@ -359,16 +339,7 @@ const OrchestrationBuilderPage: React.FC<OrchestrationBuilderPageProps> = ({
                 </div>
               )}
 
-              {generatedPage && (
-                <div>
-                  <h3 className="text-lg font-semibold text-text-primary mb-2">
-                    Generated Page
-                  </h3>
-                  <pre className="bg-secondary p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap">
-                    {generatedPage}
-                  </pre>
-                </div>
-              )}
+              {/* Page generation is now handled by the template system */}
 
               {generatedComponent && (
                 <div>

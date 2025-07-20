@@ -125,6 +125,20 @@
       "promptFile": "brand_qa.md",
       "role": "brand_qa",
       "priority": 9
+    },
+    "brand_lens": {
+      "id": "brand_lens",
+      "name": "Brand Lens Agent",
+      "description": "Analyzes brand perspective and provides authentic brand positioning for trends and campaigns.",
+      "enabled": true,
+      "model": "gpt-4o-2024-08-06",
+      "temperature": 0.4,
+      "maxTokens": 800,
+      "timeout": 45000,
+      "delay": 4000,
+      "promptFile": "brand_lens.md",
+      "role": "brand_lens",
+      "priority": 10
     }
   },
   "global": {

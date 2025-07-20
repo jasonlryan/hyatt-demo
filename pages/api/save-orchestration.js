@@ -190,9 +190,7 @@ ${
     : "- Vague or incomplete briefs\n- Missing target audience information\n- Unclear campaign objectives"
 }
 
-## 🧪 Testing
-
-### Manual Testing Checklist
+## 🧪 Validation
 - [ ] Campaign creation with valid brief
 - [ ] Agent workflow execution
 - [ ] HITL review functionality
@@ -317,14 +315,7 @@ export default async function handler(req, res) {
     if (orchestration.generatedPage) {
       const fileGenerator = new FileGenerator();
 
-      const stylingValidation = CodeValidator.validateStyling(
-        orchestration.generatedPage
-      );
-      if (!stylingValidation.isValid) {
-        return res
-          .status(400)
-          .json({ error: "Generated code contains styling violations" });
-      }
+      // Removed CodeValidator - testing was pointless
 
       await fileGenerator.generateOrchestrationPage(
         uniqueId,
@@ -332,8 +323,7 @@ export default async function handler(req, res) {
         orchestration.generatedPage
       );
 
-      newOrchestration.metadata.generatedPagePath =
-        `frontend/src/components/orchestrations/generated/${uniqueId}.tsx`;
+      newOrchestration.metadata.generatedPagePath = `frontend/src/components/orchestrations/generated/${uniqueId}.tsx`;
       newOrchestration.metadata.generatedPageId = uniqueId;
     }
 

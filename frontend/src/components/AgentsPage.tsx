@@ -18,6 +18,21 @@ interface AgentConfig {
   promptContent?: string;
 }
 
+interface OrchestrationConfig {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  agents: string[];
+  workflows: string[];
+  hasDiagram?: boolean;
+  hasDocumentation?: boolean;
+}
+
+interface OrchestrationsData {
+  orchestrators: { [key: string]: OrchestrationConfig };
+}
+
 interface ModelInfo {
   id: string;
   name: string;
@@ -99,10 +114,48 @@ const AgentsPage: React.FC = () => {
   const [imgPrompt, setImgPrompt] = useState("");
   const [imgLoading, setImgLoading] = useState(false);
   const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const [orchestrations, setOrchestrations] =
+    useState<OrchestrationsData | null>(null);
 
   useEffect(() => {
     loadAgentsConfiguration();
+    loadOrchestrations();
   }, []);
+
+  const loadOrchestrations = async () => {
+    try {
+      const response = await fetch("/api/orchestrations");
+      const data = await response.json();
+      setOrchestrations(data);
+    } catch (error) {
+      console.error("Failed to load orchestrations:", error);
+    }
+  };
+
+  const getAgentOrchestrations = (agentId: string): string[] => {
+    if (!orchestrations) return [];
+
+    const usedBy: string[] = [];
+    Object.values(orchestrations.orchestrators).forEach((orchestration) => {
+      if (orchestration.agents.includes(agentId)) {
+        usedBy.push(orchestration.name);
+      }
+    });
+    return usedBy;
+  };
+
+  const getOrchestrationTagColor = (orchestrationName: string): string => {
+    const colors: { [key: string]: string } = {
+      "Hyatt Orchestrator": "bg-blue-100 text-blue-800 border-blue-200",
+      "Hive Orchestrator": "bg-purple-100 text-purple-800 border-purple-200",
+      "Template Orchestrator": "bg-gray-100 text-gray-800 border-gray-200",
+      "Orchestration Builder": "bg-green-100 text-green-800 border-green-200",
+    };
+    return (
+      colors[orchestrationName] ||
+      "bg-slate-100 text-slate-800 border-slate-200"
+    );
+  };
 
   const loadAgentsConfiguration = async () => {
     try {
@@ -432,6 +485,22 @@ const AgentsPage: React.FC = () => {
                         <Power className="w-4 h-4" />{" "}
                       </span>
                     </div>
+                    {agent.enabled && orchestrations && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {getAgentOrchestrations(agent.id).map(
+                          (orchestrationName) => (
+                            <span
+                              key={orchestrationName}
+                              className={`text-xs font-medium px-2 py-1 rounded-full ${getOrchestrationTagColor(
+                                orchestrationName
+                              )}`}
+                            >
+                              {orchestrationName}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -463,6 +532,29 @@ const AgentsPage: React.FC = () => {
                       <div className="text-slate-600 mb-4">
                         {agent.description}
                       </div>
+                      {/* Orchestration Usage */}
+                      {orchestrations &&
+                        getAgentOrchestrations(agent.id).length > 0 && (
+                          <div className="mb-4">
+                            <h4 className="text-sm font-semibold text-slate-700 mb-2">
+                              Used by Orchestrations:
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                              {getAgentOrchestrations(agent.id).map(
+                                (orchestrationName) => (
+                                  <span
+                                    key={orchestrationName}
+                                    className={`text-xs font-medium px-3 py-1 rounded-full border ${getOrchestrationTagColor(
+                                      orchestrationName
+                                    )}`}
+                                  >
+                                    {orchestrationName}
+                                  </span>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
                       {/* Collapsible Settings Panel */}
                       <div className="mb-4">
                         <button

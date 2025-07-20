@@ -15,7 +15,7 @@ import { Campaign, Deliverable, AudienceResearch } from "../../types";
 import { useCampaignState } from "../../hooks/useCampaignState";
 import { useCampaignPolling } from "../../hooks/useCampaignPolling";
 
-interface HyattStyleOrchestrationTemplateProps {
+interface OrchestrationPageTemplateProps {
   orchestrationId: string;
   orchestrationName: string;
   hitlReview?: boolean;
@@ -24,9 +24,7 @@ interface HyattStyleOrchestrationTemplateProps {
   renderExtraCenter?: (campaign: Campaign | null) => ReactNode;
 }
 
-const HyattStyleOrchestrationTemplate: React.FC<
-  HyattStyleOrchestrationTemplateProps
-> = ({
+const OrchestrationPageTemplate: React.FC<OrchestrationPageTemplateProps> = ({
   orchestrationId,
   orchestrationName,
   hitlReview = true,
@@ -216,4 +214,4 @@ const HyattStyleOrchestrationTemplate: React.FC<
   );
 };
 
-export default HyattStyleOrchestrationTemplate;
+export default OrchestrationPageTemplate;

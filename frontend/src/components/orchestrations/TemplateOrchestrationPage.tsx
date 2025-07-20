@@ -1,4 +1,4 @@
-import HyattStyleOrchestrationTemplate from "./HyattStyleOrchestrationTemplate";
+import OrchestrationPageTemplate from "./OrchestrationPageTemplate";
 
 interface TemplateOrchestrationPageProps {
   orchestrationId: string;
@@ -12,7 +12,7 @@ const TemplateOrchestrationPage: React.FC<TemplateOrchestrationPageProps> = ({
   onToggleHitl,
 }) => {
   return (
-    <HyattStyleOrchestrationTemplate
+    <OrchestrationPageTemplate
       orchestrationId={orchestrationId}
       orchestrationName="Template Orchestrator"
       hitlReview={hitlReview}

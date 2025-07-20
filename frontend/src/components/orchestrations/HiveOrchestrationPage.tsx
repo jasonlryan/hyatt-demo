@@ -1,103 +1,125 @@
 import React from "react";
+import OrchestrationPageTemplate from "./OrchestrationPageTemplate";
+import { Campaign } from "../../types";
 
-interface HiveOrchestrationPageProps {
-  selectedOrchestration: string | null;
+// Interfaces
+interface AgentStatus {
+  name: string;
+  status: "idle" | "running" | "completed" | "error";
+}
+
+interface HiveOrchestratorProps {
+  orchestrationId: string;
   hitlReview?: boolean;
   onToggleHitl?: () => void;
   onNavigateToOrchestrations?: () => void;
 }
 
-const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
+// Sample agent data
+const agents: AgentStatus[] = [
+  { name: "Trend Cultural Analyzer", status: "idle" },
+  { name: "Brand Lens", status: "idle" },
+  { name: "Visual Prompt Generator", status: "idle" },
+  { name: "Modular Elements Recommender", status: "idle" },
+  { name: "Brand QA", status: "idle" },
+];
+
+// Hive Orchestrator Component (for renderExtraCenter)
+const HiveOrchestrator: React.FC<{ campaign: Campaign | null }> = ({
+  campaign,
+}) => {
+  return (
+    <div className="space-y-6">
+      <section className="bg-white rounded-lg shadow-md p-6 border border-border">
+        <h2 className="text-xl font-bold text-text-primary mb-4">
+          Agent Status Monitoring
+        </h2>
+        <ul className="space-y-4">
+          {agents.map((agent) => (
+            <li
+              key={agent.name}
+              className={`p-4 rounded-lg border border-border ${
+                agent.status === "running"
+                  ? "bg-primary text-white"
+                  : agent.status === "completed"
+                  ? "bg-success text-white"
+                  : "bg-bg-primary text-text-secondary"
+              }`}
+            >
+              <span className="font-medium">{agent.name}</span>: {agent.status}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="bg-white rounded-lg shadow-md p-6 border border-border">
+        <h2 className="text-xl font-bold text-text-primary mb-4">
+          Workflow Visualization
+        </h2>
+        <ol className="list-decimal list-inside space-y-2 text-text-secondary">
+          <li>Trend Cultural Analysis</li>
+          <li>Brand Lens Application</li>
+          <li>Visual Prompt Generation</li>
+          <li>Modular Elements Recommendation</li>
+          <li>Brand Quality Assurance</li>
+        </ol>
+      </section>
+
+      <section className="bg-white rounded-lg shadow-md p-6 border border-border">
+        <h2 className="text-xl font-bold text-text-primary mb-4">
+          Configuration Options
+        </h2>
+        <div className="text-text-secondary">
+          <p>
+            Configure each agent's parameters to tailor the orchestration
+            process.
+          </p>
+          {/* Configuration options would be implemented here */}
+        </div>
+      </section>
+
+      <section className="bg-white rounded-lg shadow-md p-6 border border-border">
+        <h2 className="text-xl font-bold text-text-primary mb-4">
+          Execution Controls
+        </h2>
+        <button
+          className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium focus:ring-2 focus:ring-primary focus:border-primary"
+          aria-label="Start Orchestration"
+        >
+          Start Orchestration
+        </button>
+      </section>
+
+      <section className="bg-white rounded-lg shadow-md p-6 border border-border">
+        <h2 className="text-xl font-bold text-text-primary mb-4">
+          Results Display
+        </h2>
+        <div className="text-text-secondary">
+          <p>
+            View the results of the orchestration process here once completed.
+          </p>
+          {/* Results display would be implemented here */}
+        </div>
+      </section>
+    </div>
+  );
+};
+
+// Main Hive Orchestration Page
+const HiveOrchestrationPage: React.FC<HiveOrchestratorProps> = ({
+  orchestrationId,
   hitlReview = true,
   onToggleHitl,
   onNavigateToOrchestrations,
 }) => {
   return (
-    <div className="min-h-screen">
-      <div className="container pt-3 pb-8">
-        {/* Breadcrumb and HITL Toggle */}
-        <div className="mb-6 flex items-center justify-between">
-          <nav className="flex items-center space-x-2 text-sm text-text-secondary">
-            <button
-              onClick={
-                onNavigateToOrchestrations || (() => window.history.back())
-              }
-              className="text-success hover:text-success-hover transition-colors"
-            >
-              Orchestrations
-            </button>
-            <span>›</span>
-            <span className="text-text-primary font-medium">
-              Hive Orchestrator
-            </span>
-          </nav>
-
-          {/* HITL Review Toggle */}
-          {onToggleHitl && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">HITL Review</span>
-              <button
-                onClick={onToggleHitl}
-                className={`relative inline-flex h-6 w-12 items-center rounded-full ${
-                  hitlReview ? "bg-success" : "bg-secondary"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white ${
-                    hitlReview ? "translate-x-7" : "translate-x-1"
-                  }`}
-                />
-                <span
-                  className={`absolute text-xs font-medium ${
-                    hitlReview
-                      ? "text-white left-1"
-                      : "text-text-secondary right-1"
-                  }`}
-                >
-                  {hitlReview ? "ON" : "OFF"}
-                </span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="text-center py-16">
-          <h1 className="text-3xl font-bold text-text-primary mb-4">
-            Hive Orchestrator
-          </h1>
-          <p className="text-lg text-text-secondary mb-8">
-            Reactive framework orchestration with parallel agent collaboration
-          </p>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 max-w-2xl mx-auto">
-            <h2 className="text-xl font-semibold text-yellow-800 mb-2">
-              Coming Soon
-            </h2>
-            <p className="text-yellow-700">
-              The Hive Orchestrator interface is under development. This will
-              feature:
-            </p>
-            <ul className="text-left text-yellow-700 mt-4 space-y-2">
-              <li>• Real-time parallel agent collaboration</li>
-              <li>• Visual workflow with parallel stages</li>
-              <li>• Interactive agent communication</li>
-              <li>• Advanced reactive framework controls</li>
-            </ul>
-          </div>
-
-          <div className="mt-8">
-            <button
-              onClick={
-                onNavigateToOrchestrations || (() => window.history.back())
-              }
-              className="px-6 py-2 bg-gray-600 text-white font-medium rounded hover:bg-gray-700 transition-colors"
-            >
-              Back to Orchestrations
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <OrchestrationPageTemplate
+      orchestrationId={orchestrationId}
+      orchestrationName="Hive Orchestrator"
+      hitlReview={hitlReview}
+      onToggleHitl={onToggleHitl}
+      renderExtraCenter={(campaign) => <HiveOrchestrator campaign={campaign} />}
+    />
   );
 };
 
