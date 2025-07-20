@@ -1,5 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+const AgentValidator = require("../../utils/agentValidator");
+const AgentTester = require("../../utils/agentTester");
 
 module.exports = function (app, { orchestrationManager }) {
   app.get("/api/orchestrations", (req, res) => {
@@ -360,50 +362,82 @@ Return the component as a complete, ready-to-use React TypeScript file.`;
       }
 
       console.log(
-        `🎯 Generating agents: ${agents.join(
-          ", "
-        )} for context: ${orchestrationContext}`
+        `🎯 Generating ${agents.length} agents: ${agents.join(', ')} for context: ${orchestrationContext}`
       );
 
-      // Generate agent class and prompt for the first agent
-      const agentId = agents[0];
-      const agentClass = await generateAgentClass(
-        agentId,
-        orchestrationContext
-      );
-      const agentPrompt = await generateAgentPrompt(
-        agentId,
-        orchestrationContext
-      );
+      const generatedAgents = [];
+      const errors = [];
 
-      // Save the generated files
-      const filePaths = await saveGeneratedAgent(
-        agentId,
-        agentClass,
-        agentPrompt
-      );
+      for (const agentId of agents) {
+        try {
+          console.log(`🤖 Generating agent: ${agentId}`);
+          const agentClass = await generateAgentClass(
+            agentId,
+            orchestrationContext
+          );
+          const agentPrompt = await generateAgentPrompt(
+            agentId,
+            orchestrationContext
+          );
 
-      // Update agent config
-      const configUpdated = await updateAgentConfig(
-        agentId,
-        agentClass,
-        agentPrompt,
-        orchestrationContext
-      );
+          // Validate before saving
+          const classValidation = AgentValidator.validateAgentClass(
+            agentClass.classCode
+          );
+          const promptValidation = AgentValidator.validateAgentPrompt(
+            agentPrompt.promptCode
+          );
 
-      // Reload orchestrations to include the new agent
+          if (!classValidation.isValid || !promptValidation.isValid) {
+            const validationErrors = [
+              ...classValidation.errors,
+              ...promptValidation.errors,
+            ];
+            throw new Error(`Validation failed: ${validationErrors.join(', ')}`);
+          }
+
+          const filePaths = await saveGeneratedAgent(
+            agentId,
+            agentClass,
+            agentPrompt
+          );
+
+          const configUpdated = await updateAgentConfig(
+            agentId,
+            agentClass,
+            agentPrompt,
+            orchestrationContext
+          );
+
+          generatedAgents.push({
+            agentId,
+            agentClass,
+            agentPrompt,
+            filePaths,
+            configUpdated,
+          });
+          console.log(`✅ Successfully generated agent: ${agentId}`);
+        } catch (err) {
+          console.error(`❌ Failed to generate agent ${agentId}:`, err.message);
+          errors.push({ agentId, error: err.message });
+        }
+      }
+
+      // Reload orchestrations to include the new agents
       orchestrationManager.reloadAgentsConfig();
 
+      const testResults = await AgentTester.testAllGeneratedAgents(generatedAgents);
+
       res.status(200).json({
-        agentClass,
-        agentPrompt,
-        filePaths,
-        configUpdated,
+        generatedAgents,
+        errors,
+        testResults,
         metadata: {
           generatedAt: new Date().toISOString(),
-          agentId: agentId,
-          context: orchestrationContext,
           totalAgents: agents.length,
+          successfulAgents: generatedAgents.length,
+          failedAgents: errors.length,
+          context: orchestrationContext,
         },
       });
     } catch (error) {
@@ -559,6 +593,25 @@ Output: "processed: hello"`;
 
   async function saveGeneratedAgent(agentId, agentClass, agentPrompt) {
     const baseDir = process.cwd();
+
+    const classValidation = AgentValidator.validateAgentClass(
+      agentClass.classCode
+    );
+    const promptValidation = AgentValidator.validateAgentPrompt(
+      agentPrompt.promptCode
+    );
+
+    if (!classValidation.isValid) {
+      throw new Error(
+        `Agent class validation failed: ${classValidation.errors.join(', ')}`
+      );
+    }
+
+    if (!promptValidation.isValid) {
+      throw new Error(
+        `Agent prompt validation failed: ${promptValidation.errors.join(', ')}`
+      );
+    }
 
     // Save agent class - use correct path structure
     const agentClassDir = path.join(baseDir, "agents", "classes");
