@@ -5,6 +5,26 @@ class OrchestrationManager {
   constructor() {
     this.orchestrations = new Map();
     this.loadedAgents = new Map(); // Cache for loaded agents
+    this.agentsConfig = this.loadAgentsConfig();
+    this.orchestrationConfigs = this.generateConfigsFromClasses();
+  }
+
+  // Load agents configuration as the single source of truth
+  loadAgentsConfig() {
+    try {
+      const configPath = path.join(__dirname, "..", "agents", "agents.config.json");
+      const raw = fs.readFileSync(configPath, "utf8");
+      const parsed = JSON.parse(raw);
+      return parsed.agents || {};
+    } catch (err) {
+      console.error("Failed to load agents config:", err.message);
+      return {};
+    }
+  }
+
+  // Reload agents config and regenerate orchestration configs
+  reloadAgentsConfig() {
+    this.agentsConfig = this.loadAgentsConfig();
     this.orchestrationConfigs = this.generateConfigsFromClasses();
   }
 
@@ -76,24 +96,73 @@ class OrchestrationManager {
   // Extract agents from orchestration class
   extractAgentsFromClass(instance, className) {
     const agents = {};
+    const defaultIds = {
+      HyattOrchestrator: [
+        "research",
+        "trending",
+        "story",
+        "pr-manager",
+        "strategic",
+      ],
+      HiveOrchestrator: [
+        "visual_prompt_generator",
+        "modular_elements_recommender",
+        "trend_cultural_analyzer",
+        "brand_qa",
+        "brand_lens",
+      ],
+    };
 
-    if (className === "HyattOrchestrator") {
-      // Hyatt orchestration agents
-      agents.research = { class: "ResearchAudienceAgent" };
-      agents.trending = { class: "TrendingNewsAgent" };
-      agents.story = { class: "StoryAnglesAgent" };
-      agents["pr-manager"] = { class: "PRManagerAgent" };
-      agents.strategic = { class: "StrategicInsightAgent" };
-    } else if (className === "HiveOrchestrator") {
-      // Hive orchestration agents
-      agents.visual_prompt_generator = { class: "VisualPromptGeneratorAgent" };
-      agents.modular_elements_recommender = { class: "ModularElementsRecommenderAgent" };
-      agents.trend_cultural_analyzer = { class: "TrendCulturalAnalyzerAgent" };
-      agents.brand_qa = { class: "BrandQAAgent" };
-      agents.brand_lens = { class: "BrandLensAgent" };
+    let agentIds = defaultIds[className] ? [...defaultIds[className]] : [];
+
+    // Include additional agents assigned to this orchestration via config
+    const orchestrationId = this.mapToFrontendId(className.toLowerCase());
+    for (const [id, cfg] of Object.entries(this.agentsConfig || {})) {
+      if (cfg.orchestration && cfg.orchestration.toLowerCase() === orchestrationId) {
+        if (!agentIds.includes(id)) agentIds.push(id);
+      }
     }
 
+    agentIds.forEach((agentId) => {
+      if (this.agentsConfig[agentId]) {
+        agents[agentId] = {
+          class: this.getAgentClassName(agentId),
+          model: this.agentsConfig[agentId].model,
+          config: this.agentsConfig[agentId],
+        };
+      } else {
+        console.warn(
+          `Agent ${agentId} not found in agents config for ${className}`
+        );
+      }
+    });
+
     return agents;
+  }
+
+  // Map agent id to class name
+  getAgentClassName(agentId) {
+    const mapping = {
+      research: "ResearchAudienceAgent",
+      trending: "TrendingNewsAgent",
+      story: "StoryAnglesAgent",
+      "pr-manager": "PRManagerAgent",
+      strategic: "StrategicInsightAgent",
+      visual_prompt_generator: "VisualPromptGeneratorAgent",
+      modular_elements_recommender: "ModularElementsRecommenderAgent",
+      trend_cultural_analyzer: "TrendCulturalAnalyzerAgent",
+      brand_qa: "BrandQAAgent",
+      brand_lens: "BrandLensAgent",
+    };
+    if (mapping[agentId]) return mapping[agentId];
+    return `${this.toPascalCase(agentId)}Agent`;
+  }
+
+  toPascalCase(str) {
+    return str
+      .replace(/[-_]+/g, " ")
+      .replace(/(?:^|\s)(\w)/g, (_, c) => c.toUpperCase())
+      .replace(/\s+/g, "");
   }
 
   // Get name for orchestration class

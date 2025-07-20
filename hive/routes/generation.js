@@ -384,8 +384,12 @@ Return the component as a complete, ready-to-use React TypeScript file.`;
       const configUpdated = await updateAgentConfig(
         agentId,
         agentClass,
-        agentPrompt
+        agentPrompt,
+        orchestrationContext
       );
+
+      // Reload orchestrations to include the new agent
+      orchestrationManager.reloadAgentsConfig();
 
       res.status(200).json({
         agentClass,
@@ -534,7 +538,7 @@ Generate JSON with:
     };
   }
 
-  async function updateAgentConfig(agentId, agentClass, agentPrompt) {
+  async function updateAgentConfig(agentId, agentClass, agentPrompt, context) {
     const configPath = path.join(
       process.cwd(),
       "hive",
@@ -567,6 +571,7 @@ Generate JSON with:
       promptFile: `${agentId}.md`,
       role: agentPrompt.metadata?.role || "custom",
       priority: Object.keys(config.agents).length + 1,
+      orchestration: context ? context.toLowerCase() : "none",
     };
 
     // Write updated config
