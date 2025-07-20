@@ -20,6 +20,9 @@ This plan addresses the **fundamental architectural flaws** in the orchestration
 - **Component Generator** - Still needs styling validation integration
 - **Incomplete Workflow Integration** - Generated orchestrations don't work with existing system
 - **Limited Validation Coverage** - Only page generation has validation, not components or agents
+- **❌ CRITICAL: No Config Maintenance** - Generated agents/orchestrations don't update allowed files, server configs, or API endpoints
+- **❌ CRITICAL: Manual Server Updates Required** - Every new agent requires manual updates to server.js allowedFiles array
+- **❌ CRITICAL: Broken API Endpoints** - New agents cause 404 errors until server configs are manually updated
 
 ### **🚨 Critical Failures**
 
@@ -28,6 +31,9 @@ This plan addresses the **fundamental architectural flaws** in the orchestration
 3. **Component Architecture Mismatches** - Generated components don't integrate
 4. **False Automation** - System appears to work but produces unusable results
 5. **Missing Agent Generation** - Orchestrations reference non-existent agents
+6. **🚨 CRITICAL: Config Maintenance Failures** - Generated agents cause 404 errors due to missing server config updates
+7. **🚨 CRITICAL: Manual Intervention Required** - Every generation requires manual server.js updates
+8. **🚨 CRITICAL: Broken API Endpoints** - New agents can't be accessed until manual config updates
 
 ## 🚨 **PRODUCTION-READY SOLUTIONS**
 
@@ -59,7 +65,386 @@ This plan addresses the **fundamental architectural flaws** in the orchestration
 
 #### **💡 Production-Ready Solutions**
 
-##### **Solution 1: Template-Aware Page Generator (CRITICAL)**
+##### **Solution 1: Automated Config Maintenance System (CRITICAL)**
+
+**Problem**: Generated agents and orchestrations don't automatically update server configs, causing 404 errors
+**Solution**: Automated config maintenance that updates all necessary files when new agents/orchestrations are created
+
+**New File**: `utils/ConfigMaintenanceManager.js`
+
+```javascript
+class ConfigMaintenanceManager {
+  static async maintainAllConfigs(generatedOrchestration) {
+    const maintenanceTasks = [
+      this.updateServerAllowedFiles,
+      this.updateAgentConfigs,
+      this.updateOrchestrationConfigs,
+      this.updateAPIEndpoints,
+      this.updatePromptEndpoints,
+      this.updateTypeDefinitions,
+      this.updateFrontendImports,
+      this.updateValidationSchemas,
+    ];
+
+    const results = {
+      success: true,
+      updatedFiles: [],
+      errors: [],
+      warnings: [],
+    };
+
+    for (const task of maintenanceTasks) {
+      try {
+        const result = await task.call(this, generatedOrchestration);
+        results.updatedFiles.push(...result.updatedFiles);
+        results.warnings.push(...result.warnings);
+      } catch (error) {
+        results.errors.push(`Task ${task.name} failed: ${error.message}`);
+        results.success = false;
+      }
+    }
+
+    return results;
+  }
+
+  static async updateServerAllowedFiles(generatedOrchestration) {
+    const serverPath = path.join(process.cwd(), "hive", "server.js");
+    const serverContent = await fs.readFile(serverPath, "utf8");
+
+    // Extract current allowedFiles array
+    const allowedFilesMatch = serverContent.match(
+      /const allowedFiles = \[([\s\S]*?)\];/
+    );
+
+    if (!allowedFilesMatch) {
+      throw new Error("Could not find allowedFiles array in server.js");
+    }
+
+    const currentAllowedFiles = allowedFilesMatch[1]
+      .split(",")
+      .map((file) => file.trim().replace(/"/g, ""))
+      .filter((file) => file.length > 0);
+
+    // Add new prompt files from generated agents
+    const newPromptFiles = [];
+    for (const agent of generatedOrchestration.agents || []) {
+      if (agent.promptFile && !currentAllowedFiles.includes(agent.promptFile)) {
+        newPromptFiles.push(agent.promptFile);
+      }
+    }
+
+    if (newPromptFiles.length > 0) {
+      const updatedAllowedFiles = [...currentAllowedFiles, ...newPromptFiles];
+      const updatedArray = `const allowedFiles = [\n      ${updatedAllowedFiles
+        .map((file) => `"${file}"`)
+        .join(",\n      ")}\n    ];`;
+
+      const updatedServerContent = serverContent.replace(
+        /const allowedFiles = \[[\s\S]*?\];/,
+        updatedArray
+      );
+
+      await fs.writeFile(serverPath, updatedServerContent);
+
+      return {
+        updatedFiles: [serverPath],
+        warnings: [
+          `Added ${newPromptFiles.length} new prompt files to server allowedFiles`,
+        ],
+      };
+    }
+
+    return { updatedFiles: [], warnings: [] };
+  }
+
+  static async updateAgentConfigs(generatedOrchestration) {
+    const configPath = path.join(
+      process.cwd(),
+      "hive",
+      "agents",
+      "agents.config.json"
+    );
+    const config = JSON.parse(await fs.readFile(configPath, "utf8"));
+
+    const newAgents = [];
+    for (const agent of generatedOrchestration.agents || []) {
+      if (!config.agents[agent.id]) {
+        config.agents[agent.id] = {
+          name: agent.name,
+          description: agent.description,
+          enabled: true,
+          model: agent.model || "gpt-4o-2024-08-06",
+          temperature: agent.temperature || 0.7,
+          maxTokens: agent.maxTokens || 2000,
+          timeout: agent.timeout || 45000,
+          delay: agent.delay || 4000,
+          promptFile: agent.promptFile,
+          role: agent.role,
+          priority: agent.priority || 1,
+        };
+        newAgents.push(agent.id);
+      }
+    }
+
+    if (newAgents.length > 0) {
+      await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+      return {
+        updatedFiles: [configPath],
+        warnings: [`Added ${newAgents.length} new agents to config`],
+      };
+    }
+
+    return { updatedFiles: [], warnings: [] };
+  }
+
+  static async updateOrchestrationConfigs(generatedOrchestration) {
+    const configPath = path.join(
+      process.cwd(),
+      "hive",
+      "orchestrations",
+      "configs",
+      "orchestrations.config.json"
+    );
+
+    let config;
+    try {
+      config = JSON.parse(await fs.readFile(configPath, "utf8"));
+    } catch (error) {
+      config = { orchestrations: {} };
+    }
+
+    if (!config.orchestrations[generatedOrchestration.id]) {
+      config.orchestrations[generatedOrchestration.id] = {
+        id: generatedOrchestration.id,
+        name: generatedOrchestration.name,
+        description: generatedOrchestration.description,
+        enabled: true,
+        config: {
+          maxConcurrentWorkflows: 5,
+          timeout: 300000,
+          retryAttempts: 3,
+          enableLogging: true,
+        },
+        workflows: generatedOrchestration.workflows || [],
+        agents: generatedOrchestration.agents || [],
+        hasDiagram: generatedOrchestration.hasDiagram || false,
+        hasDocumentation: generatedOrchestration.hasDocumentation || false,
+        documentationPath: generatedOrchestration.documentationPath,
+      };
+
+      await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+      return {
+        updatedFiles: [configPath],
+        warnings: [
+          `Added new orchestration ${generatedOrchestration.id} to config`,
+        ],
+      };
+    }
+
+    return { updatedFiles: [], warnings: [] };
+  }
+
+  static async updateAPIEndpoints(generatedOrchestration) {
+    // Update pages/api/orchestrations.js to include new orchestration
+    const apiPath = path.join(
+      process.cwd(),
+      "pages",
+      "api",
+      "orchestrations.js"
+    );
+    const apiContent = await fs.readFile(apiPath, "utf8");
+
+    // Check if orchestration already exists in API
+    if (!apiContent.includes(`"${generatedOrchestration.id}":`)) {
+      const orchestrationEntry = `
+      ${generatedOrchestration.id}: {
+        id: "${generatedOrchestration.id}",
+        name: "${generatedOrchestration.name}",
+        description: "${generatedOrchestration.description}",
+        enabled: true,
+        config: {
+          maxConcurrentWorkflows: 5,
+          timeout: 300000,
+          retryAttempts: 3,
+          enableLogging: true,
+        },
+        workflows: ${JSON.stringify(generatedOrchestration.workflows || [])},
+        agents: ${JSON.stringify(generatedOrchestration.agents || [])},
+      },`;
+
+      // Insert before the closing brace of baseOrchestrations
+      const updatedContent = apiContent.replace(
+        /(\s*}; \/\/ End of baseOrchestrations)/,
+        `${orchestrationEntry}$1`
+      );
+
+      await fs.writeFile(apiPath, updatedContent);
+
+      return {
+        updatedFiles: [apiPath],
+        warnings: [`Added ${generatedOrchestration.id} to API orchestrations`],
+      };
+    }
+
+    return { updatedFiles: [], warnings: [] };
+  }
+
+  static async updatePromptEndpoints(generatedOrchestration) {
+    // Ensure all new prompt files are accessible via /api/prompts/:filename
+    const promptFiles = [];
+    for (const agent of generatedOrchestration.agents || []) {
+      if (agent.promptFile) {
+        promptFiles.push(agent.promptFile);
+      }
+    }
+
+    // Verify prompt files exist and are accessible
+    for (const promptFile of promptFiles) {
+      const promptPath = path.join(
+        process.cwd(),
+        "hive",
+        "agents",
+        "prompts",
+        promptFile
+      );
+      if (
+        !(await fs
+          .access(promptPath)
+          .then(() => true)
+          .catch(() => false))
+      ) {
+        throw new Error(`Prompt file ${promptFile} not found at ${promptPath}`);
+      }
+    }
+
+    return {
+      updatedFiles: [],
+      warnings:
+        promptFiles.length > 0
+          ? [`Verified ${promptFiles.length} prompt files are accessible`]
+          : [],
+    };
+  }
+
+  static async updateTypeDefinitions(generatedOrchestration) {
+    // Update TypeScript type definitions if needed
+    const typesPath = path.join(
+      process.cwd(),
+      "frontend",
+      "src",
+      "types",
+      "index.ts"
+    );
+
+    try {
+      const typesContent = await fs.readFile(typesPath, "utf8");
+
+      // Check if new agent types need to be added
+      const newAgentTypes = [];
+      for (const agent of generatedOrchestration.agents || []) {
+        const agentTypeName = `${
+          agent.id.charAt(0).toUpperCase() + agent.id.slice(1)
+        }Agent`;
+        if (!typesContent.includes(agentTypeName)) {
+          newAgentTypes.push(agentTypeName);
+        }
+      }
+
+      if (newAgentTypes.length > 0) {
+        const newTypes = newAgentTypes
+          .map((type) => `export interface ${type} extends BaseAgent {}`)
+          .join("\n");
+        const updatedContent = typesContent + "\n" + newTypes;
+        await fs.writeFile(typesPath, updatedContent);
+
+        return {
+          updatedFiles: [typesPath],
+          warnings: [
+            `Added ${newAgentTypes.length} new agent type definitions`,
+          ],
+        };
+      }
+    } catch (error) {
+      console.warn("Could not update type definitions:", error);
+    }
+
+    return { updatedFiles: [], warnings: [] };
+  }
+
+  static async updateFrontendImports(generatedOrchestration) {
+    // Update frontend imports if new components are generated
+    if (generatedOrchestration.generatedPage) {
+      const importsPath = path.join(
+        process.cwd(),
+        "frontend",
+        "src",
+        "components",
+        "orchestrations",
+        "generated",
+        "index.ts"
+      );
+
+      try {
+        const importsContent = await fs.readFile(importsPath, "utf8");
+
+        // Add dynamic import for new orchestration page
+        if (!importsContent.includes(`"${generatedOrchestration.id}"`)) {
+          const newImport = `export const ${generatedOrchestration.id}Page = () => import("./${generatedOrchestration.id}.tsx");`;
+          const updatedContent = importsContent + "\n" + newImport;
+          await fs.writeFile(importsPath, updatedContent);
+
+          return {
+            updatedFiles: [importsPath],
+            warnings: [`Added import for ${generatedOrchestration.id} page`],
+          };
+        }
+      } catch (error) {
+        console.warn("Could not update frontend imports:", error);
+      }
+    }
+
+    return { updatedFiles: [], warnings: [] };
+  }
+
+  static async updateValidationSchemas(generatedOrchestration) {
+    // Update validation schemas to include new agents/orchestrations
+    const validationPath = path.join(
+      process.cwd(),
+      "utils",
+      "validationSchemas.js"
+    );
+
+    try {
+      const validationContent = await fs.readFile(validationPath, "utf8");
+
+      // Add new agent validation if needed
+      const newAgents = generatedOrchestration.agents || [];
+      if (newAgents.length > 0) {
+        const agentIds = newAgents.map((agent) => agent.id);
+        const updatedContent = validationContent.replace(
+          /validAgentIds:\s*\[([\s\S]*?)\]/,
+          `validAgentIds: [$1, ${agentIds.map((id) => `"${id}"`).join(", ")}]`
+        );
+
+        await fs.writeFile(validationPath, updatedContent);
+
+        return {
+          updatedFiles: [validationPath],
+          warnings: [
+            `Added ${newAgents.length} new agents to validation schema`,
+          ],
+        };
+      }
+    } catch (error) {
+      console.warn("Could not update validation schemas:", error);
+    }
+
+    return { updatedFiles: [], warnings: [] };
+  }
+}
+```
+
+##### **Solution 2: Template-Aware Page Generator (CRITICAL)**
 
 **Problem**: Current prompt is too generic and doesn't understand template integration
 **Solution**: Make the page generator template-aware and specific
@@ -314,7 +699,23 @@ class AutomatedGenerationPipeline {
         throw new Error(`Validation failed: ${validation.errors.join(", ")}`);
       }
 
-      // Step 6: Save all files
+      // Step 6: Maintain all configs automatically
+      pipeline.steps.push("Maintaining system configs...");
+      const configMaintenance =
+        await ConfigMaintenanceManager.maintainAllConfigs({
+          ...orchestration,
+          agents,
+          page,
+          components,
+        });
+
+      if (!configMaintenance.success) {
+        throw new Error(
+          `Config maintenance failed: ${configMaintenance.errors.join(", ")}`
+        );
+      }
+
+      // Step 7: Save all files
       pipeline.steps.push("Saving orchestration and files...");
       const savedFiles = await this.saveAllFiles({
         orchestration,
@@ -324,6 +725,7 @@ class AutomatedGenerationPipeline {
       });
 
       pipeline.generatedFiles = savedFiles;
+      pipeline.configMaintenance = configMaintenance;
       pipeline.steps.push("Orchestration generation completed successfully!");
 
       return {
@@ -597,6 +999,10 @@ export default async function handler(req, res) {
 - ❌ Template integration issues
 - ❌ Inconsistent output quality
 - ❌ Not production-ready
+- ❌ **Manual server.js updates required for every new agent**
+- ❌ **404 errors for new agents until manual config updates**
+- ❌ **Broken API endpoints until manual intervention**
+- ❌ **No automatic config maintenance**
 
 ##### **After (With Solutions)**
 
@@ -607,6 +1013,11 @@ export default async function handler(req, res) {
 - ✅ **Production-ready out of the box**
 - ✅ **Consistent, reliable output**
 - ✅ **Automated rollback on failures**
+- ✅ **🚀 AUTOMATED CONFIG MAINTENANCE**
+- ✅ **🚀 ZERO MANUAL SERVER UPDATES**
+- ✅ **🚀 ZERO 404 ERRORS FOR NEW AGENTS**
+- ✅ **🚀 AUTOMATIC API ENDPOINT UPDATES**
+- ✅ **🚀 COMPLETE SYSTEM INTEGRATION**
 
 #### **📊 Production Success Metrics**
 
@@ -617,6 +1028,13 @@ export default async function handler(req, res) {
 - **0** TypeScript errors in generated code
 - **100%** styling compliance
 - **100%** production readiness
+- **🚀 CONFIG MAINTENANCE METRICS**
+- **0** manual server.js updates required
+- **0** 404 errors for new agents
+- **100%** automatic config maintenance success rate
+- **< 30 seconds** config update time
+- **100%** API endpoint availability for new agents
+- **100%** prompt file accessibility for new agents
 
 ## 🏗️ **Solution Architecture**
 
@@ -650,7 +1068,7 @@ User Acceptance → Validates real-world usage
 
 ## 🔧 **Implementation Plan**
 
-### **Phase 1: Fix Agent Generation (CRITICAL - Week 1)**
+### **Phase 1: Fix Agent Generation & Config Maintenance (CRITICAL - Week 1)**
 
 #### **1.1 Create Agent Generation API**
 
@@ -763,7 +1181,30 @@ class AgentValidator {
 }
 ```
 
-#### **1.3 File Generation Enhancement**
+#### **1.3 Config Maintenance System (NEW)**
+
+**File**: `utils/ConfigMaintenanceManager.js`
+
+**Purpose**: Automatically maintain all system configs when new agents/orchestrations are created
+
+**Key Features**:
+
+- **Automatic server.js allowedFiles updates**
+- **Automatic agent config updates**
+- **Automatic orchestration config updates**
+- **Automatic API endpoint updates**
+- **Automatic type definition updates**
+- **Automatic frontend import updates**
+- **Automatic validation schema updates**
+
+**Integration Points**:
+
+- **Orchestration Generator**: Call after orchestration creation
+- **Agent Generator**: Call after agent creation
+- **Pipeline**: Integrate into automated generation pipeline
+- **Validation**: Validate all config updates before saving
+
+#### **1.4 File Generation Enhancement**
 
 **File**: `utils/fileGenerator.js`
 
@@ -1505,13 +1946,20 @@ class RollbackManager {
 
 ## 📋 **Implementation Checklist**
 
-### **Phase 1: Agent Generation (Week 1)**
+### **Phase 1: Agent Generation & Config Maintenance (Week 1)**
 
 - [ ] Create `/api/generate-agents.js` with proper validation
 - [ ] Implement `AgentValidator` class
+- [ ] **NEW: Implement `ConfigMaintenanceManager` class**
+- [ ] **NEW: Add automatic server.js allowedFiles updates**
+- [ ] **NEW: Add automatic agent config updates**
+- [ ] **NEW: Add automatic orchestration config updates**
+- [ ] **NEW: Add automatic API endpoint updates**
+- [ ] **NEW: Integrate config maintenance into generation pipeline**
 - [ ] Extend `FileGenerator` with agent methods
 - [ ] Add agent generation to orchestration builder
 - [ ] Test agent generation with sample agents
+- [ ] **NEW: Test config maintenance with new agents**
 
 ### **Phase 2: Page/Component Fixes (Week 2)**
 
@@ -1589,6 +2037,10 @@ class RollbackManager {
 - ❌ False automation promises
 - ❌ Styling system violations in generated code
 - ❌ Page generation API not integrated with validation
+- ❌ **🚨 CRITICAL: Manual server.js updates required for every new agent**
+- ❌ **🚨 CRITICAL: 404 errors for new agents until manual intervention**
+- ❌ **🚨 CRITICAL: Broken API endpoints until manual config updates**
+- ❌ **🚨 CRITICAL: No automatic config maintenance**
 
 ### **After (Target State)**
 
@@ -1599,6 +2051,11 @@ class RollbackManager {
 - ✅ Real automation that delivers value
 - ✅ 100% design token compliance in generated code
 - ✅ Automated styling validation integrated into generation pipeline
+- ✅ **🚀 AUTOMATED CONFIG MAINTENANCE**
+- ✅ **🚀 ZERO MANUAL SERVER UPDATES**
+- ✅ **🚀 ZERO 404 ERRORS FOR NEW AGENTS**
+- ✅ **🚀 AUTOMATIC API ENDPOINT UPDATES**
+- ✅ **🚀 COMPLETE SYSTEM INTEGRATION**
 
 ## 📊 **Success Metrics**
 

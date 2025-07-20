@@ -116,6 +116,8 @@ const AgentsPage: React.FC = () => {
   const [imgUrl, setImgUrl] = useState<string | null>(null);
   const [orchestrations, setOrchestrations] =
     useState<OrchestrationsData | null>(null);
+  const [selectedOrchestrationFilter, setSelectedOrchestrationFilter] =
+    useState<string>("all");
 
   useEffect(() => {
     loadAgentsConfiguration();
@@ -324,6 +326,27 @@ const AgentsPage: React.FC = () => {
     (a, b) => a.priority - b.priority
   );
 
+  // Filter agents by orchestration
+  const filteredAgents = agents.filter((agent) => {
+    if (selectedOrchestrationFilter === "all") return true;
+    if (selectedOrchestrationFilter === "unused") {
+      return getAgentOrchestrations(agent.id).length === 0;
+    }
+    return getAgentOrchestrations(agent.id).includes(
+      selectedOrchestrationFilter
+    );
+  });
+
+  // Get unique orchestration names for filter dropdown
+  const getUniqueOrchestrations = (): string[] => {
+    if (!orchestrations) return [];
+    const orchestrationNames = new Set<string>();
+    Object.values(orchestrations.orchestrators).forEach((orchestration) => {
+      orchestrationNames.add(orchestration.name);
+    });
+    return Array.from(orchestrationNames).sort();
+  };
+
   return (
     <div className="bg-slate-50 min-h-screen flex flex-col">
       <div className="flex-1">
@@ -441,68 +464,123 @@ const AgentsPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Left: Agent List */}
             <div className="md:col-span-1">
-              <div className="space-y-4">
-                {agents.map((agent) => (
-                  <div
-                    key={agent.id}
-                    className={`cursor-pointer bg-white rounded-lg shadow-md p-6 transition-all duration-300 border hover:shadow-lg ${
-                      selectedAgentId === agent.id
-                        ? "ring-2 ring-blue-500 border-blue-500"
-                        : agent.enabled
-                        ? "border-slate-200"
-                        : "border-red-200 opacity-75"
-                    }`}
-                    onClick={() => setSelectedAgentId(agent.id)}
-                  >
-                    <div className="flex items-center mb-2">
-                      <span
-                        className={`text-xl mr-2 ${
-                          agent.enabled ? "text-primary" : "text-slate-500"
-                        }`}
-                      >
-                        <Bot className="w-6 h-6" />
-                      </span>
-                      <h3 className="text-lg font-bold !text-gray-900">
-                        {agent.name || "Agent Name"}
-                      </h3>
-                    </div>
-                    <p className="text-slate-700 text-sm mb-2 line-clamp-2">
-                      {agent.description}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-slate-500">
-                        Model:{" "}
-                        <span className="font-medium text-slate-800">
-                          {agent.model}
-                        </span>
-                      </span>
-                      <span
-                        className={`p-1 rounded-full ${
-                          agent.enabled ? "text-green-600" : "text-red-600"
-                        }`}
-                      >
-                        {" "}
-                        <Power className="w-4 h-4" />{" "}
-                      </span>
-                    </div>
-                    {agent.enabled && orchestrations && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {getAgentOrchestrations(agent.id).map(
-                          (orchestrationName) => (
-                            <span
-                              key={orchestrationName}
-                              className={`text-xs font-medium px-2 py-1 rounded-full ${getOrchestrationTagColor(
-                                orchestrationName
-                              )}`}
-                            >
-                              {orchestrationName}
-                            </span>
+              {/* Orchestration Filter */}
+              <div className="mb-6 bg-white rounded-lg shadow-md p-4 border border-slate-200">
+                <h3 className="text-lg font-semibold text-slate-800 mb-3">
+                  Filter by Orchestration
+                </h3>
+                <select
+                  value={selectedOrchestrationFilter}
+                  onChange={(e) =>
+                    setSelectedOrchestrationFilter(e.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary text-sm"
+                >
+                  <option value="all">All Agents ({agents.length})</option>
+                  <option value="unused">
+                    Unused Agents (
+                    {
+                      agents.filter(
+                        (agent) => getAgentOrchestrations(agent.id).length === 0
+                      ).length
+                    }
+                    )
+                  </option>
+                  {getUniqueOrchestrations().map((orchestrationName) => (
+                    <option key={orchestrationName} value={orchestrationName}>
+                      {orchestrationName} (
+                      {
+                        agents.filter((agent) =>
+                          getAgentOrchestrations(agent.id).includes(
+                            orchestrationName
                           )
-                        )}
-                      </div>
-                    )}
+                        ).length
+                      }
+                      )
+                    </option>
+                  ))}
+                </select>
+                {selectedOrchestrationFilter !== "all" && (
+                  <div className="mt-2 text-sm text-slate-600">
+                    Showing {filteredAgents.length} of {agents.length} agents
                   </div>
-                ))}
+                )}
+              </div>
+              <div className="space-y-4">
+                {filteredAgents.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    <Bot className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <p className="text-sm">No agents found for this filter</p>
+                    <button
+                      onClick={() => setSelectedOrchestrationFilter("all")}
+                      className="mt-2 text-primary hover:text-primary-hover text-sm font-medium"
+                    >
+                      Show all agents
+                    </button>
+                  </div>
+                ) : (
+                  filteredAgents.map((agent) => (
+                    <div
+                      key={agent.id}
+                      className={`cursor-pointer bg-white rounded-lg shadow-md p-6 transition-all duration-300 border hover:shadow-lg ${
+                        selectedAgentId === agent.id
+                          ? "ring-2 ring-blue-500 border-blue-500"
+                          : agent.enabled
+                          ? "border-slate-200"
+                          : "border-red-200 opacity-75"
+                      }`}
+                      onClick={() => setSelectedAgentId(agent.id)}
+                    >
+                      <div className="flex items-center mb-2">
+                        <span
+                          className={`text-xl mr-2 ${
+                            agent.enabled ? "text-primary" : "text-slate-500"
+                          }`}
+                        >
+                          <Bot className="w-6 h-6" />
+                        </span>
+                        <h3 className="text-lg font-bold !text-gray-900">
+                          {agent.name || "Agent Name"}
+                        </h3>
+                      </div>
+                      <p className="text-slate-700 text-sm mb-2 line-clamp-2">
+                        {agent.description}
+                      </p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-xs text-slate-500">
+                          Model:{" "}
+                          <span className="font-medium text-slate-800">
+                            {agent.model}
+                          </span>
+                        </span>
+                        <span
+                          className={`p-1 rounded-full ${
+                            agent.enabled ? "text-green-600" : "text-red-600"
+                          }`}
+                        >
+                          {" "}
+                          <Power className="w-4 h-4" />{" "}
+                        </span>
+                      </div>
+                      {agent.enabled && orchestrations && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {getAgentOrchestrations(agent.id).map(
+                            (orchestrationName) => (
+                              <span
+                                key={orchestrationName}
+                                className={`text-xs font-medium px-2 py-1 rounded-full ${getOrchestrationTagColor(
+                                  orchestrationName
+                                )}`}
+                              >
+                                {orchestrationName}
+                              </span>
+                            )
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
             {/* Right: Agent Details */}

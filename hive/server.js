@@ -358,6 +358,7 @@ app.get("/api/prompts/:filename", (req, res) => {
       "modular_elements_recommender.md",
       "trend_cultural_analyzer.md",
       "brand_qa.md",
+      "brand_lens.md",
     ];
 
     if (!allowedFiles.includes(filename)) {
