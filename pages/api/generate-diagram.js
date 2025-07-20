@@ -111,14 +111,6 @@ export default function handler(req, res) {
           "brand_qa",
         ],
       },
-      template: {
-        agents: [
-          "pr_manager",
-          "research_audience",
-          "strategic_insight",
-          "trending_news",
-        ],
-      },
     };
     const orchestration = orchestrations[id];
     if (!orchestration) return res.status(404).json({ message: "Not found" });

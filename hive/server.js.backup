@@ -552,6 +552,20 @@ app.get("/api/orchestrations", (req, res) => {
         ],
         agents: ["pr-manager", "research", "strategic", "trending", "story"],
       },
+      template: {
+        id: "template",
+        name: "Template Orchestrator",
+        description: "Example orchestration built from the Hyatt template.",
+        enabled: true,
+        config: {
+          maxConcurrentWorkflows: 5,
+          timeout: 300000,
+          retryAttempts: 3,
+          enableLogging: true,
+        },
+        workflows: ["pr_campaign_workflow"],
+        agents: ["pr-manager", "research", "strategic", "trending"],
+      },
       builder: {
         id: "builder",
         name: "Orchestration Builder",
@@ -789,6 +803,7 @@ app.get("/api/orchestration-documentation", (req, res) => {
     const documentationPaths = {
       hyatt: "docs/orchestrations/HyattOrchestrator.md",
       builder: "docs/orchestrations/OrchestrationBuilder.md",
+      template: "docs/orchestrations/TemplateOrchestrator.md",
       hive: "docs/orchestrations/HiveOrchestrator.md",
     };
 
@@ -884,6 +899,14 @@ app.post("/api/generate-diagram", (req, res) => {
           "visual_prompt_generator",
           "modular_elements_recommender",
           "brand_qa",
+        ],
+      },
+      template: {
+        agents: [
+          "pr_manager",
+          "research_audience",
+          "strategic_insight",
+          "trending_news",
         ],
       },
     };

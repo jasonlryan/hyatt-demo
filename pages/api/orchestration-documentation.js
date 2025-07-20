@@ -15,7 +15,6 @@ export default function handler(req, res) {
     const documentationPaths = {
       hyatt: "docs/orchestrations/HyattOrchestrator.md",
       builder: "docs/orchestrations/OrchestrationBuilder.md",
-      template: "docs/orchestrations/TemplateOrchestrator.md",
       hive: "docs/orchestrations/HiveOrchestrator.md",
     };
 

@@ -277,11 +277,6 @@ const WorkflowsPage: React.FC = () => {
           setOrchestrations([
             { id: "hyatt", name: "Hyatt Orchestrator", hasDiagram: true },
             { id: "hive", name: "Hive Orchestrator", hasDiagram: false },
-            {
-              id: "template",
-              name: "Template Orchestrator",
-              hasDiagram: false,
-            },
           ]);
         }
       } catch (error) {
@@ -290,7 +285,6 @@ const WorkflowsPage: React.FC = () => {
         setOrchestrations([
           { id: "hyatt", name: "Hyatt Orchestrator", hasDiagram: true },
           { id: "hive", name: "Hive Orchestrator", hasDiagram: false },
-          { id: "template", name: "Template Orchestrator", hasDiagram: false },
         ]);
       } finally {
         setLoading(false);

@@ -48,6 +48,22 @@ export default function handler(req, res) {
         hasDocumentation: true,
         documentationPath: "docs/orchestrations/HyattOrchestrator.md",
       },
+      template: {
+        id: "template",
+        name: "Template Orchestrator",
+        description: "Example orchestration built from the Hyatt template.",
+        enabled: true,
+        config: {
+          maxConcurrentWorkflows: 5,
+          timeout: 300000,
+          retryAttempts: 3,
+          enableLogging: true,
+        },
+        workflows: ["pr_campaign_workflow"],
+        agents: ["pr-manager", "research", "strategic", "trending"],
+        hasDiagram: false,
+        hasDocumentation: false,
+      },
       builder: {
         id: "builder",
         name: "Orchestration Builder",
