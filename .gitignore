@@ -66,4 +66,7 @@ hive/campaigns/*.json
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Archive directory
+archive/ 
