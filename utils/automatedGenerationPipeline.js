@@ -1,6 +1,9 @@
 const fs = require("fs/promises");
 const ConfigMaintenanceManager = require("./ConfigMaintenanceManager");
 const PostProcessingValidator = require("./postProcessingValidator");
+const { FileGenerator } = require("./fileGenerator");
+
+const BASE_URL = process.env.INTERNAL_API_BASE || "http://localhost:3000";
 
 class AutomatedGenerationPipeline {
   static async generateProductionReadyOrchestration(brief) {
@@ -69,7 +72,7 @@ class AutomatedGenerationPipeline {
   }
 
   static async generatePageWithPostProcessing(orchestration) {
-    const pageResponse = await fetch("/api/generate-page", {
+    const pageResponse = await fetch(`${BASE_URL}/api/generate-page`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -118,18 +121,64 @@ class AutomatedGenerationPipeline {
     }
   }
 
-  // Placeholder methods expected to be implemented elsewhere
-  static async generateOrchestration() {
-    throw new Error("generateOrchestration not implemented");
+  static async generateOrchestration(description) {
+    const res = await fetch(`${BASE_URL}/api/generate-orchestration`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ description }),
+    });
+    if (!res.ok) {
+      throw new Error(`Orchestration generation failed: ${res.statusText}`);
+    }
+    return await res.json();
   }
-  static async generateAgentsWithValidation() {
-    return [];
+
+  static async generateAgentsWithValidation(agentIds = []) {
+    if (!agentIds.length) return [];
+    const res = await fetch(`${BASE_URL}/api/generate-agents`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ agents: agentIds, orchestrationContext: "pipeline" }),
+    });
+    if (!res.ok) {
+      throw new Error(`Agent generation failed: ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data.generatedAgents || [];
   }
-  static async generateComponentsWithPostProcessing() {
-    return [];
+
+  static async generateComponentsWithPostProcessing(orchestration) {
+    const res = await fetch(`${BASE_URL}/api/generate-component`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        componentType: "progress",
+        requirements: orchestration.description,
+        orchestrationContext: orchestration.name,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error(`Component generation failed: ${res.statusText}`);
+    }
+    const data = await res.json();
+    const validation = await PostProcessingValidator.validateAndFixGeneratedCode(
+      data.component,
+      "component"
+    );
+    return { ...data, component: validation.fixedCode, validation };
   }
-  static async saveAllFiles() {
-    return [];
+
+  static async saveAllFiles({ orchestration, page }) {
+    const fileGenerator = new FileGenerator();
+    const id =
+      orchestration.id ||
+      orchestration.name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    const filePath = await fileGenerator.generateOrchestrationPage(
+      id,
+      orchestration.name,
+      page.page
+    );
+    return [filePath];
   }
 }
 
