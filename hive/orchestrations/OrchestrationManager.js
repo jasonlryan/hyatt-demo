@@ -12,7 +12,12 @@ class OrchestrationManager {
   // Load agents configuration as the single source of truth
   loadAgentsConfig() {
     try {
-      const configPath = path.join(__dirname, "..", "agents", "agents.config.json");
+      const configPath = path.join(
+        __dirname,
+        "..",
+        "agents",
+        "agents.config.json"
+      );
       const raw = fs.readFileSync(configPath, "utf8");
       const parsed = JSON.parse(raw);
       return parsed.agents || {};
@@ -118,7 +123,10 @@ class OrchestrationManager {
     // Include additional agents assigned to this orchestration via config
     const orchestrationId = this.mapToFrontendId(className.toLowerCase());
     for (const [id, cfg] of Object.entries(this.agentsConfig || {})) {
-      if (cfg.orchestration && cfg.orchestration.toLowerCase() === orchestrationId) {
+      if (
+        cfg.orchestration &&
+        cfg.orchestration.toLowerCase() === orchestrationId
+      ) {
         if (!agentIds.includes(id)) agentIds.push(id);
       }
     }
@@ -142,6 +150,16 @@ class OrchestrationManager {
 
   // Map agent id to class name
   getAgentClassName(agentId) {
+    // First check if agent exists in config and has a name
+    if (
+      this.agentsConfig &&
+      this.agentsConfig[agentId] &&
+      this.agentsConfig[agentId].name
+    ) {
+      return this.agentsConfig[agentId].name;
+    }
+
+    // Fallback to hardcoded mapping
     const mapping = {
       research: "ResearchAudienceAgent",
       trending: "TrendingNewsAgent",
@@ -155,6 +173,8 @@ class OrchestrationManager {
       brand_lens: "BrandLensAgent",
     };
     if (mapping[agentId]) return mapping[agentId];
+
+    // For dynamically generated agents, use the pattern from the generation endpoint
     return `${this.toPascalCase(agentId)}Agent`;
   }
 

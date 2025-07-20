@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 module.exports = function (app, { orchestrationManager }) {
   app.get("/api/orchestrations", (req, res) => {
     try {
@@ -416,36 +419,36 @@ Return the component as a complete, ready-to-use React TypeScript file.`;
     const { OpenAI } = require("openai");
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const systemPrompt = `You are an AI agent architect. Generate a complete agent class that:
-1. Extends BaseAgent
-2. Has appropriate constructor configuration
-3. Includes role-specific methods based on the agent ID
-4. Follows established patterns from existing agents
-5. Is ready for immediate use
+    const systemPrompt = `You are an AI agent architect. Generate a complete agent class.
 
-Available agent patterns to follow:
-- research: Audience research and demographic analysis
-- trending: Trend identification and news opportunities  
-- story: Story angles and headline creation
-- strategic: Strategic insights and recommendations
-- pr-manager: Campaign coordination and strategy management
-- visual_prompt_generator: Visual creative prompts
-- modular_elements_recommender: Modular visual elements
-- trend_cultural_analyzer: Cultural trend analysis
-- brand_qa: Brand alignment and quality assurance
+CRITICAL: Return ONLY raw JavaScript code. NO markdown, NO backticks, NO JSON, NO formatting.
 
-IMPORTANT: Return ONLY valid JSON, no markdown formatting, no code blocks, no backticks.
+Generate a JavaScript class that:
+- Extends BaseAgent
+- Has constructor with super() call
+- Has process() method
+- Uses naming pattern: [AgentId]Agent
+- Uses model: 'gpt-4o-2024-08-06', temperature: 0.3, maxTokens: 2000
 
-Return this exact JSON structure:
-{
-  "className": "AgentClassName",
-  "classCode": "// Complete agent class code that extends BaseAgent",
-  "config": {
-    "model": "gpt-4o-2024-08-06",
-    "temperature": 0.3,
-    "maxTokens": 2000
+Example (replace [AgentId] with actual agent ID):
+const { BaseAgent } = require('./BaseAgent');
+
+class [AgentId]Agent extends BaseAgent {
+  constructor() {
+    super({
+      model: 'gpt-4o-2024-08-06',
+      temperature: 0.3,
+      maxTokens: 2000
+    });
   }
-}`;
+
+  async process(input) {
+    // Agent-specific logic here
+    return result;
+  }
+}
+
+module.exports = [AgentId]Agent;`;
 
     const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
@@ -459,39 +462,63 @@ Return this exact JSON structure:
       temperature: 0.3,
     });
 
-    return JSON.parse(response.output_text);
+    // Extract class name from the generated code
+    let classCode = response.output_text;
+
+    // Clean up any markdown formatting if AI still returns it
+    if (classCode.includes("```")) {
+      const codeBlockMatch = classCode.match(
+        /```(?:javascript|js)?\s*([\s\S]*?)```/
+      );
+      if (codeBlockMatch) {
+        classCode = codeBlockMatch[1].trim();
+      }
+    }
+
+    const classNameMatch = classCode.match(/class\s+(\w+)\s+extends/);
+    const className = classNameMatch
+      ? classNameMatch[1]
+      : `${agentId.charAt(0).toUpperCase() + agentId.slice(1)}Agent`;
+
+    return {
+      className,
+      classCode,
+      config: {
+        model: "gpt-4o-2024-08-06",
+        temperature: 0.3,
+        maxTokens: 2000,
+      },
+    };
   }
 
   async function generateAgentPrompt(agentId, context) {
     const { OpenAI } = require("openai");
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    const systemPrompt = `You are an AI prompt engineer. Generate a complete system prompt that:
-1. Defines the agent's purpose and role based on the agent ID
-2. Specifies input/output formats
-3. Provides clear examples
-4. Follows established prompt patterns from existing agents
-5. Is ready for immediate use
+    const systemPrompt = `You are an AI prompt engineer. Generate a system prompt.
 
-Available agent patterns to follow:
-- research: Audience research and demographic analysis
-- trending: Trend identification and news opportunities  
-- story: Story angles and headline creation
-- strategic: Strategic insights and recommendations
-- pr-manager: Campaign coordination and strategy management
-- visual_prompt_generator: Visual creative prompts
-- modular_elements_recommender: Modular visual elements
-- trend_cultural_analyzer: Cultural trend analysis
-- brand_qa: Brand alignment and quality assurance
+CRITICAL: Return ONLY raw markdown content. NO JSON, NO backticks, NO formatting.
 
-Generate JSON with:
-{
-  "promptCode": "# Complete system prompt in markdown format",
-  "metadata": {
-    "role": "agent role based on ID",
-    "context": "usage context"
-  }
-}`;
+Generate a markdown prompt that:
+- Starts with # heading
+- Defines agent role
+- Includes input/output formats
+- Provides examples
+
+Example:
+# Test Agent
+
+You are a test agent that processes input data.
+
+## Input Format
+Text input to process
+
+## Output Format
+Processed result
+
+## Examples
+Input: "hello"
+Output: "processed: hello"`;
 
     const response = await openai.responses.create({
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
@@ -505,14 +532,36 @@ Generate JSON with:
       temperature: 0.3,
     });
 
-    return JSON.parse(response.output_text);
+    // Extract role from the generated prompt
+    let promptCode = response.output_text;
+
+    // Clean up any markdown formatting if AI still returns it
+    if (promptCode.includes("```")) {
+      const codeBlockMatch = promptCode.match(
+        /```(?:markdown|md)?\s*([\s\S]*?)```/
+      );
+      if (codeBlockMatch) {
+        promptCode = codeBlockMatch[1].trim();
+      }
+    }
+
+    const roleMatch = promptCode.match(/#\s*(.+?)\s+Agent/);
+    const role = roleMatch ? roleMatch[1].trim() : "custom";
+
+    return {
+      promptCode,
+      metadata: {
+        role,
+        context: context || "orchestration",
+      },
+    };
   }
 
   async function saveGeneratedAgent(agentId, agentClass, agentPrompt) {
     const baseDir = process.cwd();
 
-    // Save agent class
-    const agentClassDir = path.join(baseDir, "hive", "agents", "classes");
+    // Save agent class - use correct path structure
+    const agentClassDir = path.join(baseDir, "agents", "classes");
     const agentClassPath = path.join(
       agentClassDir,
       `${agentClass.className}.js`
@@ -521,8 +570,8 @@ Generate JSON with:
     await fs.promises.mkdir(agentClassDir, { recursive: true });
     await fs.promises.writeFile(agentClassPath, agentClass.classCode, "utf8");
 
-    // Save agent prompt
-    const agentPromptDir = path.join(baseDir, "hive", "agents", "prompts");
+    // Save agent prompt - use correct path structure
+    const agentPromptDir = path.join(baseDir, "agents", "prompts");
     const agentPromptPath = path.join(agentPromptDir, `${agentId}.md`);
 
     await fs.promises.mkdir(agentPromptDir, { recursive: true });
@@ -539,12 +588,7 @@ Generate JSON with:
   }
 
   async function updateAgentConfig(agentId, agentClass, agentPrompt, context) {
-    const configPath = path.join(
-      process.cwd(),
-      "hive",
-      "agents",
-      "agents.config.json"
-    );
+    const configPath = path.join(process.cwd(), "agents", "agents.config.json");
 
     // Read existing config
     let config = {};
@@ -589,22 +633,35 @@ Generate JSON with:
 
     try {
       // Remove agent class file
-      const agentClassDir = path.join(baseDir, "hive", "agents", "classes");
+      const agentClassDir = path.join(baseDir, "agents", "classes");
       const agentClassFiles = await fs.promises.readdir(agentClassDir);
-      const agentClassFile = agentClassFiles.find((file) =>
-        file.toLowerCase().includes(agentId.toLowerCase())
+
+      // Look for the exact class file name - test_agent -> TestAgent.js
+      const agentClassName = "TestAgent";
+      const expectedFileName = `${agentClassName}.js`;
+
+      console.log(`🔍 Looking for agent class: ${expectedFileName}`);
+      console.log(`🔍 Available files:`, agentClassFiles);
+
+      const agentClassFile = agentClassFiles.find(
+        (file) => file === expectedFileName
       );
+
+      console.log(`🔍 Found file:`, agentClassFile);
 
       if (agentClassFile) {
         const agentClassPath = path.join(agentClassDir, agentClassFile);
         await fs.promises.unlink(agentClassPath);
         console.log(`🗑️ Removed agent class: ${agentClassFile}`);
+      } else {
+        console.log(
+          `❌ No agent class file found for: ${agentId} (expected: ${expectedFileName})`
+        );
       }
 
       // Remove agent prompt file
       const agentPromptPath = path.join(
         baseDir,
-        "hive",
         "agents",
         "prompts",
         `${agentId}.md`
@@ -615,12 +672,7 @@ Generate JSON with:
       }
 
       // Remove from config
-      const configPath = path.join(
-        baseDir,
-        "hive",
-        "agents",
-        "agents.config.json"
-      );
+      const configPath = path.join(baseDir, "agents", "agents.config.json");
       if (fs.existsSync(configPath)) {
         const config = JSON.parse(
           await fs.promises.readFile(configPath, "utf8")
