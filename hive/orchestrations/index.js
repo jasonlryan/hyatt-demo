@@ -6,17 +6,15 @@
 const BaseOrchestrator = require("./classes/BaseOrchestrator");
 const HyattOrchestrator = require("./classes/HyattOrchestrator");
 const HiveOrchestrator = require("./classes/HiveOrchestrator");
-const orchestrationsConfig = require("./configs/orchestrations.config.json");
-
 /**
  * Factory function to create orchestrators
- * @param {string} type - The type of orchestrator ('agent', 'hive', or custom)
+ * @param {string} type - The type of orchestrator ('hyatt', 'hive', or custom)
  * @param {object} config - Configuration options
  * @returns {BaseOrchestrator} The created orchestrator instance
  */
 function createOrchestrator(type, config = {}) {
   switch (type.toLowerCase()) {
-    case "agent":
+    case "hyatt":
       return new HyattOrchestrator(config);
     case "hive":
       return new HiveOrchestrator(config);
@@ -30,7 +28,7 @@ function createOrchestrator(type, config = {}) {
  * @returns {string[]} Array of available orchestrator types
  */
 function getAvailableOrchestrators() {
-  return Object.keys(orchestrationsConfig.orchestrators);
+  return ["hyatt", "hive"];
 }
 
 /**
@@ -39,7 +37,8 @@ function getAvailableOrchestrators() {
  * @returns {object} The orchestrator configuration
  */
 function getOrchestratorConfig(type) {
-  return orchestrationsConfig.orchestrators[type] || null;
+  // Configs are now generated dynamically by OrchestrationManager
+  return null;
 }
 
 module.exports = {
@@ -49,5 +48,4 @@ module.exports = {
   createOrchestrator,
   getAvailableOrchestrators,
   getOrchestratorConfig,
-  config: orchestrationsConfig,
 };

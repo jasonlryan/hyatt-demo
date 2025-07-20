@@ -13,10 +13,10 @@ const StrategicInsightAgent = require("../../agents/classes/StrategicInsightAgen
 const DataSourceManager = require("../../utils/DataSourceManager");
 const QualityController = require("../../utils/QualityController");
 
-class AgentOrchestrator extends BaseOrchestrator {
+class HyattOrchestrator extends BaseOrchestrator {
   constructor(config = {}) {
     super({
-      name: "AgentOrchestrator",
+      name: "HyattOrchestrator",
       version: "1.0.0",
       ...config,
     });
@@ -68,14 +68,14 @@ class AgentOrchestrator extends BaseOrchestrator {
   }
 
   async loadWorkflows() {
-    // AgentOrchestrator uses campaign-based workflows rather than predefined ones
-    this.log("AgentOrchestrator uses dynamic campaign workflows");
+    // HyattOrchestrator uses campaign-based workflows rather than predefined ones
+    this.log("HyattOrchestrator uses dynamic campaign workflows");
   }
 
   async executeWorkflow(workflow, execution) {
-    // For AgentOrchestrator, workflows are campaign-based
+    // For HyattOrchestrator, workflows are campaign-based
     // This method is mainly for compatibility with BaseOrchestrator
-    this.log(`AgentOrchestrator workflow execution handled by campaign system`);
+    this.log(`HyattOrchestrator workflow execution handled by campaign system`);
     return { status: "handled_by_campaign_system" };
   }
 
@@ -1688,4 +1688,4 @@ class AgentOrchestrator extends BaseOrchestrator {
   }
 }
 
-module.exports = AgentOrchestrator;
+module.exports = HyattOrchestrator;

@@ -47,3 +47,11 @@ export interface BackendOrchestrationConfig {
   hasDocumentation?: boolean;
   documentationPath?: string;
 }
+
+export interface GeneratedOrchestrationPageProps {
+  orchestrationId: string;
+  orchestrationName: string;
+  hitlReview?: boolean;
+  onToggleHitl?: () => void;
+  onNavigateToOrchestrations?: () => void;
+}

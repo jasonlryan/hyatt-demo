@@ -1,3 +1,5 @@
+import { GeneratedOrchestrationPageProps } from "../../../types/orchestrations";
+
 // Dynamic orchestration page loader
 export const loadOrchestrationPage = async (orchestrationId: string) => {
   try {
@@ -11,10 +13,4 @@ export const loadOrchestrationPage = async (orchestrationId: string) => {
   }
 };
 
-export interface GeneratedOrchestrationPageProps {
-  orchestrationId: string;
-  orchestrationName: string;
-  hitlReview?: boolean;
-  onToggleHitl?: () => void;
-  onNavigateToOrchestrations?: () => void;
-}
+export type { GeneratedOrchestrationPageProps };

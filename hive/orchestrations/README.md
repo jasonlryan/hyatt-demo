@@ -8,10 +8,8 @@ This directory contains all orchestration logic for managing agent workflows and
 orchestrations/
 ├── classes/           # Orchestrator class implementations
 │   ├── BaseOrchestrator.js
-│   ├── AgentOrchestrator.js
+│   ├── HyattOrchestrator.js
 │   └── HiveOrchestrator.js
-├── configs/           # Configuration files
-│   └── orchestrations.config.json
 ├── workflows/         # Workflow definitions and templates
 ├── index.js          # Main export file
 └── README.md         # This file
@@ -19,9 +17,9 @@ orchestrations/
 
 ## Orchestrator Types
 
-### 1. Agent Orchestrator
+### 1. Hyatt Orchestrator
 
-- **Purpose**: Traditional sequential workflow execution
+- **Purpose**: Traditional sequential workflow execution for PR campaigns
 - **Use Case**: Linear processes where steps depend on previous results
 - **Features**:
   - Step-by-step execution
@@ -46,8 +44,8 @@ orchestrations/
 ```javascript
 const { createOrchestrator } = require("./orchestrations");
 
-// Create an agent orchestrator
-const agentOrchestrator = createOrchestrator("agent", {
+// Create a Hyatt orchestrator
+const hyattOrchestrator = createOrchestrator("hyatt", {
   maxConcurrentWorkflows: 5,
   timeout: 300000,
 });
@@ -144,11 +142,11 @@ The orchestrators were moved from the root level to this organized structure. Up
 **Before:**
 
 ```javascript
-const AgentOrchestrator = require("./AgentOrchestrator");
+const HyattOrchestrator = require("./HyattOrchestrator");
 ```
 
 **After:**
 
 ```javascript
-const { AgentOrchestrator } = require("./orchestrations");
+const { HyattOrchestrator } = require("./orchestrations");
 ```

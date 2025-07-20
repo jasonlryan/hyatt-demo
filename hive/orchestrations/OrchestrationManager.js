@@ -347,15 +347,18 @@ class OrchestrationManager {
 
   // Dynamically load orchestrator class
   async getOrchestratorClass(orchestratorType) {
-    const orchestratorPath = path.join(
-      __dirname,
-      "classes",
-      `${orchestratorType}.js`
-    );
+    // Map frontend IDs to actual class names
+    const classMapping = {
+      hyatt: "HyattOrchestrator",
+      hive: "HiveOrchestrator",
+    };
+
+    const className = classMapping[orchestratorType] || orchestratorType;
+    const orchestratorPath = path.join(__dirname, "classes", `${className}.js`);
 
     if (!fs.existsSync(orchestratorPath)) {
       throw new Error(
-        `Orchestrator class ${orchestratorType} not found at ${orchestratorPath}`
+        `Orchestrator class ${className} not found at ${orchestratorPath}`
       );
     }
 
@@ -364,7 +367,7 @@ class OrchestrationManager {
       return OrchestratorClass.default || OrchestratorClass;
     } catch (error) {
       throw new Error(
-        `Failed to load orchestrator class ${orchestratorType}: ${error.message}`
+        `Failed to load orchestrator class ${className}: ${error.message}`
       );
     }
   }
