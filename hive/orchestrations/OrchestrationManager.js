@@ -82,14 +82,14 @@ class OrchestrationManager {
       agents.research = { class: "ResearchAudienceAgent" };
       agents.trending = { class: "TrendingNewsAgent" };
       agents.story = { class: "StoryAnglesAgent" };
-      agents.pr_manager = { class: "PRManagerAgent" };
-      agents.strategic_insight = { class: "StrategicInsightAgent" };
+      agents["pr-manager"] = { class: "PRManagerAgent" };
+      agents.strategic = { class: "StrategicInsightAgent" };
     } else if (className === "HiveOrchestrator") {
       // Hive orchestration agents
-      agents.visual = { class: "VisualPromptGeneratorAgent" };
-      agents.modular = { class: "ModularElementsRecommenderAgent" };
-      agents.trend = { class: "TrendCulturalAnalyzerAgent" };
-      agents.qa = { class: "BrandQAAgent" };
+      agents.visual_prompt_generator = { class: "VisualPromptGeneratorAgent" };
+      agents.modular_elements_recommender = { class: "ModularElementsRecommenderAgent" };
+      agents.trend_cultural_analyzer = { class: "TrendCulturalAnalyzerAgent" };
+      agents.brand_qa = { class: "BrandQAAgent" };
       agents.brand_lens = { class: "BrandLensAgent" };
     }
 

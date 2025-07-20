@@ -233,3 +233,7 @@ After this fix:
 - **Brand Lens Agent** → "Hive Orchestrator" tag
 
 **Simple fix. No overengineering. Just match the IDs correctly.**
+
+## Implementation Notes
+
+Agent IDs in OrchestrationManager and orchestration classes now match agents.config.json. Orchestration configs updated accordingly.

@@ -28,10 +28,10 @@ class HiveOrchestrator extends BaseOrchestrator {
       await this.qaAgent.loadSystemPrompt();
       await this.brandLensAgent.loadSystemPrompt();
 
-      this.agents.set("visual", this.visualAgent);
-      this.agents.set("modular", this.modularAgent);
-      this.agents.set("trend", this.trendAgent);
-      this.agents.set("qa", this.qaAgent);
+      this.agents.set("visual_prompt_generator", this.visualAgent);
+      this.agents.set("modular_elements_recommender", this.modularAgent);
+      this.agents.set("trend_cultural_analyzer", this.trendAgent);
+      this.agents.set("brand_qa", this.qaAgent);
       this.agents.set("brand_lens", this.brandLensAgent);
 
       this.log("Hive agents loaded successfully");
