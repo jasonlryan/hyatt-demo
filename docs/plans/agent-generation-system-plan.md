@@ -1,309 +1,316 @@
-# 🚀 Agent Generation System Plan
+# 🚀 Agent Generation System Plan - COMPLETION FOCUS
 
 ## 🎯 **Overview**
 
-This plan builds the **real agent generation system** that was promised but never delivered. It creates the 5 core agents needed to make the orchestration generator actually functional instead of fake.
+This plan focuses on **completing the agent generation system** that is currently 70% functional but missing critical validation and multi-agent support components.
 
-## 🚨 **Current Problem**
+## 📊 **Current Status: 70% Complete**
 
-- ❌ **No real agent generation** - Only fake promises and incomplete code
-- ❌ **No agent validation** - No way to check if generated agents work
-- ❌ **No agent registration** - No integration with orchestrator system
-- ❌ **No config management** - Manual coordination between files
-- ❌ **No single source of truth** - Multiple hardcoded arrays and configs
+### **✅ COMPLETED COMPONENTS** (Moved to end)
 
-## 🏗️ **Solution: Build the 5 Core Agents**
+- ✅ Basic `/api/generate-agents` endpoint
+- ✅ Agent class generation with OpenAI Responses API
+- ✅ Agent prompt generation
+- ✅ File saving to filesystem
+- ✅ Config updates to `agents.config.json`
+- ✅ Cleanup functionality
+- ✅ Proper OpenAI API usage
 
-### **Agent 1: Agent Class Generator**
+### **❌ CRITICAL MISSING COMPONENTS**
 
-**Purpose**: Creates agent classes from templates
+| Component                  | Priority        | Effort    | Status     | Impact                            |
+| -------------------------- | --------------- | --------- | ---------- | --------------------------------- |
+| **Agent Validation**       | 🔴 Critical     | 1-2 hours | ❌ Missing | Prevents broken agents            |
+| **Multi-Agent Generation** | 🔴 Critical     | 2-3 hours | ❌ Missing | Only generates 1 agent at a time  |
+| **Agent Registration**     | 🟡 Important    | 3-4 hours | ❌ Missing | No dynamic loading                |
+| **Error Handling**         | 🟡 Important    | 2-3 hours | ❌ Missing | Poor failure handling             |
+| **Agent Testing**          | 🟢 Nice to Have | 4-5 hours | ❌ Missing | No validation of generated agents |
 
-**Input**:
+## 🎯 **MINIMAL VIABLE AGENT GENERATION**
 
-```json
-{
-  "agentId": "custom_analytics",
-  "role": "analytics",
-  "requirements": "Analyze campaign performance data and provide insights",
-  "context": "Hive reactive framework orchestration"
-}
-```
+**To make agent generation fully functional, you need:**
 
-**Output**:
+1. **AgentValidator class** - Validate generated code before saving
+2. **Multi-agent processing** - Handle multiple agents in one request
+3. **Better error handling** - Validate and handle failures gracefully
 
-```javascript
-// hive/agents/classes/CustomAnalyticsAgent.js
-class CustomAnalyticsAgent extends BaseAgent {
-  constructor() {
-    super({
-      id: "custom_analytics",
-      name: "Custom Analytics Agent",
-      description: "Analyzes campaign performance data and provides insights",
-      model: "gpt-4o-2024-08-06",
-      temperature: 0.3,
-      maxTokens: 2000,
-    });
-  }
+**Total Effort**: ~6-8 hours to complete agent generation system
 
-  async analyzePerformance(data) {
-    // Generated method based on role
-  }
+## 🚨 **CRITICAL ISSUES TO FIX**
 
-  async generateInsights(context) {
-    // Generated method based on requirements
-  }
-}
-```
+### **Issue 1: No Agent Validation** 🔴 **CRITICAL**
 
-**Template System**:
+**Problem**: Generated agents are saved without validation, potentially creating broken agents.
 
-- Base template with common methods
-- Role-specific method generation
-- Context-aware customization
-- Proper BaseAgent extension
-
-### **Agent 2: Agent Prompt Generator**
-
-**Purpose**: Creates system prompts for agents
-
-**Input**:
-
-```json
-{
-  "agentId": "custom_analytics",
-  "role": "analytics",
-  "context": "Campaign performance analysis",
-  "examples": ["data analysis", "insight generation", "reporting"]
-}
-```
-
-**Output**:
-
-```markdown
-# Custom Analytics Agent
-
-## Purpose
-
-Analyze campaign performance data and provide actionable insights for optimization.
-
-## Role
-
-You are a specialized analytics agent within the Hive reactive framework orchestration.
-
-## Capabilities
-
-- Data analysis and interpretation
-- Performance metric calculation
-- Insight generation and recommendations
-- Report creation and visualization
-
-## Input Format
-
-- Campaign performance data
-- Historical benchmarks
-- Target metrics and KPIs
-
-## Output Format
-
-- Structured analysis results
-- Actionable recommendations
-- Visual data representations
-- Performance insights
-
-## Examples
-
-[Generated examples based on context]
-```
-
-**Template System**:
-
-- Role-based prompt templates
-- Context-aware customization
-- Example generation
-- Structured format enforcement
-
-### **Agent 3: Agent Validator**
-
-**Purpose**: Validates generated agents
-
-**Input**:
-
-```json
-{
-  "agentClass": "// Generated agent class code...",
-  "agentPrompt": "# Generated prompt...",
-  "agentConfig": { "id": "custom_analytics", ... }
-}
-```
-
-**Output**:
-
-```json
-{
-  "isValid": true,
-  "errors": [],
-  "warnings": ["Consider adding error handling"],
-  "suggestions": ["Add input validation for data parameter"],
-  "validationDetails": {
-    "syntax": "valid",
-    "baseAgentExtension": "valid",
-    "requiredMethods": "valid",
-    "promptStructure": "valid",
-    "configConsistency": "valid"
-  }
-}
-```
-
-**Validation Checks**:
-
-- JavaScript syntax validation
-- BaseAgent extension verification
-- Required method presence
-- Prompt structure validation
-- Config consistency checks
-- Integration compatibility
-
-### **Agent 4: Agent Registrar**
-
-**Purpose**: Registers agents with orchestrator
-
-**Input**:
-
-```json
-{
-  "agentConfig": {
-    "id": "custom_analytics",
-    "name": "Custom Analytics Agent",
-    "class": "CustomAnalyticsAgent",
-    "config": { ... }
-  },
-  "orchestrationContext": "hive"
-}
-```
-
-**Output**:
-
-```json
-{
-  "registered": true,
-  "updatedFiles": [
-    "hive/agents/agents.config.json",
-    "hive/orchestrations/configs/hive.json"
-  ],
-  "integrationStatus": "success",
-  "orchestratorReady": true
-}
-```
-
-**Registration Process**:
-
-- Update agents.config.json
-- Update orchestration configs
-- Register with OrchestrationManager
-- Update index files
-- Verify integration
-
-### **Agent 5: Config Updater**
-
-**Purpose**: Updates all config files
-
-**Input**:
-
-```json
-{
-  "newAgents": [
-    {
-      "id": "custom_analytics",
-      "config": { ... }
-    }
-  ],
-  "orchestrationUpdates": {
-    "hive": {
-      "agents": ["custom_analytics", ...]
-    }
-  }
-}
-```
-
-**Output**:
-
-```json
-{
-  "updatedFiles": [
-    "hive/agents/agents.config.json",
-    "hive/orchestrations/configs/hive.json",
-    "hive/orchestrations/configs/orchestrations.json"
-  ],
-  "backupCreated": true,
-  "validationPassed": true,
-  "systemReady": true
-}
-```
-
-**Update Process**:
-
-- Create backups of existing configs
-- Update agents.config.json
-- Update orchestration configs
-- Update index files
-- Validate all changes
-- Restart orchestration manager
-
-## 🔧 **Implementation Plan**
-
-### **Phase 1: Create `/api/generate-agents` Endpoint**
-
-**File**: `pages/api/generate-agents.js`
+**Current Code** (lines 560-590 in `hive/routes/generation.js`):
 
 ```javascript
-export default async function handler(req, res) {
+async function saveGeneratedAgent(agentId, agentClass, agentPrompt) {
+  // ❌ NO VALIDATION - saves potentially broken code
+  await fs.promises.writeFile(agentClassPath, agentClass.classCode, "utf8");
+  await fs.promises.writeFile(agentPromptPath, agentPrompt.promptCode, "utf8");
+}
+```
+
+**Solution**: Create `AgentValidator` class and validate before saving.
+
+### **Issue 2: Single Agent Generation** 🔴 **CRITICAL**
+
+**Problem**: Only generates one agent at a time, even when multiple agents are requested.
+
+**Current Code** (lines 365-375 in `hive/routes/generation.js`):
+
+```javascript
+// Generate agent class and prompt for the first agent
+const agentId = agents[0]; // ❌ ONLY PROCESSES FIRST AGENT
+const agentClass = await generateAgentClass(agentId, orchestrationContext);
+const agentPrompt = await generateAgentPrompt(agentId, orchestrationContext);
+```
+
+**Solution**: Loop through all agents and generate them in batch.
+
+### **Issue 3: Poor Error Handling** 🟡 **IMPORTANT**
+
+**Problem**: Limited error handling and no validation before saving.
+
+**Current Code**:
+
+```javascript
+} catch (error) {
+  console.error("Agent generation failed:", error);
+  res.status(500).json({
+    error: "Failed to generate agent",
+    details: error.message,
+  });
+}
+```
+
+**Solution**: Add comprehensive validation and graceful error handling.
+
+## 🔧 **IMPLEMENTATION PLAN**
+
+### **Phase 1: Agent Validation System** 🔴 **CRITICAL - 1-2 hours**
+
+#### **Step 1.1: Create AgentValidator Class**
+
+**File**: `utils/agentValidator.js`
+
+```javascript
+class AgentValidator {
+  static validateAgentClass(classCode) {
+    const errors = [];
+
+    // Check for BaseAgent extension
+    if (!classCode.includes("extends BaseAgent")) {
+      errors.push("Agent must extend BaseAgent class");
+    }
+
+    // Check for required methods
+    if (!classCode.includes("process")) {
+      errors.push("Agent must implement process method");
+    }
+
+    // Check for proper imports
+    if (!classCode.includes('require("./BaseAgent")')) {
+      errors.push("Agent must import BaseAgent");
+    }
+
+    // Check for proper exports
+    if (!classCode.includes("module.exports")) {
+      errors.push("Agent must export the class");
+    }
+
+    // Check for Responses API usage
+    if (classCode.includes("chat.completions.create")) {
+      errors.push(
+        "Agent MUST use responses.create() NOT chat.completions.create()"
+      );
+    }
+
+    return { isValid: errors.length === 0, errors };
+  }
+
+  static validateAgentPrompt(promptCode) {
+    const errors = [];
+
+    // Check for markdown structure
+    if (!promptCode.includes("#")) {
+      errors.push("Prompt must include markdown headers");
+    }
+
+    // Check for purpose section
+    if (!promptCode.includes("Purpose") && !promptCode.includes("purpose")) {
+      errors.push("Prompt must include purpose section");
+    }
+
+    return { isValid: errors.length === 0, errors };
+  }
+}
+
+module.exports = AgentValidator;
+```
+
+#### **Step 1.2: Integrate Validation into Generation**
+
+**Update**: `hive/routes/generation.js` - `saveGeneratedAgent` function
+
+```javascript
+const AgentValidator = require("../../utils/agentValidator");
+
+async function saveGeneratedAgent(agentId, agentClass, agentPrompt) {
+  // ✅ VALIDATE BEFORE SAVING
+  const classValidation = AgentValidator.validateAgentClass(
+    agentClass.classCode
+  );
+  const promptValidation = AgentValidator.validateAgentPrompt(
+    agentPrompt.promptCode
+  );
+
+  if (!classValidation.isValid) {
+    throw new Error(
+      `Agent class validation failed: ${classValidation.errors.join(", ")}`
+    );
+  }
+
+  if (!promptValidation.isValid) {
+    throw new Error(
+      `Agent prompt validation failed: ${promptValidation.errors.join(", ")}`
+    );
+  }
+
+  // Save files only after validation passes
+  const baseDir = process.cwd();
+  const agentClassDir = path.join(baseDir, "agents", "classes");
+  const agentClassPath = path.join(agentClassDir, `${agentClass.className}.js`);
+
+  await fs.promises.mkdir(agentClassDir, { recursive: true });
+  await fs.promises.writeFile(agentClassPath, agentClass.classCode, "utf8");
+
+  const agentPromptDir = path.join(baseDir, "agents", "prompts");
+  const agentPromptPath = path.join(agentPromptDir, `${agentId}.md`);
+
+  await fs.promises.mkdir(agentPromptDir, { recursive: true });
+  await fs.promises.writeFile(agentPromptPath, agentPrompt.promptCode, "utf8");
+
+  return { agentClassPath, agentPromptPath };
+}
+```
+
+### **Phase 2: Multi-Agent Generation** 🔴 **CRITICAL - 2-3 hours**
+
+#### **Step 2.1: Update Main Endpoint**
+
+**Update**: `hive/routes/generation.js` - Main `/api/generate-agents` handler
+
+```javascript
+app.post("/api/generate-agents", async (req, res) => {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { agents, orchestrationContext, existingAgents } = req.body;
+    const { agents, orchestrationContext, cleanup = false } = req.body;
 
-    // Step 1: Generate agent classes
-    const agentClasses = await generateAgentClasses(
-      agents,
-      orchestrationContext
+    // Handle cleanup request
+    if (cleanup && agents && agents.length > 0) {
+      const cleanupResult = await cleanupTestAgent(agents[0]);
+      return res.status(200).json({
+        message: "Test agent cleaned up",
+        cleanupResult,
+      });
+    }
+
+    if (!agents || !Array.isArray(agents) || agents.length === 0) {
+      return res.status(400).json({ error: "Agents array is required" });
+    }
+
+    if (!orchestrationContext) {
+      return res
+        .status(400)
+        .json({ error: "Orchestration context is required" });
+    }
+
+    console.log(
+      `🎯 Generating ${agents.length} agents: ${agents.join(
+        ", "
+      )} for context: ${orchestrationContext}`
     );
 
-    // Step 2: Generate agent prompts
-    const agentPrompts = await generateAgentPrompts(
-      agents,
-      orchestrationContext
-    );
+    // ✅ GENERATE ALL AGENTS
+    const generatedAgents = [];
+    const errors = [];
 
-    // Step 3: Validate generated agents
-    const validationResults = await validateGeneratedAgents(
-      agentClasses,
-      agentPrompts
-    );
+    for (const agentId of agents) {
+      try {
+        console.log(`🤖 Generating agent: ${agentId}`);
 
-    // Step 4: Register agents with orchestrator
-    const registrationResults = await registerAgents(
-      agentClasses,
-      orchestrationContext
-    );
+        const agentClass = await generateAgentClass(
+          agentId,
+          orchestrationContext
+        );
+        const agentPrompt = await generateAgentPrompt(
+          agentId,
+          orchestrationContext
+        );
 
-    // Step 5: Update config files
-    const configResults = await updateConfigFiles(
-      agentClasses,
-      orchestrationContext
-    );
+        // Validate before saving
+        const classValidation = AgentValidator.validateAgentClass(
+          agentClass.classCode
+        );
+        const promptValidation = AgentValidator.validateAgentPrompt(
+          agentPrompt.promptCode
+        );
+
+        if (!classValidation.isValid || !promptValidation.isValid) {
+          const validationErrors = [
+            ...classValidation.errors,
+            ...promptValidation.errors,
+          ];
+          throw new Error(`Validation failed: ${validationErrors.join(", ")}`);
+        }
+
+        // Save the generated files
+        const filePaths = await saveGeneratedAgent(
+          agentId,
+          agentClass,
+          agentPrompt
+        );
+
+        // Update agent config
+        const configUpdated = await updateAgentConfig(
+          agentId,
+          agentClass,
+          agentPrompt,
+          orchestrationContext
+        );
+
+        generatedAgents.push({
+          agentId,
+          agentClass,
+          agentPrompt,
+          filePaths,
+          configUpdated,
+        });
+
+        console.log(`✅ Successfully generated agent: ${agentId}`);
+      } catch (error) {
+        console.error(`❌ Failed to generate agent ${agentId}:`, error.message);
+        errors.push({ agentId, error: error.message });
+      }
+    }
+
+    // Reload orchestrations to include the new agents
+    orchestrationManager.reloadAgentsConfig();
 
     res.status(200).json({
-      generatedAgents: agentClasses,
-      generatedPrompts: agentPrompts,
-      validation: validationResults,
-      registration: registrationResults,
-      configUpdates: configResults,
+      generatedAgents,
+      errors,
       metadata: {
         generatedAt: new Date().toISOString(),
         totalAgents: agents.length,
-        orchestrationContext,
+        successfulAgents: generatedAgents.length,
+        failedAgents: errors.length,
+        context: orchestrationContext,
       },
     });
   } catch (error) {
@@ -313,476 +320,312 @@ export default async function handler(req, res) {
       details: error.message,
     });
   }
-}
+});
 ```
 
-### **Phase 2: Build Agent Generation Functions**
+### **Phase 3: Agent Registration System** 🟡 **IMPORTANT - 3-4 hours**
 
-#### **2.1 Agent Class Generation**
+#### **Step 3.1: Create AgentRegistry Class**
 
-```javascript
-async function generateAgentClasses(agentIds, context) {
-  const generatedAgents = [];
-
-  for (const agentId of agentIds) {
-    const agentClass = await generateAgentClass(agentId, context);
-    generatedAgents.push(agentClass);
-  }
-
-  return generatedAgents;
-}
-
-async function generateAgentClass(agentId, context) {
-  const systemPrompt = `You are an AI agent architect. Generate a complete agent class that:
-1. Extends BaseAgent
-2. Has appropriate constructor configuration
-3. Includes role-specific methods
-4. Follows established patterns
-5. Is ready for immediate use
-
-Generate JSON with:
-{
-  "className": "AgentClassName",
-  "classCode": "// Complete agent class code",
-  "config": {
-    "model": "gpt-4o-2024-08-06",
-    "temperature": 0.3,
-    "maxTokens": 2000
-  }
-}`;
-
-  const response = await openai.responses.create({
-    model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
-    input: [
-      { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content: `Generate agent class for: ${agentId} in context: ${context}`,
-      },
-    ],
-    temperature: 0.3,
-  });
-
-  return JSON.parse(response.output_text);
-}
-```
-
-#### **2.2 Agent Prompt Generation**
+**File**: `hive/agents/index.js`
 
 ```javascript
-async function generateAgentPrompts(agentIds, context) {
-  const generatedPrompts = [];
+const fs = require("fs").promises;
+const path = require("path");
 
-  for (const agentId of agentIds) {
-    const prompt = await generateAgentPrompt(agentId, context);
-    generatedPrompts.push(prompt);
+class AgentRegistry {
+  static async loadAllAgents() {
+    const agentsDir = path.join(__dirname, "classes");
+    const agentFiles = await fs.readdir(agentsDir);
+
+    const agents = {};
+
+    for (const file of agentFiles) {
+      if (file.endsWith(".js") && file !== "BaseAgent.js") {
+        const agentId = file.replace(".js", "").toLowerCase();
+        try {
+          const AgentClass = require(`./classes/${file}`);
+          agents[agentId] = AgentClass;
+        } catch (error) {
+          console.warn(`Failed to load agent ${agentId}:`, error.message);
+        }
+      }
+    }
+
+    return agents;
   }
 
-  return generatedPrompts;
-}
+  static async registerNewAgent(agentId, agentClass) {
+    // Register with OrchestrationManager
+    const OrchestrationManager = require("../orchestrations/OrchestrationManager");
+    const manager = new OrchestrationManager();
 
-async function generateAgentPrompt(agentId, context) {
-  const systemPrompt = `You are an AI prompt engineer. Generate a complete system prompt that:
-1. Defines the agent's purpose and role
-2. Specifies input/output formats
-3. Provides clear examples
-4. Follows established prompt patterns
-5. Is ready for immediate use
+    // Update agent configuration
+    await manager.reloadAgentsConfig();
 
-Generate JSON with:
-{
-  "promptCode": "# Complete system prompt in markdown",
-  "metadata": {
-    "role": "agent role",
-    "context": "usage context"
-  }
-}`;
-
-  const response = await openai.responses.create({
-    model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
-    input: [
-      { role: "system", content: systemPrompt },
-      {
-        role: "user",
-        content: `Generate prompt for: ${agentId} in context: ${context}`,
-      },
-    ],
-    temperature: 0.3,
-  });
-
-  return JSON.parse(response.output_text);
-}
-```
-
-#### **2.3 Agent Validation**
-
-```javascript
-async function validateGeneratedAgents(agentClasses, agentPrompts) {
-  const validationResults = [];
-
-  for (let i = 0; i < agentClasses.length; i++) {
-    const classValidation = await validateAgentClass(agentClasses[i]);
-    const promptValidation = await validateAgentPrompt(agentPrompts[i]);
-
-    validationResults.push({
-      agentId: agentClasses[i].className,
-      classValidation,
-      promptValidation,
-      overallValid: classValidation.isValid && promptValidation.isValid,
-    });
-  }
-
-  return validationResults;
-}
-
-async function validateAgentClass(agentClass) {
-  // Validate JavaScript syntax
-  try {
-    eval(`(${agentClass.classCode})`);
-  } catch (error) {
-    return { isValid: false, errors: [`Syntax error: ${error.message}`] };
-  }
-
-  // Validate BaseAgent extension
-  if (!agentClass.classCode.includes("extends BaseAgent")) {
-    return { isValid: false, errors: ["Must extend BaseAgent"] };
-  }
-
-  // Validate required methods
-  const requiredMethods = ["constructor"];
-  const missingMethods = requiredMethods.filter(
-    (method) => !agentClass.classCode.includes(method)
-  );
-
-  if (missingMethods.length > 0) {
     return {
-      isValid: false,
-      errors: [`Missing required methods: ${missingMethods.join(", ")}`],
+      registered: true,
+      agentId,
+      className: agentClass.className,
     };
   }
 
-  return { isValid: true, errors: [] };
-}
-```
+  static async getExistingAgentIds() {
+    const configPath = path.join(__dirname, "agents.config.json");
+    if (!fs.existsSync(configPath)) {
+      return [];
+    }
 
-#### **2.4 Agent Registration**
-
-```javascript
-async function registerAgents(agentClasses, context) {
-  const registrationResults = [];
-
-  for (const agentClass of agentClasses) {
-    const result = await registerAgent(agentClass, context);
-    registrationResults.push(result);
-  }
-
-  return registrationResults;
-}
-
-async function registerAgent(agentClass, context) {
-  // Update agents.config.json
-  const configPath = path.join(
-    process.cwd(),
-    "hive",
-    "agents",
-    "agents.config.json"
-  );
-  const config = JSON.parse(await fs.readFile(configPath, "utf8"));
-
-  config.agents[agentClass.className.toLowerCase()] = {
-    id: agentClass.className.toLowerCase(),
-    name: agentClass.className,
-    description: `Generated agent for ${context}`,
-    model: agentClass.config.model,
-    temperature: agentClass.config.temperature,
-    maxTokens: agentClass.config.maxTokens,
-    enabled: true,
-  };
-
-  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-
-  return {
-    agentId: agentClass.className,
-    registered: true,
-    configUpdated: true,
-  };
-}
-```
-
-#### **2.5 Config Updates**
-
-```javascript
-async function updateConfigFiles(agentClasses, context) {
-  // Update orchestration configs
-  const orchestrationConfigs = await updateOrchestrationConfigs(
-    agentClasses,
-    context
-  );
-
-  // Update index files
-  const indexUpdates = await updateIndexFiles(agentClasses);
-
-  return {
-    orchestrationConfigs,
-    indexUpdates,
-    systemReady: true,
-  };
-}
-
-async function updateOrchestrationConfigs(agentClasses, context) {
-  const configPath = path.join(
-    process.cwd(),
-    "hive",
-    "orchestrations",
-    "configs",
-    "orchestrations.json"
-  );
-
-  let config = {};
-  if (fs.existsSync(configPath)) {
-    config = JSON.parse(await fs.readFile(configPath, "utf8"));
-  }
-
-  // Add new orchestration if it doesn't exist
-  if (!config.orchestrations) {
-    config.orchestrations = {};
-  }
-
-  const orchestrationId = context.toLowerCase().replace(/\s+/g, "_");
-  config.orchestrations[orchestrationId] = {
-    name: context,
-    description: `Generated orchestration for ${context}`,
-    agents: agentClasses.map((ac) => ac.className.toLowerCase()),
-    class: `${context.replace(/\s+/g, "")}Orchestrator`,
-    workflows: [`${orchestrationId}_workflow`],
-  };
-
-  await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-
-  return {
-    updated: true,
-    orchestrationId,
-    agentCount: agentClasses.length,
-  };
-}
-```
-
-### **Phase 3: File Generation Service Enhancement**
-
-**File**: `utils/fileGenerator.js`
-
-```javascript
-export class FileGenerator {
-  // ... existing methods ...
-
-  async generateAgentClass(agentId, className, classCode) {
-    const agentDir = path.join(process.cwd(), "hive", "agents", "classes");
-    const filePath = path.join(agentDir, `${className}.js`);
-
-    await fs.promises.writeFile(filePath, classCode, "utf8");
-    return filePath;
-  }
-
-  async generateAgentPrompt(agentId, promptCode) {
-    const promptDir = path.join(process.cwd(), "hive", "agents", "prompts");
-    const filePath = path.join(promptDir, `${agentId}.md`);
-
-    await fs.promises.writeFile(filePath, promptCode, "utf8");
-    return filePath;
-  }
-
-  async updateAgentConfig(newAgents) {
-    const configPath = path.join(
-      process.cwd(),
-      "hive",
-      "agents",
-      "agents.config.json"
-    );
     const config = JSON.parse(await fs.readFile(configPath, "utf8"));
+    return Object.keys(config.agents || {});
+  }
+}
 
-    newAgents.forEach((agent) => {
-      config.agents[agent.id] = {
-        id: agent.id,
-        name: agent.name,
-        description: agent.description,
-        model: agent.config.model,
-        temperature: agent.config.temperature,
-        maxTokens: agent.config.maxTokens,
-        enabled: true,
-      };
+module.exports = AgentRegistry;
+```
+
+### **Phase 4: Enhanced Error Handling** 🟡 **IMPORTANT - 2-3 hours**
+
+#### **Step 4.1: Comprehensive Error Handling**
+
+**Update**: Add error handling to all generation functions
+
+```javascript
+async function generateAgentClass(agentId, context) {
+  try {
+    const { OpenAI } = require("openai");
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    // ... existing code ...
+
+    const response = await openai.responses.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
+      input: [
+        { role: "system", content: systemPrompt },
+        {
+          role: "user",
+          content: `Generate agent class for: ${agentId} in context: ${context}`,
+        },
+      ],
+      temperature: 0.3,
     });
 
-    await fs.writeFile(configPath, JSON.stringify(config, null, 2));
-    return configPath;
+    // Validate response
+    if (!response.output_text) {
+      throw new Error("No output text received from OpenAI");
+    }
+
+    // ... rest of existing code ...
+  } catch (error) {
+    throw new Error(
+      `Failed to generate agent class for ${agentId}: ${error.message}`
+    );
   }
 }
 ```
 
-### **Phase 4: Integration with Orchestration Builder**
+### **Phase 5: Agent Testing System** 🟢 **NICE TO HAVE - 4-5 hours**
 
-**File**: `frontend/src/components/orchestrations/OrchestrationBuilderPage.tsx`
+#### **Step 5.1: Create AgentTester Class**
 
-```typescript
-const handleGenerateOrchestration = async (brief: string) => {
-  setGenerationError(null);
-  setIsGenerating(true);
-  setGenerationStep("orchestration");
+**File**: `utils/agentTester.js`
 
-  try {
-    // Step 1: Generate orchestration
-    const orchestrationRes = await fetch("/api/generate-orchestration", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ description: brief }),
-    });
+```javascript
+class AgentTester {
+  static async testGeneratedAgent(agentId, agentClass) {
+    try {
+      // Test agent instantiation
+      const AgentClass = require(`../hive/agents/classes/${agentClass.className}.js`);
+      const agent = new AgentClass();
 
-    if (!orchestrationRes.ok) {
-      throw new Error(
-        `Failed to generate orchestration: ${orchestrationRes.statusText}`
-      );
+      // Test system prompt loading
+      await agent.loadSystemPrompt();
+
+      // Test basic functionality
+      const result = await agent.process("test input");
+
+      return {
+        isValid: true,
+        result,
+        agentId,
+        className: agentClass.className,
+      };
+    } catch (error) {
+      return {
+        isValid: false,
+        error: error.message,
+        agentId,
+        className: agentClass.className,
+      };
     }
-
-    const orchestrationData = await orchestrationRes.json();
-    setGeneratedOrchestration(orchestrationData);
-
-    // Step 2: Generate missing agents
-    setGenerationStep("agents");
-    const agentsRes = await fetch("/api/generate-agents", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        agents: orchestrationData.agents,
-        orchestrationContext: orchestrationData.description,
-        existingAgents: await getExistingAgentIds(),
-      }),
-    });
-
-    if (!agentsRes.ok) {
-      throw new Error(`Agent generation failed: ${agentsRes.statusText}`);
-    }
-
-    const agentsData = await agentsRes.json();
-    setGeneratedAgents(agentsData);
-
-    // Step 3: Generate page
-    setGenerationStep("page");
-    const pageRes = await fetch("/api/generate-page", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        pageType: "orchestration",
-        requirements: orchestrationData.description,
-        features: orchestrationData.workflows.join(", "),
-      }),
-    });
-
-    if (pageRes.ok) {
-      const pageData = await pageRes.json();
-      setGeneratedComponent(pageData.page);
-    }
-
-    setIsBuilderModalOpen(true);
-  } catch (error: any) {
-    console.error("Generation error:", error);
-    setGenerationError(error.message || "Generation failed");
-  } finally {
-    setGenerationStep(null);
-    setIsGenerating(false);
   }
-};
+
+  static async testAllGeneratedAgents(generatedAgents) {
+    const testResults = [];
+
+    for (const agent of generatedAgents) {
+      const result = await this.testGeneratedAgent(
+        agent.agentId,
+        agent.agentClass
+      );
+      testResults.push(result);
+    }
+
+    return testResults;
+  }
+}
+
+module.exports = AgentTester;
 ```
 
-## 📋 **Implementation Checklist**
+## 📋 **IMPLEMENTATION CHECKLIST**
 
-### **Phase 1: Core Endpoint**
+### **Phase 1: Agent Validation** 🔴 **CRITICAL**
 
-- [ ] Create `pages/api/generate-agents.js`
-- [ ] Implement agent class generation
-- [ ] Implement agent prompt generation
-- [ ] Implement agent validation
-- [ ] Implement agent registration
-- [ ] Implement config updates
+- [ ] Create `utils/agentValidator.js`
+- [ ] Add validation to `saveGeneratedAgent` function
+- [ ] Test validation with sample agents
+- [ ] Add validation error handling
 
-### **Phase 2: File Generation**
+### **Phase 2: Multi-Agent Generation** 🔴 **CRITICAL**
 
-- [ ] Extend `FileGenerator` class
-- [ ] Add agent class generation methods
-- [ ] Add agent prompt generation methods
-- [ ] Add config update methods
-- [ ] Add validation methods
+- [ ] Update main endpoint to handle multiple agents
+- [ ] Add batch processing logic
+- [ ] Add individual agent error handling
+- [ ] Test with multiple agents
 
-### **Phase 3: Integration**
+### **Phase 3: Agent Registration** 🟡 **IMPORTANT**
 
-- [ ] Update OrchestrationBuilderPage
-- [ ] Add agent generation step
-- [ ] Add progress tracking
-- [ ] Add error handling
+- [ ] Create `hive/agents/index.js` with AgentRegistry
+- [ ] Add dynamic agent loading
+- [ ] Integrate with OrchestrationManager
+- [ ] Test agent registration
+
+### **Phase 4: Error Handling** 🟡 **IMPORTANT**
+
+- [ ] Add comprehensive error handling to all functions
+- [ ] Add validation error handling
+- [ ] Add graceful failure handling
+- [ ] Test error scenarios
+
+### **Phase 5: Agent Testing** 🟢 **NICE TO HAVE**
+
+- [ ] Create `utils/agentTester.js`
+- [ ] Add agent testing functionality
+- [ ] Integrate testing into generation pipeline
 - [ ] Test complete workflow
 
-### **Phase 4: Testing**
+## 🧪 **TESTING STRATEGY**
 
-- [ ] Test agent generation API
-- [ ] Test generated agents
-- [ ] Test integration with orchestrator
-- [ ] Test config updates
-- [ ] Test error handling
-
-## 🧪 **Testing Strategy**
-
-### **Test 1: Generate Core Agents**
+### **Test 1: Agent Validation**
 
 ```bash
 curl -X POST http://localhost:3000/api/generate-agents \
   -H "Content-Type: application/json" \
   -d '{
-    "agents": ["agent_class_generator", "agent_prompt_generator", "agent_validator", "agent_registrar", "config_updater"],
-    "orchestrationContext": "Agent generation system for orchestration builder",
-    "existingAgents": ["research", "trending", "story", "pr-manager", "strategic"]
+    "agents": ["test_agent"],
+    "orchestrationContext": "Test orchestration"
   }'
 ```
 
-### **Test 2: Verify Generated Agents**
+### **Test 2: Multi-Agent Generation**
 
-- Check agent classes compile
-- Check prompts are valid
-- Check configs are updated
-- Check integration works
+```bash
+curl -X POST http://localhost:3000/api/generate-agents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agents": ["agent1", "agent2", "agent3"],
+    "orchestrationContext": "Multi-agent test"
+  }'
+```
 
-### **Test 3: Test Complete Workflow**
+### **Test 3: Error Handling**
 
-- Generate orchestration with new agents
-- Verify agents are functional
-- Test orchestration execution
-- Validate generated files
+```bash
+curl -X POST http://localhost:3000/api/generate-agents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "agents": ["invalid_agent"],
+    "orchestrationContext": "Error test"
+  }'
+```
 
-## 🚀 **Expected Outcomes**
+## 🚀 **EXPECTED OUTCOMES**
 
-### **Before (Current State)**
+### **Before (Current State - 70% Complete)**
 
-- ❌ Fake agent generation promises
-- ❌ No real agent creation
-- ❌ Manual coordination required
-- ❌ No single source of truth
+- ✅ Basic agent generation works
+- ❌ No validation before saving
+- ❌ Only generates one agent at a time
+- ❌ Poor error handling
+- ❌ No agent testing
 
-### **After (Target State)**
+### **After (Target State - 100% Complete)**
 
-- ✅ Real agent generation system
-- ✅ Complete automation from description to working agents
-- ✅ Single source of truth through generated configs
-- ✅ No manual coordination required
-- ✅ Validation system to catch errors
+- ✅ Complete agent generation system
+- ✅ Validation before saving
+- ✅ Multi-agent batch processing
+- ✅ Comprehensive error handling
+- ✅ Agent testing and validation
+- ✅ Production-ready agent generation
 
-## 📊 **Success Metrics**
+## 📊 **SUCCESS METRICS**
 
-- **100%** of generated agents are functional
-- **0** manual agent creation steps required
-- **< 2 minutes** from description to working agents
-- **100%** agent validation pass rate
+- **100%** of generated agents pass validation
 - **0** broken agents created
+- **< 30 seconds** generation time for single agent
+- **< 2 minutes** generation time for multiple agents
+- **100%** error handling coverage
+- **0** unhandled exceptions
 
 ---
 
 **Status**: 🚧 Implementation Phase  
 **Priority**: 🔴 Critical  
-**Estimated Effort**: 1-2 weeks  
-**Dependencies**: Existing orchestration generator infrastructure
+**Estimated Effort**: 6-8 hours  
+**Dependencies**: Existing agent generation infrastructure
+
+---
+
+## ✅ **COMPLETED COMPONENTS** (Reference)
+
+### **✅ Basic Agent Generation Endpoint**
+
+- **File**: `hive/routes/generation.js` (lines 335-629)
+- **Status**: ✅ **COMPLETE**
+- **Functionality**: Generates agent classes and prompts using OpenAI Responses API
+
+### **✅ Agent Class Generation**
+
+- **File**: `hive/routes/generation.js` (lines 418-493)
+- **Status**: ✅ **COMPLETE**
+- **Functionality**: Creates JavaScript classes extending BaseAgent
+
+### **✅ Agent Prompt Generation**
+
+- **File**: `hive/routes/generation.js` (lines 494-559)
+- **Status**: ✅ **COMPLETE**
+- **Functionality**: Creates markdown system prompts
+
+### **✅ File Saving System**
+
+- **File**: `hive/routes/generation.js` (lines 560-589)
+- **Status**: ✅ **COMPLETE**
+- **Functionality**: Saves agent classes and prompts to filesystem
+
+### **✅ Config Updates**
+
+- **File**: `hive/routes/generation.js` (lines 590-630)
+- **Status**: ✅ **COMPLETE**
+- **Functionality**: Updates `agents.config.json` with new agents
+
+### **✅ Cleanup Functionality**
+
+- **File**: `hive/routes/generation.js` (lines 631-704)
+- **Status**: ✅ **COMPLETE**
+- **Functionality**: Removes test agents and their files
+
+### **✅ OpenAI Responses API Integration**
+
+- **Status**: ✅ **COMPLETE**
+- **Functionality**: Uses correct `responses.create()` API format
