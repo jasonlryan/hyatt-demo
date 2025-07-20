@@ -753,4 +753,30 @@ Output: "processed: hello"`;
       };
     }
   }
+
+  app.post("/api/generate-orchestration-pipeline", async (req, res) => {
+    if (req.method !== "POST")
+      return res.status(405).json({ error: "Method not allowed" });
+    try {
+      const { description } = req.body;
+      if (!description)
+        return res.status(400).json({ error: "Description is required" });
+
+      const AutomatedGenerationPipeline = require("../../utils/automatedGenerationPipeline");
+
+      const result = await AutomatedGenerationPipeline.generateProductionReadyOrchestration(description);
+      if (result.success) {
+        res.status(200).json(result);
+      } else {
+        res.status(500).json(result);
+      }
+    } catch (error) {
+      console.error("Pipeline generation failed:", error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+        pipeline: { steps: ["Generation failed"], errors: [error.message] },
+      });
+    }
+  });
 };

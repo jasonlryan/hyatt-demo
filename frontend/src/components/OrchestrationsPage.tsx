@@ -84,9 +84,9 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
               },
               workflows: ["orchestration_generation_workflow"],
               agents: [
-                "orchestration_analyzer",
-                "agent_generator",
-                "workflow_designer",
+                "research",
+                "strategic",
+                "pr-manager",
               ],
             },
             {
