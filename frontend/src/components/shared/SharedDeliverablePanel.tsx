@@ -1,6 +1,7 @@
 import React from 'react';
 import { Deliverable } from '../../types';
 import SharedDeliverableCard from './SharedDeliverableCard';
+import ImageDeliverableCard from './ImageDeliverableCard';
 import { FileText } from 'lucide-react';
 import './sharedStyles.css';
 
@@ -33,9 +34,14 @@ const SharedDeliverablePanel: React.FC<SharedDeliverablePanelProps> = ({ deliver
       </div>
     ) : (
       <div className="space-y-4">
-        {deliverables.map((d) => (
-          <SharedDeliverableCard key={d.id} deliverable={d} onViewDetails={onViewDetails} />
-        ))}
+        {deliverables.map((d) => {
+          const hasImage = typeof d.content === 'object' && (d.content as any).imageUrl;
+          return hasImage ? (
+            <ImageDeliverableCard key={d.id} deliverable={d} onViewDetails={onViewDetails} />
+          ) : (
+            <SharedDeliverableCard key={d.id} deliverable={d} onViewDetails={onViewDetails} />
+          );
+        })}
       </div>
     )}
   </div>

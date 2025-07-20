@@ -99,3 +99,12 @@ export interface AudienceResearch {
     tertiary: string;
   };
 }
+
+export interface HiveWorkflowState {
+  id: string;
+  status: 'running' | 'completed' | 'failed';
+  deliverables: { [key: string]: Deliverable };
+  createdAt?: string;
+  lastUpdated?: string;
+  error?: string;
+}
