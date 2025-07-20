@@ -22,6 +22,23 @@ const DeliverableModal: React.FC<DeliverableModalProps> = ({
   if (!isOpen || !deliverable) return null;
 
   const handleDownload = () => {
+    const imageUrl =
+      deliverable.type === "image" &&
+      typeof deliverable.content === "object" &&
+      (deliverable.content as any).imageUrl
+        ? (deliverable.content as any).imageUrl
+        : null;
+
+    if (imageUrl) {
+      const a = document.createElement("a");
+      a.href = imageUrl;
+      a.download = `${deliverable.title.replace(/\s+/g, "_")}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    }
+
     const content =
       typeof deliverable.content === "string"
         ? deliverable.content
@@ -55,7 +72,16 @@ const DeliverableModal: React.FC<DeliverableModalProps> = ({
           </button>
         </div>
 
-        <div className="deliverable-modal-body">
+        <div className="deliverable-modal-body space-y-4">
+          {deliverable.type === 'image' &&
+          typeof deliverable.content === 'object' &&
+          (deliverable.content as any).imageUrl ? (
+            <img
+              src={(deliverable.content as any).imageUrl}
+              alt={deliverable.title}
+              className="w-full h-auto object-contain rounded-md border border-border"
+            />
+          ) : null}
           <DeliverableContent content={deliverable.content} />
         </div>
 
