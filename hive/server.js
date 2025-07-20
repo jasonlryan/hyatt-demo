@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 const { createOrchestrator } = require("./orchestrations");
 const VisualPromptGeneratorAgent = require("./agents/classes/VisualPromptGeneratorAgent");
 const ModularElementsRecommenderAgent = require("./agents/classes/ModularElementsRecommenderAgent");
@@ -14,6 +15,10 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+const frontendDist = path.join(__dirname, "..", "frontend", "dist");
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+}
 app.use(express.static("public"));
 
 // Initialize orchestrator
@@ -709,6 +714,174 @@ app.get("/api/orchestration-documentation", (req, res) => {
   }
 });
 
+// Generate orchestration
+app.post("/api/generate-orchestration", async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+  try {
+    const { description } = req.body;
+    if (!description) {
+      return res.status(400).json({ error: "Description is required" });
+    }
+    const { OpenAI } = require("openai");
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const systemPrompt = `You are an AI orchestration architect. Based on a description, generate a complete orchestration specification including agents, workflows, configuration, and comprehensive documentation.`;
+    const completion = await openai.chat.completions.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Create an orchestration for: ${description}` },
+      ],
+      temperature: 0.3,
+      max_tokens: 2000,
+      response_format: { type: "json_object" },
+    });
+    const generated = JSON.parse(completion.choices[0].message.content);
+    if (!generated.name || !generated.agents || !generated.workflows) {
+      throw new Error("Invalid orchestration structure generated");
+    }
+    generated.metadata = {
+      generatedAt: new Date().toISOString(),
+      sourceDescription: description,
+      model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
+    };
+    res.status(200).json(generated);
+  } catch (error) {
+    console.error("Error generating orchestration:", error);
+    res.status(500).json({
+      error: "Failed to generate orchestration",
+      details: error.message,
+    });
+  }
+});
+
+// Generate diagram for an orchestration
+app.post("/api/generate-diagram", (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
+  try {
+    const { id } = req.body;
+    if (!id) return res.status(400).json({ message: "Missing id" });
+    const orchestrations = {
+      hyatt: {
+        agents: [
+          "pr_manager",
+          "research_audience",
+          "strategic_insight",
+          "trending_news",
+          "story_angles",
+        ],
+      },
+      hive: {
+        agents: [
+          "trend_cultural_analyzer",
+          "brand_lens",
+          "visual_prompt_generator",
+          "modular_elements_recommender",
+          "brand_qa",
+        ],
+      },
+      template: {
+        agents: [
+          "pr_manager",
+          "research_audience",
+          "strategic_insight",
+          "trending_news",
+        ],
+      },
+    };
+
+    const agentColors = {
+      research: "#2563eb",
+      strategy: "#ec4899",
+      trending: "#22c55e",
+      story: "#7c3aed",
+      "pr-manager": "#64748b",
+      visual_prompt_generator: "#f59e0b",
+      modular_elements_recommender: "#06b6d4",
+      trend_cultural_analyzer: "#8b5cf6",
+      brand_qa: "#ef4444",
+      brand_lens: "#10b981",
+    };
+
+    const calculateNodePosition = (index, total) => {
+      const centerX = 600;
+      const centerY = 300;
+      const radius = 200;
+      if (total === 1) return { x: centerX, y: centerY };
+      const angle = (index / total) * Math.PI * 2;
+      return {
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle),
+      };
+    };
+
+    const generateNodes = (agents) =>
+      agents.map((agent, index) => ({
+        id: agent,
+        label: agent,
+        position: calculateNodePosition(index, agents.length),
+        connectors: [
+          { id: `${agent}-T`, position: "T" },
+          { id: `${agent}-B`, position: "B" },
+          { id: `${agent}-L`, position: "L" },
+          { id: `${agent}-R`, position: "R" },
+        ],
+        style: { border: `2px solid ${agentColors[agent] || "#64748b"}` },
+      }));
+
+    const generateSequentialConnections = (agents) => {
+      const connections = [];
+      for (let i = 0; i < agents.length - 1; i++) {
+        connections.push(`${agents[i]}:R -> ${agents[i + 1]}:L`);
+      }
+      return connections;
+    };
+
+    const parseConnection = (conn) => {
+      const [nodeId, connector] = conn.split(":");
+      return { nodeId, connector };
+    };
+
+    const createEdgeFromString = (str) => {
+      const [from, to] = str.split("->").map((s) => s.trim());
+      const fromConn = parseConnection(from);
+      const toConn = parseConnection(to);
+      return {
+        id: `${from}-${to}`,
+        from: fromConn,
+        to: toConn,
+        style: { color: "#2563eb", dashed: true, animated: true, strokeWidth: 2 },
+        type: "default",
+      };
+    };
+
+    const generateDiagramFromOrchestration = (orch) => {
+      if (!orch || !Array.isArray(orch.agents) || orch.agents.length === 0) {
+        return {
+          nodes: [
+            { id: "empty", label: "No Agents", position: { x: 600, y: 300 }, connectors: [] },
+          ],
+          edges: [],
+        };
+      }
+      const nodes = generateNodes(orch.agents);
+      const edges = generateSequentialConnections(orch.agents).map(createEdgeFromString);
+      return { nodes, edges };
+    };
+
+    const orchestration = orchestrations[id];
+    if (!orchestration) return res.status(404).json({ message: "Not found" });
+    const diagram = generateDiagramFromOrchestration(orchestration);
+    res.status(200).json({ diagram });
+  } catch (err) {
+    console.error("Diagram generation failed:", err);
+    res.status(500).json({ message: "Failed to generate diagram" });
+  }
+});
+
 // Page generation endpoint
 app.post("/api/generate-page", async (req, res) => {
   if (req.method !== "POST") {
@@ -874,8 +1047,122 @@ Return the component as a complete, ready-to-use React TypeScript file.`;
   }
 });
 
+// Save updated global CSS
+app.post("/api/save-css", (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Method not allowed" });
+  }
+  try {
+    const { css } = req.body;
+    if (!css) {
+      return res.status(400).json({ message: "CSS content is required" });
+    }
+    const cssPath = path.join(process.cwd(), "frontend", "src", "index.css");
+    fs.writeFileSync(cssPath, css, "utf8");
+    res.status(200).json({ message: "CSS saved successfully" });
+  } catch (error) {
+    console.error("Error saving CSS:", error);
+    res.status(500).json({ message: "Failed to save CSS" });
+  }
+});
+
+// Save a generated orchestration and docs
+app.post("/api/save-orchestration", async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+  try {
+    const orchestration = req.body;
+    if (!orchestration.name || !orchestration.agents || !orchestration.workflows) {
+      return res.status(400).json({ error: "Invalid orchestration data" });
+    }
+    const id = orchestration.name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    const timestamp = Date.now();
+    const uniqueId = `${id}-${timestamp}`;
+    const newOrchestration = {
+      id: uniqueId,
+      name: orchestration.name,
+      description: orchestration.description,
+      enabled: true,
+      config: {
+        maxConcurrentWorkflows: orchestration.config.maxConcurrentWorkflows || 5,
+        timeout: orchestration.config.timeout || 300000,
+        retryAttempts: orchestration.config.retryAttempts || 3,
+        enableLogging: orchestration.config.enableLogging !== false,
+        reactiveFramework: orchestration.config.reactiveFramework || false,
+        parallelExecution: orchestration.config.parallelExecution || false,
+      },
+      workflows: orchestration.workflows,
+      agents: orchestration.agents,
+      documentation: orchestration.documentation || {},
+      metadata: {
+        ...orchestration.metadata,
+        createdBy: "orchestration-builder",
+        createdAt: new Date().toISOString(),
+      },
+    };
+
+    if (orchestration.generatedPage) {
+      const { FileGenerator } = require("../utils/fileGenerator");
+      const fileGenerator = new FileGenerator();
+      await fileGenerator.generateOrchestrationPage(
+        uniqueId,
+        orchestration.name,
+        orchestration.generatedPage
+      );
+      newOrchestration.metadata.generatedPagePath = `frontend/src/components/orchestrations/generated/${uniqueId}.tsx`;
+      newOrchestration.metadata.generatedPageId = uniqueId;
+    }
+
+    const orchestrationsDir = path.join(process.cwd(), "data", "orchestrations");
+    if (!fs.existsSync(orchestrationsDir)) {
+      fs.mkdirSync(orchestrationsDir, { recursive: true });
+    }
+    const filePath = path.join(orchestrationsDir, `${uniqueId}.json`);
+    fs.writeFileSync(filePath, JSON.stringify(newOrchestration, null, 2));
+
+    const masterListPath = path.join(orchestrationsDir, "generated-orchestrations.json");
+    let masterList = [];
+    if (fs.existsSync(masterListPath)) {
+      masterList = JSON.parse(fs.readFileSync(masterListPath, "utf8"));
+    }
+    masterList.push(newOrchestration);
+    fs.writeFileSync(masterListPath, JSON.stringify(masterList, null, 2));
+
+    if (orchestration.documentation) {
+      const docsDir = path.join(process.cwd(), "hive", "orchestrations", "docs");
+      if (!fs.existsSync(docsDir)) {
+        fs.mkdirSync(docsDir, { recursive: true });
+      }
+      const generateDocumentationMarkdown = (o) => {
+        const { name, description, agents, workflows, config, documentation } = o;
+        return `# ${name}\n\n## Overview\n\n${documentation.overview || description}`;
+      };
+      const docContent = generateDocumentationMarkdown(orchestration);
+      const docFilePath = path.join(docsDir, `${uniqueId}.md`);
+      fs.writeFileSync(docFilePath, docContent);
+    }
+
+    res.status(200).json({
+      success: true,
+      orchestration: newOrchestration,
+      message: "Orchestration and documentation saved successfully",
+    });
+  } catch (error) {
+    console.error("Error saving orchestration:", error);
+    res.status(500).json({
+      error: "Failed to save orchestration",
+      details: error.message,
+    });
+  }
+});
+
 // Serve the frontend
 app.get("/", (req, res) => {
+  const distIndex = path.join(__dirname, "..", "frontend", "dist", "index.html");
+  if (fs.existsSync(distIndex)) {
+    return res.sendFile(distIndex);
+  }
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
