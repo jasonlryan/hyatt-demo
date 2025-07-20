@@ -23,11 +23,11 @@
         "research_workflow"
       ],
       "agents": [
-        "pr_manager",
-        "research_audience",
-        "strategic_insight",
-        "trending_news",
-        "story_angles"
+        "pr-manager",
+        "research",
+        "strategic",
+        "trending",
+        "story"
       ]
     },
     "hive": {
@@ -50,14 +50,16 @@
         "hive_research_collaboration"
       ],
       "agents": [
-        "pr_manager",
-        "research_audience",
-        "strategic_insight",
-        "trending_news",
-        "story_angles",
+        "pr-manager",
+        "research",
+        "strategic",
+        "trending",
+        "story",
         "visual_prompt_generator",
         "brand_qa",
-        "modular_elements_recommender"
+        "modular_elements_recommender",
+        "trend_cultural_analyzer",
+        "brand_lens"
       ]
     }
   },
