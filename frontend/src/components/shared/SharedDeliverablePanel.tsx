@@ -15,6 +15,9 @@ export interface SharedDeliverablePanelProps {
   onViewDetails: (id: string) => void;
 }
 
+const isImageDeliverable = (d: Deliverable) =>
+  d.type === 'image' || (typeof d.content === 'object' && (d.content as any).imageUrl);
+
 const SharedDeliverablePanel: React.FC<SharedDeliverablePanelProps> = ({ deliverables, onViewDetails }) => (
   <div className="deliverable-card">
     <div className="deliverable-header">
@@ -34,14 +37,13 @@ const SharedDeliverablePanel: React.FC<SharedDeliverablePanelProps> = ({ deliver
       </div>
     ) : (
       <div className="space-y-4">
-        {deliverables.map((d) => {
-          const hasImage = typeof d.content === 'object' && (d.content as any).imageUrl;
-          return hasImage ? (
+        {deliverables.map((d) =>
+          isImageDeliverable(d) ? (
             <ImageDeliverableCard key={d.id} deliverable={d} onViewDetails={onViewDetails} />
           ) : (
             <SharedDeliverableCard key={d.id} deliverable={d} onViewDetails={onViewDetails} />
-          );
-        })}
+          )
+        )}
       </div>
     )}
   </div>

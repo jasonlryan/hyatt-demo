@@ -1,15 +1,33 @@
 import React from 'react';
 import { Deliverable } from '../../types';
-import { Eye } from 'lucide-react';
+import { Eye, Download } from 'lucide-react';
 
 interface ImageDeliverableCardProps {
   deliverable: Deliverable;
   onViewDetails: (id: string) => void;
 }
 
-const ImageDeliverableCard: React.FC<ImageDeliverableCardProps> = ({ deliverable, onViewDetails }) => {
-  const hasImage = typeof deliverable.content === 'object' && (deliverable.content as any).imageUrl;
-  const imageUrl = hasImage ? (deliverable.content as any).imageUrl : null;
+const ImageDeliverableCard: React.FC<ImageDeliverableCardProps> = ({
+  deliverable,
+  onViewDetails,
+}) => {
+  const content =
+    typeof deliverable.content === 'object' ? (deliverable.content as any) : null;
+  let imageUrl: string | null = content?.imageUrl || null;
+  if (imageUrl && !imageUrl.startsWith('data:image')) {
+    imageUrl = `data:image/png;base64,${imageUrl}`;
+  }
+
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!imageUrl) return;
+    const a = document.createElement('a');
+    a.href = imageUrl;
+    a.download = `${deliverable.title.replace(/\s+/g, '_')}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
 
   return (
     <div
@@ -28,20 +46,34 @@ const ImageDeliverableCard: React.FC<ImageDeliverableCardProps> = ({ deliverable
             {deliverable.agent}
           </div>
         </div>
-        <button
-          className="deliverable-icon-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            onViewDetails(deliverable.id);
-          }}
-          title="View Details"
-          aria-label="View Details"
-        >
-          <Eye size={18} />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="deliverable-icon-btn"
+            onClick={handleDownload}
+            title="Download Image"
+            aria-label="Download Image"
+          >
+            <Download size={18} />
+          </button>
+          <button
+            className="deliverable-icon-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewDetails(deliverable.id);
+            }}
+            title="View Details"
+            aria-label="View Details"
+          >
+            <Eye size={18} />
+          </button>
+        </div>
       </div>
       {imageUrl && (
-        <img src={imageUrl} alt={deliverable.title} className="w-full h-32 object-cover rounded-lg border border-border" />
+        <img
+          src={imageUrl}
+          alt={deliverable.title}
+          className="w-full h-48 object-contain rounded-lg border border-border"
+        />
       )}
     </div>
   );
