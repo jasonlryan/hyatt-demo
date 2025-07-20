@@ -511,117 +511,126 @@ app.get("/api/prompts/:filename", (req, res) => {
 // Get orchestrations list
 app.get("/api/orchestrations", (req, res) => {
   try {
-    // Load generated orchestrations
-    const fs = require("fs");
-    const path = require("path");
-
-    let generatedOrchestrations = [];
-    const generatedOrchestrationsPath = path.join(
-      process.cwd(),
-      "data",
-      "generated-orchestrations.json"
-    );
-
-    if (fs.existsSync(generatedOrchestrationsPath)) {
-      const generatedData = JSON.parse(
-        fs.readFileSync(generatedOrchestrationsPath, "utf8")
-      );
-      generatedOrchestrations = Object.values(
-        generatedData.orchestrations || {}
-      );
-    }
-
-    // Base orchestrations
-    const baseOrchestrations = {
-      hyatt: {
-        id: "hyatt",
-        name: "Hyatt Orchestrator",
-        description:
-          "Specialized orchestration for Hyatt PR campaigns with sequential workflow execution. Perfect for hotel and hospitality marketing campaigns.",
-        enabled: true,
-        config: {
-          maxConcurrentWorkflows: 5,
-          timeout: 300000,
-          retryAttempts: 3,
-          enableLogging: true,
-        },
-        workflows: [
-          "pr_campaign_workflow",
-          "content_creation_workflow",
-          "research_workflow",
-        ],
-        agents: ["pr-manager", "research", "strategic", "trending", "story"],
-      },
-      builder: {
-        id: "builder",
-        name: "Orchestration Builder",
-        description:
-          "AI-powered orchestration generator. Describe what you want, and it creates a custom orchestration for you.",
-        enabled: true,
-        config: {
-          maxConcurrentWorkflows: 3,
-          timeout: 300000,
-          retryAttempts: 2,
-          enableLogging: true,
-        },
-        workflows: ["orchestration_generation_workflow"],
-        agents: [
-          "orchestration_analyzer",
-          "agent_generator",
-          "workflow_designer",
-        ],
-      },
-      hive: {
-        id: "hive",
-        name: "Hive Orchestrator",
-        description:
-          "Reactive framework orchestration with parallel agent collaboration. Perfect for complex PR campaigns with multiple stakeholders.",
-        enabled: true,
-        config: {
-          maxConcurrentWorkflows: 10,
-          timeout: 600000,
-          retryAttempts: 2,
-          enableLogging: true,
-          reactiveFramework: true,
-          parallelExecution: true,
-        },
-        workflows: [
-          "hive_pr_campaign",
-          "hive_content_creation",
-          "hive_research_collaboration",
-        ],
-        agents: [
-          "pr-manager",
-          "research",
-          "strategic",
-          "trending",
-          "story",
-          "visual_prompt_generator",
-          "brand_qa",
-          "modular_elements_recommender",
-          "trend_cultural_analyzer",
-          "brand_lens",
-        ],
-      },
-    };
-
-    // Combine base and generated orchestrations
-    const allOrchestrations = {
-      ...baseOrchestrations,
-      ...generatedOrchestrations.reduce((acc, orchestration) => {
-        acc[orchestration.id] = orchestration;
-        return acc;
-      }, {}),
-    };
+    // Use OrchestrationManager to get orchestration data from actual classes
+    const orchestrations = orchestrationManager.getFrontendOrchestrations();
 
     res.status(200).json({
-      orchestrators: allOrchestrations,
+      orchestrators: orchestrations,
     });
   } catch (error) {
     console.error("Error loading orchestrations:", error);
     res.status(500).json({
       message: "Failed to load orchestrations",
       error: error.message,
+    });
+  }
+});
+
+// Generate orchestration endpoint (moved from Next.js API)
+app.post("/api/generate-orchestration", async (req, res) => {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const { description } = req.body;
+
+    if (!description) {
+      return res.status(400).json({ error: "Description is required" });
+    }
+
+    // Use the existing agent configuration as a reference
+    const systemPrompt = `You are an AI orchestration architect. Based on a description, generate a complete orchestration specification including agents, workflows, configuration, and comprehensive documentation.
+
+Available agent types to choose from:
+- research: Audience research and demographic analysis
+- trending: Trend identification and news opportunities  
+- story: Story angles and headline creation
+- strategic: Strategic insights and recommendations
+- pr-manager: Campaign coordination and strategy management
+- visual_prompt_generator: Visual creative prompts
+- modular_elements_recommender: Modular visual elements
+- trend_cultural_analyzer: Cultural trend analysis
+- brand_qa: Brand alignment and quality assurance
+
+Generate a JSON response with this structure:
+{
+  "name": "Descriptive name for the orchestration",
+  "description": "Detailed description of what this orchestration does",
+  "agents": ["array", "of", "relevant", "agent", "ids"],
+  "workflows": ["array", "of", "workflow", "names"],
+  "config": {
+    "maxConcurrentWorkflows": 3-10,
+    "timeout": 300000-600000,
+    "retryAttempts": 2-3,
+    "enableLogging": true,
+    "reactiveFramework": boolean,
+    "parallelExecution": boolean
+  },
+  "documentation": {
+    "overview": "Comprehensive overview of the orchestration's purpose and capabilities",
+    "useCases": ["array", "of", "specific", "use", "cases"],
+    "workflowDescription": "Detailed description of how the workflow operates",
+    "agentRoles": {
+      "agent_id": "Detailed description of this agent's role in this orchestration"
+    },
+    "deliverables": ["array", "of", "expected", "outputs"],
+    "configuration": "Explanation of configuration options and their impact",
+    "bestPractices": ["array", "of", "best", "practices", "for", "using", "this", "orchestration"],
+    "limitations": ["array", "of", "current", "limitations", "or", "considerations"],
+    "examples": {
+      "goodInputs": ["array", "of", "good", "input", "examples"],
+      "poorInputs": ["array", "of", "poor", "input", "examples"]
+    }
+  }
+}
+
+Make the orchestration practical and focused on the described use case. Include comprehensive documentation that would help users understand and effectively use the orchestration. If any UI components are generated, they must rely exclusively on the unified design token styling system with no hardcoded Tailwind colors.`;
+
+    const OpenAI = require("openai");
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const response = await openai.responses.create({
+      model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
+      input: [
+        {
+          role: "system",
+          content: systemPrompt,
+        },
+        {
+          role: "user",
+          content: `Create an orchestration for: ${description}`,
+        },
+      ],
+      temperature: 0.3,
+    });
+
+    const generatedOrchestration = JSON.parse(response.output_text);
+
+    // Validate the generated orchestration
+    if (
+      !generatedOrchestration.name ||
+      !generatedOrchestration.agents ||
+      !generatedOrchestration.workflows
+    ) {
+      throw new Error("Invalid orchestration structure generated");
+    }
+
+    // Add metadata
+    generatedOrchestration.metadata = {
+      generatedAt: new Date().toISOString(),
+      sourceDescription: description,
+      model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
+    };
+
+    res.status(200).json(generatedOrchestration);
+  } catch (error) {
+    console.error("Error generating orchestration:", error);
+    res.status(500).json({
+      error: "Failed to generate orchestration",
+      details: error.message,
     });
   }
 });

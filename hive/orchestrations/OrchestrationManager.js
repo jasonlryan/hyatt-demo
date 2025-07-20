@@ -5,10 +5,135 @@ class OrchestrationManager {
   constructor() {
     this.orchestrations = new Map();
     this.loadedAgents = new Map(); // Cache for loaded agents
-    this.orchestrationConfigs = this.loadOrchestrationConfigs();
+    this.orchestrationConfigs = this.generateConfigsFromClasses();
   }
 
-  // Load orchestration configurations from config files
+  // Generate configurations from actual orchestration classes
+  generateConfigsFromClasses() {
+    const configs = {};
+    const classesDir = path.join(__dirname, "classes");
+
+    if (fs.existsSync(classesDir)) {
+      const classFiles = fs
+        .readdirSync(classesDir)
+        .filter(
+          (file) => file.endsWith(".js") && file !== "BaseOrchestrator.js"
+        );
+
+      for (const file of classFiles) {
+        try {
+          const className = path.basename(file, ".js");
+          const config = this.generateConfigFromClass(className);
+          if (config) {
+            configs[className.toLowerCase()] = config;
+          }
+        } catch (error) {
+          console.warn(`Failed to generate config for ${file}:`, error.message);
+        }
+      }
+    }
+
+    return configs;
+  }
+
+  // Generate config from orchestration class
+  generateConfigFromClass(className) {
+    try {
+      const classPath = path.join(__dirname, "classes", `${className}.js`);
+      const OrchestratorClass = require(classPath);
+
+      // Extract configuration from the class without instantiating (to avoid API key issues)
+      const config = {
+        name: this.getNameForClass(className),
+        description: this.getDescriptionForClass(className),
+        orchestrator: className,
+        enabled: true,
+        config: {
+          maxConcurrentWorkflows: 5,
+          timeout: 300000,
+          retryAttempts: 3,
+          enableLogging: true,
+          reactiveFramework: className === "HiveOrchestrator",
+          parallelExecution: className === "HiveOrchestrator",
+        },
+        workflows: this.getWorkflowsForClass(className),
+        agents: this.extractAgentsFromClass(null, className),
+        hasDiagram: className === "HiveOrchestrator",
+        hasDocumentation: true,
+        documentationPath: `docs/orchestrations/${className}.md`,
+      };
+
+      return config;
+    } catch (error) {
+      console.error(
+        `Failed to generate config for ${className}:`,
+        error.message
+      );
+      return null;
+    }
+  }
+
+  // Extract agents from orchestration class
+  extractAgentsFromClass(instance, className) {
+    const agents = {};
+
+    if (className === "AgentOrchestrator") {
+      // Hyatt orchestration agents
+      agents.research = { class: "ResearchAudienceAgent" };
+      agents.trending = { class: "TrendingNewsAgent" };
+      agents.story = { class: "StoryAnglesAgent" };
+      agents.pr_manager = { class: "PRManagerAgent" };
+      agents.strategic_insight = { class: "StrategicInsightAgent" };
+    } else if (className === "HiveOrchestrator") {
+      // Hive orchestration agents
+      agents.visual = { class: "VisualPromptGeneratorAgent" };
+      agents.modular = { class: "ModularElementsRecommenderAgent" };
+      agents.trend = { class: "TrendCulturalAnalyzerAgent" };
+      agents.qa = { class: "BrandQAAgent" };
+      agents.brand_lens = { class: "BrandLensAgent" };
+    }
+
+    return agents;
+  }
+
+  // Get name for orchestration class
+  getNameForClass(className) {
+    const names = {
+      AgentOrchestrator: "Hyatt Orchestrator",
+      HiveOrchestrator: "Hive Orchestrator",
+    };
+    return names[className] || className;
+  }
+
+  // Get description for orchestration class
+  getDescriptionForClass(className) {
+    const descriptions = {
+      AgentOrchestrator:
+        "Hyatt orchestration with 5 specialized agents for comprehensive campaign development",
+      HiveOrchestrator:
+        "Reactive framework orchestration with parallel agent collaboration for visual content generation",
+    };
+    return descriptions[className] || `Orchestration using ${className}`;
+  }
+
+  // Get workflows for orchestration class
+  getWorkflowsForClass(className) {
+    const workflows = {
+      AgentOrchestrator: [
+        "hyatt_campaign_development",
+        "hyatt_research_analysis",
+        "hyatt_strategic_planning",
+      ],
+      HiveOrchestrator: [
+        "hive_visual_generation",
+        "hive_trend_analysis",
+        "hive_brand_analysis",
+      ],
+    };
+    return workflows[className] || [];
+  }
+
+  // Load orchestration configurations from config files (legacy method)
   loadOrchestrationConfigs() {
     const configs = {};
     const configDir = path.join(__dirname, "configs");
@@ -192,6 +317,40 @@ class OrchestrationManager {
       loadedAgents: Array.from(this.loadedAgents.keys()),
       totalAgents: this.loadedAgents.size,
     };
+  }
+
+  // Generate frontend-compatible orchestration data
+  getFrontendOrchestrations() {
+    const orchestrations = {};
+
+    for (const [id, config] of Object.entries(this.orchestrationConfigs)) {
+      // Map orchestration IDs to frontend-expected names
+      const frontendId = this.mapToFrontendId(id);
+
+      orchestrations[frontendId] = {
+        id: frontendId,
+        name: config.name,
+        description: config.description,
+        enabled: config.enabled,
+        config: config.config,
+        workflows: config.workflows,
+        agents: Object.keys(config.agents),
+        hasDiagram: config.hasDiagram,
+        hasDocumentation: config.hasDocumentation,
+        documentationPath: config.documentationPath,
+      };
+    }
+
+    return orchestrations;
+  }
+
+  // Map orchestration class names to frontend-expected IDs
+  mapToFrontendId(className) {
+    const mappings = {
+      agentorchestrator: "hyatt",
+      hiveorchestrator: "hive",
+    };
+    return mappings[className] || className;
   }
 }
 
