@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import SharedOrchestrationLayout from './SharedOrchestrationLayout';
 import SidePanel from '../SidePanel';
-import { SharedDeliverablePanel } from '../shared';
+import { SharedDeliverablePanel, SharedProgressPanel } from '../shared';
 import HiveMomentForm from '../shared/HiveMomentForm';
 import HiveAgentCollaboration from '../shared/HiveAgentCollaboration';
 import { useHiveWorkflowState } from '../../hooks/useHiveWorkflowState';
@@ -69,6 +69,14 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
             </div>
           )}
         </div>
+        {workflow && (
+          <div className="mb-6">
+            <SharedProgressPanel
+              campaign={{ id: workflow.id, status: workflow.status } as any}
+              onViewProgress={() => setIsSidePanelOpen(true)}
+            />
+          </div>
+        )}
         <SharedOrchestrationLayout
           isSidePanelOpen={isSidePanelOpen}
           sidePanel={
