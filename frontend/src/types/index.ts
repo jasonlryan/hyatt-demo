@@ -27,11 +27,18 @@ export interface ConversationMessage {
 export interface Deliverable {
   id: string;
   title: string;
+  type?: 'text' | 'image' | 'mixed';
   status: 'pending' | 'ready' | 'reviewed' | 'completed';
   agent: string;
   timestamp: string;
   content: string | Record<string, any>;
   lastUpdated?: string;
+}
+
+export interface HiveWorkflowPhase {
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  start?: string;
+  end?: string;
 }
 
 export interface Campaign {
@@ -103,6 +110,8 @@ export interface AudienceResearch {
 export interface HiveWorkflowState {
   id: string;
   status: 'running' | 'completed' | 'failed';
+  currentPhase?: string;
+  phases: { [key: string]: HiveWorkflowPhase };
   deliverables: { [key: string]: Deliverable };
   createdAt?: string;
   lastUpdated?: string;

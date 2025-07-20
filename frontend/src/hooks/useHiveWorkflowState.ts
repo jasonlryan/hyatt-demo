@@ -1,11 +1,34 @@
 import { useState } from 'react';
 import { apiFetch } from '../utils/api';
-import { HiveWorkflowState, Deliverable } from '../types';
+import { HiveWorkflowState } from '../types';
 
 export function useHiveWorkflowState() {
   const [workflow, setWorkflow] = useState<HiveWorkflowState | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pollId, setPollId] = useState<NodeJS.Timeout | null>(null);
+
+  const fetchWorkflow = async (id: string) => {
+    try {
+      const data = await apiFetch(`/api/hive/workflows/${id}`);
+      setWorkflow(data);
+      return data as HiveWorkflowState;
+    } catch (e: any) {
+      setError(e.message);
+      throw e;
+    }
+  };
+
+  const startPolling = (id: string) => {
+    const int = setInterval(async () => {
+      const wf = await fetchWorkflow(id);
+      if (wf.status !== 'running') {
+        clearInterval(int);
+        setPollId(null);
+      }
+    }, 2000);
+    setPollId(int);
+  };
 
   const startOrchestration = async (context: any) => {
     try {
@@ -16,52 +39,9 @@ export function useHiveWorkflowState() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(context),
       });
-
-      const deliverables: { [k: string]: Deliverable } = {
-        trend_analysis: {
-          id: 'trend_analysis',
-          title: 'Trend Insights',
-          status: 'ready',
-          agent: 'Trend Cultural Analyzer',
-          timestamp: new Date().toISOString(),
-          content: data.trendInsights,
-        },
-        visual_prompt: {
-          id: 'visual_prompt',
-          title: 'Visual Prompt',
-          status: 'ready',
-          agent: 'Visual Prompt Generator',
-          timestamp: new Date().toISOString(),
-          content: { promptText: data.promptText, imageUrl: data.imageUrl },
-        },
-        modular_elements: {
-          id: 'modular_elements',
-          title: 'Modular Elements',
-          status: 'ready',
-          agent: 'Modular Elements Recommender',
-          timestamp: new Date().toISOString(),
-          content: { elements: data.modulars },
-        },
-        qa_review: {
-          id: 'qa_review',
-          title: 'QA Review',
-          status: 'ready',
-          agent: 'Brand QA',
-          timestamp: new Date().toISOString(),
-          content: data.qaResult,
-        },
-      };
-
-      const wf: HiveWorkflowState = {
-        id: Date.now().toString(),
-        status: 'completed',
-        deliverables,
-        createdAt: new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
-      };
-
-      setWorkflow(wf);
-      return wf;
+      await fetchWorkflow(data.id);
+      startPolling(data.id);
+      return data;
     } catch (e: any) {
       setError(e.message);
       throw e;
@@ -70,7 +50,17 @@ export function useHiveWorkflowState() {
     }
   };
 
-  const resetWorkflow = () => setWorkflow(null);
+  const resetWorkflow = () => {
+    if (pollId) clearInterval(pollId);
+    setPollId(null);
+    setWorkflow(null);
+  };
 
-  return { workflow, isLoading, error, startOrchestration, resetWorkflow };
+  const loadWorkflow = async (id: string) => {
+    const wf = await fetchWorkflow(id);
+    if (wf.status === 'running') startPolling(id);
+    return wf;
+  };
+
+  return { workflow, isLoading, error, startOrchestration, resetWorkflow, loadWorkflow };
 }
