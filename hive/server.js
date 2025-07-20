@@ -424,13 +424,7 @@ app.get("/api/orchestrations", (req, res) => {
           "content_creation_workflow",
           "research_workflow",
         ],
-        agents: [
-          "pr_manager",
-          "research_audience",
-          "strategic_insight",
-          "trending_news",
-          "story_angles",
-        ],
+        agents: ["pr-manager", "research", "strategic", "trending", "story"],
       },
       template: {
         id: "template",
@@ -444,12 +438,7 @@ app.get("/api/orchestrations", (req, res) => {
           enableLogging: true,
         },
         workflows: ["pr_campaign_workflow"],
-        agents: [
-          "pr_manager",
-          "research_audience",
-          "strategic_insight",
-          "trending_news",
-        ],
+        agents: ["pr-manager", "research", "strategic", "trending"],
       },
       builder: {
         id: "builder",
@@ -490,14 +479,16 @@ app.get("/api/orchestrations", (req, res) => {
           "hive_research_collaboration",
         ],
         agents: [
-          "pr_manager",
-          "research_audience",
-          "strategic_insight",
-          "trending_news",
-          "story_angles",
+          "pr-manager",
+          "research",
+          "strategic",
+          "trending",
+          "story",
           "visual_prompt_generator",
           "brand_qa",
           "modular_elements_recommender",
+          "trend_cultural_analyzer",
+          "brand_lens",
         ],
       },
     };
@@ -731,7 +722,10 @@ app.post("/api/generate-orchestration", async (req, res) => {
       model: process.env.OPENAI_MODEL || "gpt-4o-2024-08-06",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Create an orchestration for: ${description}` },
+        {
+          role: "user",
+          content: `Create an orchestration for: ${description}`,
+        },
       ],
       temperature: 0.3,
       max_tokens: 2000,
@@ -853,7 +847,12 @@ app.post("/api/generate-diagram", (req, res) => {
         id: `${from}-${to}`,
         from: fromConn,
         to: toConn,
-        style: { color: "#2563eb", dashed: true, animated: true, strokeWidth: 2 },
+        style: {
+          color: "#2563eb",
+          dashed: true,
+          animated: true,
+          strokeWidth: 2,
+        },
         type: "default",
       };
     };
@@ -862,13 +861,20 @@ app.post("/api/generate-diagram", (req, res) => {
       if (!orch || !Array.isArray(orch.agents) || orch.agents.length === 0) {
         return {
           nodes: [
-            { id: "empty", label: "No Agents", position: { x: 600, y: 300 }, connectors: [] },
+            {
+              id: "empty",
+              label: "No Agents",
+              position: { x: 600, y: 300 },
+              connectors: [],
+            },
           ],
           edges: [],
         };
       }
       const nodes = generateNodes(orch.agents);
-      const edges = generateSequentialConnections(orch.agents).map(createEdgeFromString);
+      const edges = generateSequentialConnections(orch.agents).map(
+        createEdgeFromString
+      );
       return { nodes, edges };
     };
 
@@ -1073,7 +1079,11 @@ app.post("/api/save-orchestration", async (req, res) => {
   }
   try {
     const orchestration = req.body;
-    if (!orchestration.name || !orchestration.agents || !orchestration.workflows) {
+    if (
+      !orchestration.name ||
+      !orchestration.agents ||
+      !orchestration.workflows
+    ) {
       return res.status(400).json({ error: "Invalid orchestration data" });
     }
     const id = orchestration.name.toLowerCase().replace(/[^a-z0-9]/g, "-");
@@ -1085,7 +1095,8 @@ app.post("/api/save-orchestration", async (req, res) => {
       description: orchestration.description,
       enabled: true,
       config: {
-        maxConcurrentWorkflows: orchestration.config.maxConcurrentWorkflows || 5,
+        maxConcurrentWorkflows:
+          orchestration.config.maxConcurrentWorkflows || 5,
         timeout: orchestration.config.timeout || 300000,
         retryAttempts: orchestration.config.retryAttempts || 3,
         enableLogging: orchestration.config.enableLogging !== false,
@@ -1114,14 +1125,21 @@ app.post("/api/save-orchestration", async (req, res) => {
       newOrchestration.metadata.generatedPageId = uniqueId;
     }
 
-    const orchestrationsDir = path.join(process.cwd(), "data", "orchestrations");
+    const orchestrationsDir = path.join(
+      process.cwd(),
+      "data",
+      "orchestrations"
+    );
     if (!fs.existsSync(orchestrationsDir)) {
       fs.mkdirSync(orchestrationsDir, { recursive: true });
     }
     const filePath = path.join(orchestrationsDir, `${uniqueId}.json`);
     fs.writeFileSync(filePath, JSON.stringify(newOrchestration, null, 2));
 
-    const masterListPath = path.join(orchestrationsDir, "generated-orchestrations.json");
+    const masterListPath = path.join(
+      orchestrationsDir,
+      "generated-orchestrations.json"
+    );
     let masterList = [];
     if (fs.existsSync(masterListPath)) {
       masterList = JSON.parse(fs.readFileSync(masterListPath, "utf8"));
@@ -1130,13 +1148,21 @@ app.post("/api/save-orchestration", async (req, res) => {
     fs.writeFileSync(masterListPath, JSON.stringify(masterList, null, 2));
 
     if (orchestration.documentation) {
-      const docsDir = path.join(process.cwd(), "hive", "orchestrations", "docs");
+      const docsDir = path.join(
+        process.cwd(),
+        "hive",
+        "orchestrations",
+        "docs"
+      );
       if (!fs.existsSync(docsDir)) {
         fs.mkdirSync(docsDir, { recursive: true });
       }
       const generateDocumentationMarkdown = (o) => {
-        const { name, description, agents, workflows, config, documentation } = o;
-        return `# ${name}\n\n## Overview\n\n${documentation.overview || description}`;
+        const { name, description, agents, workflows, config, documentation } =
+          o;
+        return `# ${name}\n\n## Overview\n\n${
+          documentation.overview || description
+        }`;
       };
       const docContent = generateDocumentationMarkdown(orchestration);
       const docFilePath = path.join(docsDir, `${uniqueId}.md`);
@@ -1159,7 +1185,13 @@ app.post("/api/save-orchestration", async (req, res) => {
 
 // Serve the frontend
 app.get("/", (req, res) => {
-  const distIndex = path.join(__dirname, "..", "frontend", "dist", "index.html");
+  const distIndex = path.join(
+    __dirname,
+    "..",
+    "frontend",
+    "dist",
+    "index.html"
+  );
   if (fs.existsSync(distIndex)) {
     return res.sendFile(distIndex);
   }

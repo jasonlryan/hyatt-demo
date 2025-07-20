@@ -1,108 +1,96 @@
-# 🛡️ RESPECT EXISTING STRUCTURE RULE
+# Respect Existing Structure
 
-## 🚨 CRITICAL: ALWAYS CHECK BEFORE CREATING
+## **Core Principle: Understand Before Changing**
 
-**NEVER create new directories, files, or structures without first examining what already exists.**
+**The existing structure was built for a reason. Respect it, understand it, and work within it. Only create new structures when the existing ones truly don't meet the need.**
 
-## 🔍 MANDATORY CHECKLIST BEFORE ANY CREATION
+## **🚨 CRITICAL: Stop Replacing, Start Improving**
 
-### **1. Directory Structure Analysis**
+### **❌ What NOT to Do (My Achilles Heel)**
 
-- **ALWAYS** use `list_dir` to examine existing directory structure
-- **ALWAYS** check for existing subdirectories before creating new ones
-- **ALWAYS** look for existing organization patterns
-- **NEVER** assume a directory doesn't exist
+- Replace existing files/systems without understanding their purpose
+- Create new structures when existing ones can be improved
+- Assume the current approach is wrong without evidence
+- Overwrite working code with "better" implementations
+- Ignore the architectural decisions that led to current structure
 
-### **2. File Organization Patterns**
+### **✅ What TO Do Instead**
 
-- **ALWAYS** examine existing file naming conventions
-- **ALWAYS** check for existing categorization systems
-- **ALWAYS** respect established folder hierarchies
-- **NEVER** create duplicate organizational structures
+- **First**: Understand why the current structure exists
+- **Second**: Identify specific problems with current approach
+- **Third**: Propose improvements within existing structure
+- **Fourth**: Only replace if existing structure fundamentally cannot support the need
 
-### **3. Archive Structure Respect**
+## **🔍 Analysis Framework**
 
-- **ALWAYS** check `archive/` directory structure first
-- **ALWAYS** examine existing `legacy-docs/` organization
-- **ALWAYS** look for existing `implementation-plans/` subdirectories
-- **NEVER** create new archive structures without checking existing ones
+### **Before Making Changes, Ask:**
 
-## ✅ REQUIRED WORKFLOW
+1. **Why does this structure exist?** What problem was it solving?
+2. **What are the current limitations?** Specific, measurable issues
+3. **Can the existing structure be improved?** Extensions, not replacements
+4. **What would be lost by replacing it?** Dependencies, integrations, knowledge
+5. **Is the replacement actually better?** Evidence-based decision
 
-### **Before Creating ANY New Structure:**
+### **Evidence Required for Replacement:**
 
-1. **EXAMINE** existing directory with `list_dir`
-2. **ANALYZE** existing file organization patterns
-3. **IDENTIFY** appropriate existing location
-4. **USE** existing structure if it exists
-5. **ONLY CREATE** if no appropriate location exists
+- **Specific failures** of current approach
+- **Clear benefits** of new approach
+- **Migration path** that preserves value
+- **Risk assessment** of replacement
 
-### **Example Workflow:**
+## **📋 Improvement vs Replacement Guidelines**
 
-```bash
-# ✅ CORRECT: Check first
-list_dir archive/legacy-docs/implementation-plans/
-# If "completed" subdirectory exists, use it
-# If not, then create it
+### **Improve When:**
 
-# ❌ WRONG: Blind creation
-mkdir -p archive/legacy-docs/implementation-plans/completed/
-# This assumes structure doesn't exist
-```
+- Current structure works but has specific issues
+- Adding features to existing system
+- Fixing bugs or performance problems
+- Extending functionality within current patterns
+- Refactoring for better maintainability
 
-## 🎯 SPECIFIC RULES FOR THIS PROJECT
+### **Replace Only When:**
 
-### **Archive Organization:**
+- Current structure fundamentally cannot support requirements
+- Clear evidence that replacement provides significant benefits
+- Migration path preserves all existing value
+- Team consensus on replacement approach
 
-- **Plans go in**: `archive/legacy-docs/implementation-plans/`
-- **Summaries go in**: `archive/legacy-docs/upgrade-summaries/`
-- **Planning docs go in**: `archive/legacy-docs/planning/`
-- **Check for existing subdirectories** before creating new ones
+## **🎯 Examples of My Mistakes**
 
-### **Active Plans:**
+### **❌ What I Keep Doing Wrong:**
 
-- **Current plans stay in**: `docs/plans/`
-- **Completed plans move to**: `archive/legacy-docs/implementation-plans/`
-- **Check for existing "completed" subdirectory** before creating
+- Replacing orchestration configs instead of fixing agent ID mismatches
+- Creating new server architectures instead of fixing existing ones
+- Overwriting working code with "improved" versions
+- Ignoring existing patterns and conventions
 
-### **File Naming:**
+### **✅ What I Should Do Instead:**
 
-- **Respect existing naming conventions**
-- **Use consistent date/version patterns**
-- **Follow established categorization**
+- Fix agent ID mismatches within existing config structure
+- Improve existing server by adding missing routes
+- Extend working code with new features
+- Follow existing patterns and conventions
 
-## 🚨 CONSEQUENCES OF VIOLATION
+## **🔧 Implementation Rules**
 
-**If you violate this rule:**
+1. **Always read and understand existing code first**
+2. **Identify specific problems, not general "improvements"**
+3. **Propose changes that work within existing structure**
+4. **Document why changes are needed and how they improve existing system**
+5. **Test that changes don't break existing functionality**
+6. **Get approval before replacing any existing structure**
 
-1. **Stop immediately** when called out
-2. **Examine existing structure** properly
-3. **Use existing organization** if available
-4. **Only create new structure** if truly needed
-5. **Apologize for not checking first**
+## **📊 Success Metrics**
 
-## 🎯 SUCCESS METRICS
-
-### **Respectful Development:**
-
-- ✅ **Always check existing structure first**
-- ✅ **Use existing organization when available**
-- ✅ **Only create new structures when necessary**
-- ✅ **Maintain consistency with existing patterns**
-- ✅ **Preserve established workflows**
-
-### **Efficient Organization:**
-
-- ✅ **No duplicate directory structures**
-- ✅ **Consistent file organization**
-- ✅ **Logical categorization**
-- ✅ **Easy navigation and maintenance**
+- **Reduced replacement frequency** - fewer "new" implementations
+- **Increased improvement frequency** - more enhancements to existing code
+- **Better understanding** - deeper knowledge of existing systems
+- **Preserved value** - existing functionality remains intact
+- **Team confidence** - trust in working within existing structures
 
 ---
 
-**Remember: The existing structure was built for a reason. Respect it, understand it, and work within it. Only create new structures when the existing ones truly don't meet the need.**
-description:
-globs:
+**Remember: The goal is to make existing systems better, not to replace them with "better" systems.**
 alwaysApply: false
 
 ---
