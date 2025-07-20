@@ -31,8 +31,8 @@ class AgentOrchestrator extends BaseOrchestrator {
     this.researchAgent = this.agents.get("research");
     this.trendingAgent = this.agents.get("trending");
     this.storyAgent = this.agents.get("story");
-    this.prManagerAgent = this.agents.get("pr_manager");
-    this.strategicInsightAgent = this.agents.get("strategic_insight");
+    this.prManagerAgent = this.agents.get("pr-manager");
+    this.strategicInsightAgent = this.agents.get("strategic");
 
     // Initialize dynamic components
     this.dataSourceManager = new DataSourceManager();
@@ -104,10 +104,10 @@ class AgentOrchestrator extends BaseOrchestrator {
       awaitingReview: null,
       agentModels: {
         research: this.researchAgent.model,
-        strategic_insight: this.strategicInsightAgent.model,
+        strategic: this.strategicInsightAgent.model,
         trending: this.trendingAgent.model,
         story: this.storyAgent.model,
-        pr_manager: this.prManagerAgent.model,
+        "pr-manager": this.prManagerAgent.model,
       },
       createdAt: new Date().toISOString(),
       lastUpdated: new Date().toISOString(),
