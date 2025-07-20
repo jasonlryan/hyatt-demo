@@ -13,6 +13,8 @@ This plan outlines how to adapt the Hive Orchestrator to use the same UI compone
 - ✅ **Proper agent coordination**: Error handling and workflow management
 - ✅ **Moment-based input**: Takes context/moment input (not campaign brief)
 - ❌ **No UI integration**: Doesn't use shared UI components like Hyatt
+- ❌ **Wrong agent order**: Current implementation runs agents in wrong sequence
+- ❌ **Missing Brand Lens**: Brand Lens agent not included in current flow
 
 ### Hive Landing Page
 
@@ -29,1253 +31,353 @@ This plan outlines how to adapt the Hive Orchestrator to use the same UI compone
 - ✅ **Agent handoff visualization**: Clear progression through phases
 - ✅ **HITL review integration**: Full human-in-the-loop capabilities
 
-## Transformation Strategy
+## Remaining Work Plan
 
-### Phase 1: Adapt Hive Backend for UI Integration
+### Phase 1: Fix Backend Workflow Logic
 
-#### 1.1 Update HiveOrchestrator for UI State Management
+#### 1.1 Fix Agent Execution Order
 
-**File**: `hive/orchestrations/classes/HiveOrchestrator.js`
+**Objective**: Implement proper sequential 5-agent workflow with correct order and Brand Lens agent
 
-**Changes**: Add state management for UI components without changing the moment-based workflow
+**Current Situation**:
 
-```javascript
-class HiveOrchestrator extends BaseOrchestrator {
-  constructor(config = {}) {
-    super({
-      name: "HiveOrchestrator",
-      version: "2.0.0",
-      ...config,
-    });
+- Current `/api/hive-orchestrate` endpoint runs agents in wrong order
+- Missing Brand Lens agent entirely
+- No real-time progress tracking for UI
 
-    this.visualAgent = new VisualPromptGeneratorAgent();
-    this.modularAgent = new ModularElementsRecommenderAgent();
-    this.trendAgent = new TrendCulturalAnalyzerAgent();
-    this.qaAgent = new BrandQAAgent();
-    this.brandLensAgent = new BrandLensAgent();
+**End Goal**:
 
-    // Add state tracking for UI
-    this.activeWorkflows = new Map();
-  }
+- Sequential execution: Trend → Brand Lens → Visual Prompt → Modular Elements → QA Review
+- Include Brand Lens agent in workflow
+- Add UI state tracking for real-time progress
 
-  // Keep the moment-based workflow but add UI state tracking
-  async runHiveOrchestration(momentContext) {
-    const workflowId = this.generateWorkflowId();
+**Codex Prompt**:
 
-    // Initialize UI state
-    const uiState = {
-      id: workflowId,
-      status: "initializing",
-      currentPhase: null,
-      phases: {
-        trend_analysis: { status: "pending", startTime: null, endTime: null },
-        brand_lens: { status: "pending", startTime: null, endTime: null },
-        visual_prompt: { status: "pending", startTime: null, endTime: null },
-        modular_elements: { status: "pending", startTime: null, endTime: null },
-        qa_review: { status: "pending", startTime: null, endTime: null },
-      },
-      deliverables: {},
-      conversation: [],
-      createdAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    };
+```
+Update the Hive orchestration backend to implement proper sequential agent execution.
 
-    this.activeWorkflows.set(workflowId, uiState);
+Current file: hive/routes/visual.js
+Current endpoint: /api/hive-orchestrate
 
-    try {
-      // Step 1: Trend Analysis
-      uiState.status = "trend_analysis";
-      uiState.currentPhase = "trend_analysis";
-      uiState.phases.trend_analysis.status = "active";
-      uiState.phases.trend_analysis.startTime = new Date().toISOString();
-      uiState.lastUpdated = new Date().toISOString();
+Requirements:
+1. Fix agent execution order to: Trend Cultural Analyzer → Brand Lens → Visual Prompt Generator → Modular Elements Recommender → Brand QA
+2. Add Brand Lens agent to the workflow (import BrandLensAgent)
+3. Each agent should build on previous agent's output
+4. Add UI state tracking with phases and status updates
+5. Return workflow state for frontend consumption
 
-      const trendInsights = await this.trendAgent.analyzeTrends(momentContext);
+Agent dependencies:
+- Brand Lens needs Trend Cultural Analyzer output
+- Visual Prompt needs Brand Lens output
+- Modular Elements needs Visual Prompt output
+- QA Review needs all previous outputs
 
-      // Create deliverable for UI
-      const trendDeliverable = {
-        id: `trend_analysis_${workflowId}`,
-        title: "Cultural Trend Analysis",
-        status: "ready",
-        agent: "Trend Cultural Analyzer",
-        timestamp: new Date().toISOString(),
-        content: trendInsights,
-        type: "text",
-      };
-      uiState.deliverables.trend_analysis = trendDeliverable;
-      uiState.phases.trend_analysis.status = "completed";
-      uiState.phases.trend_analysis.endTime = new Date().toISOString();
-
-      // Step 2: Brand Lens
-      uiState.status = "brand_lens";
-      uiState.currentPhase = "brand_lens";
-      uiState.phases.brand_lens.status = "active";
-      uiState.phases.brand_lens.startTime = new Date().toISOString();
-      uiState.lastUpdated = new Date().toISOString();
-
-      const brandLens = await this.brandLensAgent.analyzeBrandPerspective(
-        trendInsights,
-        momentContext
-      );
-
-      const brandDeliverable = {
-        id: `brand_lens_${workflowId}`,
-        title: "Brand Lens Analysis",
-        status: "ready",
-        agent: "Brand Lens",
-        timestamp: new Date().toISOString(),
-        content: brandLens,
-        type: "text",
-      };
-      uiState.deliverables.brand_lens = brandDeliverable;
-      uiState.phases.brand_lens.status = "completed";
-      uiState.phases.brand_lens.endTime = new Date().toISOString();
-
-      // Step 3: Visual Prompt Generation
-      uiState.status = "visual_prompt";
-      uiState.currentPhase = "visual_prompt";
-      uiState.phases.visual_prompt.status = "active";
-      uiState.phases.visual_prompt.startTime = new Date().toISOString();
-      uiState.lastUpdated = new Date().toISOString();
-
-      const basePrompt = await this.visualAgent.generatePrompt(momentContext);
-
-      const visualDeliverable = {
-        id: `visual_prompt_${workflowId}`,
-        title: "Visual Prompt Generation",
-        status: "ready",
-        agent: "Visual Prompt Generator",
-        timestamp: new Date().toISOString(),
-        content: {
-          promptText: basePrompt.promptText,
-          imageUrl: basePrompt.imageUrl,
-          type: "image",
-        },
-        type: "image",
-      };
-      uiState.deliverables.visual_prompt = visualDeliverable;
-      uiState.phases.visual_prompt.status = "completed";
-      uiState.phases.visual_prompt.endTime = new Date().toISOString();
-
-      // Step 4: Modular Elements
-      uiState.status = "modular_elements";
-      uiState.currentPhase = "modular_elements";
-      uiState.phases.modular_elements.status = "active";
-      uiState.phases.modular_elements.startTime = new Date().toISOString();
-      uiState.lastUpdated = new Date().toISOString();
-
-      const modulars = await this.modularAgent.recommendElements(
-        momentContext,
-        basePrompt,
-        trendInsights,
-        brandLens
-      );
-
-      const modularDeliverable = {
-        id: `modular_elements_${workflowId}`,
-        title: "Modular Visual Elements",
-        status: "ready",
-        agent: "Modular Elements Recommender",
-        timestamp: new Date().toISOString(),
-        content: {
-          elements: modulars,
-          type: "mixed",
-        },
-        type: "mixed",
-      };
-      uiState.deliverables.modular_elements = modularDeliverable;
-      uiState.phases.modular_elements.status = "completed";
-      uiState.phases.modular_elements.endTime = new Date().toISOString();
-
-      // Step 5: QA Review
-      uiState.status = "qa_review";
-      uiState.currentPhase = "qa_review";
-      uiState.phases.qa_review.status = "active";
-      uiState.phases.qa_review.startTime = new Date().toISOString();
-      uiState.lastUpdated = new Date().toISOString();
-
-      const qaResult = await this.qaAgent.reviewPrompt(
-        basePrompt,
-        modulars,
-        trendInsights,
-        brandLens
-      );
-
-      const qaDeliverable = {
-        id: `qa_review_${workflowId}`,
-        title: "Quality Assurance Review",
-        status: "ready",
-        agent: "Brand QA",
-        timestamp: new Date().toISOString(),
-        content: qaResult,
-        type: "text",
-      };
-      uiState.deliverables.qa_review = qaDeliverable;
-      uiState.phases.qa_review.status = "completed";
-      uiState.phases.qa_review.endTime = new Date().toISOString();
-
-      // Complete
-      uiState.status = "completed";
-      uiState.currentPhase = null;
-      uiState.lastUpdated = new Date().toISOString();
-
-      const result = {
-        trendInsights,
-        brandLens,
-        basePrompt,
-        modularElements: modulars,
-        qaResult,
-        timestamp: new Date().toISOString(),
-      };
-
-      return result;
-    } catch (error) {
-      uiState.status = "failed";
-      uiState.error = error.message;
-      uiState.lastUpdated = new Date().toISOString();
-      throw error;
-    }
-  }
-
-  // Add methods for UI state management
-  getWorkflowState(workflowId) {
-    return this.activeWorkflows.get(workflowId);
-  }
-
-  getAllWorkflows() {
-    return Array.from(this.activeWorkflows.values());
-  }
-}
+Include proper error handling and status tracking for each phase.
 ```
 
-#### 1.2 Add API Endpoints for UI State
+#### 1.2 Add UI State Management
 
-**File**: `hive/routes/campaigns.js`
+**Objective**: Add backend state tracking for workflow progress
 
-**Changes**: Add endpoints for Hive workflow state (not campaigns)
+**Current Situation**:
 
-```javascript
-// Get Hive workflow state for UI
-app.get("/api/hive/workflows/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    const hiveOrchestrator =
-      orchestrationManager.getLoadedOrchestration("hive");
+- No workflow state persistence
+- No real-time progress updates
+- No phase status tracking
 
-    if (!hiveOrchestrator) {
-      return res.status(404).json({ error: "Hive orchestrator not found" });
-    }
+**End Goal**:
 
-    const workflowState = hiveOrchestrator.getWorkflowState(id);
-    if (!workflowState) {
-      return res.status(404).json({ error: "Workflow not found" });
-    }
+- Track workflow state with phases, status, and deliverables
+- Provide endpoints for frontend to poll progress
+- Store workflow history
 
-    res.json(workflowState);
-  } catch (error) {
-    console.error("Get workflow state error:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to get workflow state", details: error.message });
-  }
-});
+**Codex Prompt**:
 
-// Get all Hive workflows for UI
-app.get("/api/hive/workflows", async (req, res) => {
-  try {
-    const hiveOrchestrator =
-      orchestrationManager.getLoadedOrchestration("hive");
+```
+Add UI state management to Hive orchestrator for real-time progress tracking.
 
-    if (!hiveOrchestrator) {
-      return res.status(404).json({ error: "Hive orchestrator not found" });
-    }
+Files to update:
+- hive/orchestrations/classes/HiveOrchestrator.js
+- hive/routes/campaigns.js (add new endpoints)
 
-    const workflows = hiveOrchestrator.getAllWorkflows();
-    res.json(workflows);
-  } catch (error) {
-    console.error("Get workflows error:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to get workflows", details: error.message });
-  }
-});
+Requirements:
+1. Add activeWorkflows Map to track running workflows
+2. Create workflow state structure with phases, status, deliverables
+3. Add endpoints: GET /api/hive/workflows/:id, GET /api/hive/workflows
+4. Update POST /api/hive/orchestrate to return workflow ID
+5. Track phase transitions and timing
+6. Store deliverables as they're created
 
-// Start Hive orchestration (moment-based)
-app.post("/api/hive/orchestrate", async (req, res) => {
-  try {
-    const { momentContext } = req.body;
-
-    if (!momentContext) {
-      return res.status(400).json({ error: "Moment context is required" });
-    }
-
-    const hiveOrchestrator = await orchestrationManager.getOrchestration(
-      "hive"
-    );
-    const result = await hiveOrchestrator.runHiveOrchestration(momentContext);
-
-    res.status(201).json(result);
-  } catch (error) {
-    console.error("Hive orchestration error:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to start orchestration", details: error.message });
-  }
-});
+Workflow state should include:
+- id, status, currentPhase, phases (with status/timing), deliverables, timestamps
+- Support for: initializing, trend_analysis, brand_lens, visual_prompt, modular_elements, qa_review, completed, failed
 ```
 
-### Phase 2: Create Hive-Specific UI Components
+### Phase 2: Enhance Frontend Components
 
-#### 2.1 Create HiveMomentForm Component
+#### 2.1 Improve HiveAgentCollaboration
 
-**File**: `frontend/src/components/shared/HiveMomentForm.tsx`
+**Objective**: Add real-time progress indicators and better phase visualization
 
-**New Component**: Form for Hive moment input (not campaign)
+**Current Situation**:
 
-```typescript
-import React, { useState } from "react";
+- Basic phase display without real-time updates
+- Missing progress indicators and status messages
+- No active phase highlighting
 
-export interface HiveMomentFormProps {
-  onSubmit: (momentContext: any) => void;
-  isLoading: boolean;
-  onCancel: () => void;
-}
+**End Goal**:
 
-const HiveMomentForm: React.FC<HiveMomentFormProps> = ({
-  onSubmit,
-  isLoading,
-  onCancel,
-}) => {
-  const [momentContext, setMomentContext] = useState({
-    campaign: "",
-    momentType: "campaign",
-    visualObjective: "",
-    heroVisualDescription: "",
-    promptSnippet: "",
-    modularElements: [],
-  });
+- Real-time progress indicators for active phases
+- Status messages showing current agent activity
+- Visual feedback for completed/pending/active phases
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (momentContext.campaign.trim()) {
-      onSubmit(momentContext);
-    }
-  };
+**Codex Prompt**:
 
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-text-primary mb-4">
-        Start Hive Orchestration
-      </h2>
-      <p className="text-text-secondary mb-6">
-        Describe your moment or context to generate visual creative content
-        through our 5-agent workflow.
-      </p>
+```
+Enhance HiveAgentCollaboration component to show real-time workflow progress.
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label
-            htmlFor="campaign"
-            className="block text-sm font-medium text-text-secondary mb-2"
-          >
-            Campaign/Moment Context
-          </label>
-          <textarea
-            id="campaign"
-            value={momentContext.campaign}
-            onChange={(e) =>
-              setMomentContext((prev) => ({
-                ...prev,
-                campaign: e.target.value,
-              }))
-            }
-            className="w-full h-32 p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition"
-            placeholder="Describe your campaign, moment, or context for visual content generation..."
-            disabled={isLoading}
-            required
-          />
-        </div>
+Current file: frontend/src/components/shared/HiveAgentCollaboration.tsx
 
-        <div className="mb-4">
-          <label
-            htmlFor="momentType"
-            className="block text-sm font-medium text-text-secondary mb-2"
-          >
-            Moment Type
-          </label>
-          <select
-            id="momentType"
-            value={momentContext.momentType}
-            onChange={(e) =>
-              setMomentContext((prev) => ({
-                ...prev,
-                momentType: e.target.value,
-              }))
-            }
-            className="w-full p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition"
-            disabled={isLoading}
-          >
-            <option value="campaign">Campaign</option>
-            <option value="launch">Launch</option>
-            <option value="event">Event</option>
-            <option value="promotion">Promotion</option>
-            <option value="seasonal">Seasonal</option>
-          </select>
-        </div>
+Requirements:
+1. Add real-time progress indicators (spinning icons, status messages)
+2. Show current active phase with visual highlighting
+3. Display status messages for each agent's activity
+4. Add phase timing information (start/end times)
+5. Handle workflow states: running, completed, failed
+6. Use consistent styling with Hyatt's SharedAgentCollaboration
 
-        <div className="mb-4">
-          <label
-            htmlFor="visualObjective"
-            className="block text-sm font-medium text-text-secondary mb-2"
-          >
-            Visual Objective
-          </label>
-          <textarea
-            id="visualObjective"
-            value={momentContext.visualObjective}
-            onChange={(e) =>
-              setMomentContext((prev) => ({
-                ...prev,
-                visualObjective: e.target.value,
-              }))
-            }
-            className="w-full h-24 p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition"
-            placeholder="What are the visual goals and objectives?"
-            disabled={isLoading}
-          />
-        </div>
-
-        <div className="mb-4">
-          <label
-            htmlFor="heroVisualDescription"
-            className="block text-sm font-medium text-text-secondary mb-2"
-          >
-            Hero Visual Description
-          </label>
-          <textarea
-            id="heroVisualDescription"
-            value={momentContext.heroVisualDescription}
-            onChange={(e) =>
-              setMomentContext((prev) => ({
-                ...prev,
-                heroVisualDescription: e.target.value,
-              }))
-            }
-            className="w-full h-24 p-3 border border-border rounded-md focus:ring-2 focus:ring-primary focus:border-primary transition"
-            placeholder="Describe the main hero visual you want to create..."
-            disabled={isLoading}
-          />
-        </div>
-
-        <div className="flex justify-between items-center">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-secondary text-text-primary font-medium rounded hover:bg-secondary-hover transition-colors"
-            disabled={isLoading}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={isLoading || !momentContext.campaign.trim()}
-            className="px-4 py-2 bg-primary text-white font-medium rounded hover:bg-primary-hover disabled:bg-secondary disabled:cursor-not-allowed transition-colors"
-          >
-            {isLoading ? "Starting Orchestration..." : "Start Orchestration"}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-export default HiveMomentForm;
+Design guidance:
+- Use Lucide icons: Play, CheckCircle, AlertCircle, Eye
+- Follow existing color scheme: primary, success, error
+- Add loading spinners for active phases
+- Show phase completion status with checkmarks
+- Include "View Deliverable" buttons for completed phases
 ```
 
-#### 2.2 Create HiveWorkflowState Hook
+#### 2.2 Add Progress Panel Integration
 
-**File**: `frontend/src/hooks/useHiveWorkflowState.ts`
+**Objective**: Integrate SharedProgressPanel for overall workflow progress
 
-**New Hook**: Manage Hive workflow state (not campaign state)
+**Current Situation**:
 
-```typescript
-import { useState, useEffect } from "react";
-import { apiFetch } from "../utils/api";
+- Missing SharedProgressPanel in HiveOrchestrationPage
+- No overall progress visualization
 
-export interface HiveWorkflowState {
-  id: string;
-  status:
-    | "initializing"
-    | "trend_analysis"
-    | "brand_lens"
-    | "visual_prompt"
-    | "modular_elements"
-    | "qa_review"
-    | "completed"
-    | "failed";
-  currentPhase: string | null;
-  phases: {
-    [key: string]: {
-      status: "pending" | "active" | "completed" | "error";
-      startTime: string | null;
-      endTime: string | null;
-    };
-  };
-  deliverables: { [key: string]: any };
-  conversation: any[];
-  createdAt: string;
-  lastUpdated: string;
-  error?: string;
-}
+**End Goal**:
 
-export function useHiveWorkflowState() {
-  const [workflows, setWorkflows] = useState<HiveWorkflowState[]>([]);
-  const [currentWorkflow, setCurrentWorkflow] =
-    useState<HiveWorkflowState | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+- Show overall workflow progress like Hyatt
+- Display workflow status and timing
+- Provide progress details access
 
-  const loadWorkflows = async () => {
-    try {
-      const data = await apiFetch("/api/hive/workflows");
-      setWorkflows(data);
-    } catch (e: any) {
-      setError(e.message);
-    }
-  };
+**Codex Prompt**:
 
-  const loadWorkflow = async (workflowId: string) => {
-    try {
-      setIsLoading(true);
-      const data = await apiFetch(`/api/hive/workflows/${workflowId}`);
-      setCurrentWorkflow(data);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+```
+Add SharedProgressPanel integration to HiveOrchestrationPage.
 
-  const startOrchestration = async (momentContext: any) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await apiFetch("/api/hive/orchestrate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ momentContext }),
-      });
+Current file: frontend/src/components/orchestrations/HiveOrchestrationPage.tsx
 
-      // Start polling for the new workflow
-      const workflowId = data.id || "new";
-      await loadWorkflow(workflowId);
+Requirements:
+1. Import and use SharedProgressPanel component
+2. Adapt workflow state to match campaign interface expected by SharedProgressPanel
+3. Show overall workflow progress and status
+4. Handle progress panel's onViewProgress callback
+5. Display workflow timing and completion status
 
-      return data;
-    } catch (e: any) {
-      setError(e.message);
-      throw e;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resetWorkflow = () => {
-    setCurrentWorkflow(null);
-    setError(null);
-  };
-
-  // Poll for workflow updates
-  useEffect(() => {
-    if (
-      !currentWorkflow ||
-      currentWorkflow.status === "completed" ||
-      currentWorkflow.status === "failed"
-    ) {
-      return;
-    }
-
-    const interval = setInterval(async () => {
-      try {
-        const data = await apiFetch(
-          `/api/hive/workflows/${currentWorkflow.id}`
-        );
-        setCurrentWorkflow(data);
-
-        if (data.status === "completed" || data.status === "failed") {
-          clearInterval(interval);
-        }
-      } catch (e) {
-        console.error("Failed to poll workflow:", e);
-      }
-    }, 2000);
-
-    return () => clearInterval(interval);
-  }, [currentWorkflow?.id, currentWorkflow?.status]);
-
-  return {
-    workflows,
-    currentWorkflow,
-    isLoading,
-    error,
-    loadWorkflows,
-    loadWorkflow,
-    startOrchestration,
-    resetWorkflow,
-  };
-}
+Integration guidance:
+- Pass workflow as campaign prop to SharedProgressPanel
+- Map workflow status to campaign status format
+- Handle onViewProgress to open side panel
+- Show workflow start/completion times
+- Display current phase and overall progress percentage
 ```
 
-### Phase 3: Update HiveOrchestrationPage to Use Hyatt Pattern
+#### 2.3 Enhance useHiveWorkflowState Hook
 
-#### 3.1 Replace HiveOrchestrationPage
+**Objective**: Add real-time polling and better state management
 
-**File**: `frontend/src/components/orchestrations/HiveOrchestrationPage.tsx`
+**Current Situation**:
 
-**New Structure**: Use Hyatt pattern with Hive-specific components
+- No real-time updates from backend
+- Missing polling for workflow progress
+- Limited error handling
 
-```typescript
-import { useState } from "react";
-import { useHiveWorkflowState } from "../../hooks/useHiveWorkflowState";
-import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
-import SidePanel from "../SidePanel";
-import { SharedProgressPanel, SharedDeliverablePanel } from "../shared";
-import HiveMomentForm from "../shared/HiveMomentForm";
-import HiveAgentCollaboration from "../shared/HiveAgentCollaboration";
-import DeliverableModal from "../DeliverableModal";
-import { Deliverable } from "../../types";
+**End Goal**:
 
-interface HiveOrchestrationPageProps {
-  orchestrationId: string;
-  hitlReview?: boolean;
-  onToggleHitl?: () => void;
-  onNavigateToOrchestrations?: () => void;
-}
+- Real-time workflow progress updates
+- Automatic polling for active workflows
+- Better error handling and state management
 
-const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
-  orchestrationId,
-  hitlReview = true,
-  onToggleHitl,
-  onNavigateToOrchestrations,
-}) => {
-  const {
-    currentWorkflow,
-    isLoading,
-    error,
-    startOrchestration,
-    resetWorkflow,
-  } = useHiveWorkflowState();
+**Codex Prompt**:
 
-  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
-  const [modalDeliverable, setModalDeliverable] = useState<Deliverable | null>(
-    null
-  );
-  const [isDeliverableModalOpen, setIsDeliverableModalOpen] = useState(false);
+```
+Enhance useHiveWorkflowState hook for real-time workflow updates.
 
-  const handleStartOrchestration = async (momentContext: any) => {
-    try {
-      await startOrchestration(momentContext);
-    } catch (e) {
-      console.error("Failed to start orchestration:", e);
-    }
-  };
+Current file: frontend/src/hooks/useHiveWorkflowState.ts
 
-  const handleViewDetails = (deliverable: Deliverable) => {
-    setModalDeliverable(deliverable);
-    setIsDeliverableModalOpen(true);
-  };
+Requirements:
+1. Add polling mechanism for active workflows
+2. Implement real-time progress updates
+3. Add better error handling and loading states
+4. Support workflow state transitions
+5. Add methods for loading existing workflows
 
-  const handleViewPhaseDeliverable = (phaseKey: string) => {
-    if (currentWorkflow?.deliverables[phaseKey]) {
-      setModalDeliverable(currentWorkflow.deliverables[phaseKey]);
-      setIsDeliverableModalOpen(true);
-    }
-  };
-
-  const deliverables = currentWorkflow
-    ? Object.values(currentWorkflow.deliverables)
-    : [];
-
-  return (
-    <div className="min-h-screen">
-      <div className="container pt-6 pb-8">
-        {/* Breadcrumb and HITL Toggle */}
-        <div className="mb-6 flex items-center justify-between">
-          <nav className="flex items-center space-x-2 text-sm text-text-secondary">
-            <button
-              onClick={
-                onNavigateToOrchestrations || (() => window.history.back())
-              }
-              className="text-success hover:text-success-hover transition-colors"
-            >
-              Orchestrations
-            </button>
-            <span>›</span>
-            <span className="text-text-primary font-medium">
-              Hive Orchestrator
-            </span>
-          </nav>
-
-          {onToggleHitl && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-text-secondary">HITL Review</span>
-              <button
-                onClick={onToggleHitl}
-                className={`relative inline-flex h-6 w-12 items-center rounded-full ${
-                  hitlReview ? "bg-success" : "bg-secondary"
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white ${
-                    hitlReview ? "translate-x-7" : "translate-x-1"
-                  }`}
-                />
-                <span
-                  className={`absolute text-xs font-medium ${
-                    hitlReview
-                      ? "text-white left-1"
-                      : "text-text-secondary right-1"
-                  }`}
-                >
-                  {hitlReview ? "ON" : "OFF"}
-                </span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        <SharedOrchestrationLayout
-          isSidePanelOpen={isSidePanelOpen}
-          sidePanel={
-            <SidePanel
-              messages={currentWorkflow?.conversation || []}
-              isOpen={isSidePanelOpen}
-              onClose={() => setIsSidePanelOpen(false)}
-            />
-          }
-          rightPanel={
-            <SharedDeliverablePanel
-              deliverables={deliverables}
-              onViewDetails={(id) => {
-                const deliverable = deliverables.find((d) => d.id === id);
-                if (deliverable) handleViewDetails(deliverable);
-              }}
-            />
-          }
-        >
-          {!currentWorkflow ? (
-            <HiveMomentForm
-              onSubmit={handleStartOrchestration}
-              onCancel={resetWorkflow}
-              isLoading={isLoading}
-            />
-          ) : (
-            <>
-              <SharedProgressPanel
-                campaign={currentWorkflow} // Adapt campaign interface for workflow
-                onViewProgress={() => setIsSidePanelOpen(true)}
-              />
-
-              <HiveAgentCollaboration
-                workflow={currentWorkflow}
-                onViewDeliverable={handleViewPhaseDeliverable}
-              />
-            </>
-          )}
-        </SharedOrchestrationLayout>
-      </div>
-
-      <DeliverableModal
-        deliverable={modalDeliverable}
-        isOpen={isDeliverableModalOpen}
-        onClose={() => {
-          setIsDeliverableModalOpen(false);
-        }}
-      />
-    </div>
-  );
-};
-
-export default HiveOrchestrationPage;
+Implementation guidance:
+- Poll every 2 seconds for active workflows
+- Stop polling when workflow completes or fails
+- Handle API errors gracefully
+- Add loading states for different operations
+- Support loading workflow by ID
+- Add workflow reset functionality
 ```
 
-#### 3.2 Create HiveAgentCollaboration Component
+### Phase 3: Fix Image Deliverable Handling
 
-**File**: `frontend/src/components/shared/HiveAgentCollaboration.tsx`
+#### 3.1 Update ImageDeliverableCard
 
-**New Component**: Adapt SharedAgentCollaboration for Hive's 5-agent workflow
+**Objective**: Improve image display and add download functionality
 
-```typescript
-import React from "react";
-import { HiveWorkflowState } from "../../hooks/useHiveWorkflowState";
-import { CheckCircle, Play, AlertCircle, Check, Eye } from "lucide-react";
+**Current Situation**:
 
-interface HiveAgentCollaborationProps {
-  workflow: HiveWorkflowState;
-  onViewDeliverable?: (phaseKey: string) => void;
-}
+- Basic image display without download
+- Missing proper image type detection
+- Limited mixed content handling
 
-const HiveAgentCollaboration: React.FC<HiveAgentCollaborationProps> = ({
-  workflow,
-  onViewDeliverable,
-}) => {
-  const getCurrentPhase = () => {
-    if (!workflow) return null;
+**End Goal**:
 
-    if (workflow.status === "failed") {
-      return {
-        phase: workflow.currentPhase,
-        status: "error",
-        message: `Workflow failed: ${workflow.error}`,
-      };
-    }
+- Image download functionality
+- Better mixed content display
+- Proper image type detection
 
-    if (workflow.status === "completed") {
-      return {
-        phase: "completed",
-        status: "completed",
-        message: "Hive orchestration completed successfully",
-      };
-    }
+**Codex Prompt**:
 
-    const phaseMessages = {
-      trend_analysis: "Trend Cultural Analyzer is analyzing cultural trends...",
-      brand_lens: "Brand Lens is applying brand perspective...",
-      visual_prompt: "Visual Prompt Generator is creating visual prompts...",
-      modular_elements:
-        "Modular Elements Recommender is creating visual elements...",
-      qa_review: "Brand QA is performing quality assurance...",
-    };
+```
+Enhance ImageDeliverableCard component with better image handling.
 
-    return {
-      phase: workflow.currentPhase,
-      status: "active",
-      message:
-        phaseMessages[workflow.currentPhase as keyof typeof phaseMessages] ||
-        "Processing...",
-    };
-  };
+Current file: frontend/src/components/shared/ImageDeliverableCard.tsx
 
-  const currentPhase = getCurrentPhase();
-  const completedPhases = Object.keys(workflow.phases).filter(
-    (key) => workflow.phases[key].status === "completed"
-  );
+Requirements:
+1. Add image download functionality
+2. Improve mixed content display (text + images)
+3. Better image type detection
+4. Add loading states for images
+5. Handle image errors gracefully
 
-  const hivePhases = [
-    { key: "trend_analysis", label: "Trend Analysis", icon: "📈" },
-    { key: "brand_lens", label: "Brand Lens", icon: "🎯" },
-    { key: "visual_prompt", label: "Visual Prompt", icon: "🎨" },
-    { key: "modular_elements", label: "Modular Elements", icon: "🧩" },
-    { key: "qa_review", label: "Quality Review", icon: "✅" },
-  ];
-
-  return (
-    <div className="bg-white rounded-lg shadow-md">
-      <div className="p-4 border-b border-border">
-        <h2 className="text-xl font-bold text-text-primary">
-          Hive Workflow Progress
-        </h2>
-      </div>
-      <div className="p-6">
-        {/* Current Status */}
-        {currentPhase && (
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-3">
-              {currentPhase.status === "active" && (
-                <div className="flex items-center gap-2 text-primary">
-                  <Play size={16} />
-                  <span className="font-semibold">Active</span>
-                </div>
-              )}
-              {currentPhase.status === "completed" && (
-                <div className="flex items-center gap-2 text-success">
-                  <CheckCircle size={16} />
-                  <span className="font-semibold">Completed</span>
-                </div>
-              )}
-              {currentPhase.status === "error" && (
-                <div className="flex items-center gap-2 text-error">
-                  <AlertCircle size={16} />
-                  <span className="font-semibold">Failed</span>
-                </div>
-              )}
-            </div>
-            <p className="text-text-primary">{currentPhase.message}</p>
-          </div>
-        )}
-
-        {/* Progress Steps */}
-        <div className="space-y-4">
-          <h3 className="font-semibold text-text-primary mb-3">
-            Agent Workflow
-          </h3>
-
-          {hivePhases.map((phase) => {
-            const phaseState = workflow.phases[phase.key];
-            const isCompleted = phaseState.status === "completed";
-            const isCurrent =
-              workflow.currentPhase === phase.key &&
-              workflow.status !== "completed";
-            const hasDeliverable = workflow.deliverables[phase.key];
-
-            return (
-              <div
-                key={phase.key}
-                className={`p-4 rounded-lg border ${
-                  isCurrent ? "border-primary bg-primary-light" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="text-lg">{phase.icon}</div>
-                  <div className="flex-1">
-                    <span className="font-medium text-text-primary">
-                      {phase.label}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {isCompleted && (
-                      <CheckCircle size={16} className="text-success" />
-                    )}
-                    {isCurrent && (
-                      <div className="flex items-center gap-1 text-primary">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
-                        <span className="text-xs">Working...</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Deliverable View Button */}
-                {hasDeliverable && onViewDeliverable && (
-                  <div className="mt-4 pt-4 border-t border-border">
-                    <button
-                      onClick={() => onViewDeliverable(phase.key)}
-                      className="flex items-center gap-2 px-4 py-2 bg-secondary text-text-primary rounded-md hover:bg-secondary-hover transition-colors text-sm font-medium"
-                    >
-                      <Eye size={16} /> View Deliverable
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Workflow Info */}
-        <div className="mt-6 p-4 bg-secondary rounded-lg">
-          <div className="text-sm text-text-secondary">
-            <p>
-              <strong>Workflow ID:</strong> {workflow.id}
-            </p>
-            <p>
-              <strong>Started:</strong>{" "}
-              {new Date(workflow.createdAt).toLocaleString()}
-            </p>
-            <p>
-              <strong>Last Updated:</strong>{" "}
-              {new Date(workflow.lastUpdated).toLocaleString()}
-            </p>
-            <p>
-              <strong>Completed Phases:</strong> {completedPhases.length}/5
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default HiveAgentCollaboration;
+Design guidance:
+- Use Download icon from Lucide for download button
+- Show image previews for mixed content
+- Add proper alt text and accessibility
+- Handle base64 and URL images
+- Show loading spinner while images load
+- Add error fallback for failed images
 ```
 
-### Phase 4: Image Deliverable Handling
+#### 3.2 Update Deliverable Types
 
-#### 4.1 Create ImageDeliverableCard Component
+**Objective**: Add proper type support for image deliverables
 
-**File**: `frontend/src/components/shared/ImageDeliverableCard.tsx`
+**Current Situation**:
 
-**New Component**: Handle image deliverables from Hive
+- Missing type field in Deliverable interface
+- Limited support for mixed content types
 
-```typescript
-import React from "react";
-import { Deliverable } from "../../types";
-import { Eye, Download } from "lucide-react";
-import "./sharedStyles.css";
+**End Goal**:
 
-export interface ImageDeliverableCardProps {
-  deliverable: Deliverable;
-  onViewDetails: (id: string) => void;
-}
+- Proper type definitions for image deliverables
+- Support for text, image, and mixed content types
 
-const ImageDeliverableCard: React.FC<ImageDeliverableCardProps> = ({
-  deliverable,
-  onViewDetails,
-}) => {
-  const getAgentIcon = (agent: string) => {
-    if (agent?.includes("Visual")) return "🎨";
-    if (agent?.includes("Modular")) return "🧩";
-    if (agent?.includes("Trend")) return "📈";
-    if (agent?.includes("Brand")) return "🎯";
-    return "👨‍💼";
-  };
+**Codex Prompt**:
 
-  const handleDownload = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (deliverable.content?.imageUrl) {
-      const link = document.createElement("a");
-      link.href = deliverable.content.imageUrl;
-      link.download = `${deliverable.title.replace(/\s+/g, "_")}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+```
+Update Deliverable type to support image deliverables.
 
-  const isImage = deliverable.content?.imageUrl || deliverable.type === "image";
-  const isMixed = deliverable.type === "mixed";
+Current file: frontend/src/types/index.ts
 
-  return (
-    <div
-      className="deliverable-card flex flex-col gap-2 cursor-pointer hover:shadow-md transition-shadow"
-      onClick={() => onViewDetails(deliverable.id)}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="deliverable-icon text-2xl">
-              {isImage ? "🖼️" : isMixed ? "📋" : "📋"}
-            </span>
-            <h3
-              className="deliverable-title-text text-lg font-semibold truncate"
-              title={deliverable.title}
-            >
-              {deliverable.title}
-            </h3>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span className="deliverable-agent-icon">
-              {getAgentIcon(deliverable.agent)}
-            </span>
-            <span className="truncate" title={deliverable.agent}>
-              {deliverable.agent || "AI Agent"}
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col items-end gap-2 ml-2">
-          <span
-            className={`deliverable-status ${deliverable.status} text-xs mb-1`}
-          >
-            {deliverable.status === "ready"
-              ? "Ready"
-              : deliverable.status === "reviewed"
-              ? "Reviewed"
-              : "Pending"}
-          </span>
-          <div className="flex gap-2 mt-1">
-            {isImage && (
-              <button
-                className="deliverable-icon-btn"
-                onClick={handleDownload}
-                title="Download Image"
-                tabIndex={0}
-                aria-label="Download Image"
-              >
-                <Download size={18} />
-              </button>
-            )}
-            <button
-              className="deliverable-icon-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onViewDetails(deliverable.id);
-              }}
-              title="View Details"
-              tabIndex={0}
-              aria-label="View Details"
-            >
-              <Eye size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
+Requirements:
+1. Add type field to Deliverable interface
+2. Support 'text', 'image', 'mixed' types
+3. Update HiveWorkflowState to include proper phase tracking
+4. Add proper typing for image content
 
-      {/* Image Preview */}
-      {isImage && deliverable.content?.imageUrl && (
-        <div className="mt-3">
-          <img
-            src={deliverable.content.imageUrl}
-            alt={deliverable.title}
-            className="w-full h-32 object-cover rounded-lg border border-border"
-          />
-        </div>
-      )}
-
-      {/* Mixed Content Preview */}
-      {isMixed && deliverable.content?.elements && (
-        <div className="mt-3">
-          <div className="grid grid-cols-2 gap-2">
-            {deliverable.content.elements
-              .slice(0, 4)
-              .map((element: any, index: number) => (
-                <div key={index} className="relative">
-                  {element.imageUrl && (
-                    <img
-                      src={element.imageUrl}
-                      alt={element.element}
-                      className="w-full h-16 object-cover rounded border border-border"
-                    />
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 rounded-b">
-                    {element.targetChannel}
-                  </div>
-                </div>
-              ))}
-          </div>
-          {deliverable.content.elements.length > 4 && (
-            <p className="text-xs text-text-secondary mt-1">
-              +{deliverable.content.elements.length - 4} more elements
-            </p>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default ImageDeliverableCard;
+Type definitions needed:
+- Deliverable.type: 'text' | 'image' | 'mixed'
+- HiveWorkflowState.phases: proper phase status tracking
+- Image content structure with imageUrl and metadata
 ```
 
-#### 4.2 Update SharedDeliverablePanel
+### Phase 4: Testing and Integration
 
-**File**: `frontend/src/components/shared/SharedDeliverablePanel.tsx`
+#### 4.1 End-to-End Testing
 
-**Changes**: Add support for image deliverables
+**Objective**: Test complete workflow from moment input to deliverables
 
-```typescript
-import React from "react";
-import { Deliverable } from "../../types";
-import SharedDeliverableCard from "./SharedDeliverableCard";
-import ImageDeliverableCard from "./ImageDeliverableCard";
-import { FileText } from "lucide-react";
-import "./sharedStyles.css";
+**Current Situation**:
 
-export interface SharedDeliverablePanelProps {
-  deliverables: Deliverable[];
-  onViewDetails: (id: string) => void;
-}
+- No comprehensive testing of complete workflow
+- Missing integration tests
 
-const SharedDeliverablePanel: React.FC<SharedDeliverablePanelProps> = ({
-  deliverables,
-  onViewDetails,
-}) => {
-  const isImageDeliverable = (deliverable: Deliverable) => {
-    return (
-      deliverable.type === "image" ||
-      deliverable.type === "mixed" ||
-      deliverable.content?.imageUrl
-    );
-  };
+**End Goal**:
 
-  return (
-    <div className="deliverable-card">
-      <div className="deliverable-header">
-        <div className="deliverable-title">
-          <span className="deliverable-icon">
-            <FileText size={20} />
-          </span>
-          <h2 className="deliverable-title-text">Workflow Deliverables</h2>
-        </div>
-        <div className="deliverable-status ready">
-          {deliverables.length} Available
-        </div>
-      </div>
-      {deliverables.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <FileText size={48} className="mx-auto mb-4 text-gray-300" />
-          <p>No deliverables available yet.</p>
-          <p className="text-sm">
-            Start an orchestration to see deliverables here.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {deliverables.map((d) =>
-            isImageDeliverable(d) ? (
-              <ImageDeliverableCard
-                key={d.id}
-                deliverable={d}
-                onViewDetails={onViewDetails}
-              />
-            ) : (
-              <SharedDeliverableCard
-                key={d.id}
-                deliverable={d}
-                onViewDetails={onViewDetails}
-              />
-            )
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
+- Complete workflow testing
+- Error scenario testing
+- Performance validation
 
-export default SharedDeliverablePanel;
+**Codex Prompt**:
+
+```
+Create comprehensive testing plan for Hive orchestration workflow.
+
+Testing requirements:
+1. Test complete 5-agent sequential workflow
+2. Test error handling and recovery
+3. Test image generation and display
+4. Test real-time progress updates
+5. Test deliverable viewing and download
+6. Test workflow state persistence
+
+Test scenarios:
+- Happy path: complete workflow with all agents
+- Error path: agent failure and recovery
+- Performance: multiple concurrent workflows
+- UI: responsive design and accessibility
+- Integration: frontend-backend communication
 ```
 
-### Phase 5: Testing and Validation
+## Completed Work
 
-#### 5.1 Backend Testing
+### ✅ Frontend Components Implemented
 
-**Test Cases**:
+1. **HiveOrchestrationPage** - Uses SharedOrchestrationLayout like Hyatt
+2. **HiveMomentForm** - Moment-based input form (not campaign)
+3. **HiveAgentCollaboration** - Basic 5-agent workflow visualization
+4. **ImageDeliverableCard** - Handles image deliverables
+5. **useHiveWorkflowState** - Hook for workflow state management
+6. **HiveWorkflowState type** - Added to types
+7. **SharedDeliverablePanel** - Updated to handle image deliverables
 
-1. **Moment Input**: Verify Hive accepts moment context and processes through 5 agents
-2. **Workflow State**: Test UI state tracking throughout the workflow
-3. **Image Generation**: Verify images are generated and stored properly
-4. **API Endpoints**: Test all new Hive-specific endpoints
-5. **Error Handling**: Test error scenarios and recovery
+### ✅ Backend Foundation
 
-#### 5.2 Frontend Testing
-
-**Test Cases**:
-
-1. **HiveMomentForm**: Test moment input form and validation
-2. **HiveAgentCollaboration**: Verify 5-agent workflow visualization
-3. **Image Deliverables**: Test image display and download functionality
-4. **Workflow Progress**: Test real-time progress updates
-5. **Responsive Design**: Test on different screen sizes
-
-#### 5.3 Integration Testing
-
-**Test Cases**:
-
-1. **End-to-End Workflow**: Complete Hive orchestration from moment input to deliverables
-2. **Cross-Orchestration**: Switch between Hyatt and Hive orchestrations
-3. **Data Persistence**: Verify workflow data persists across sessions
-4. **Performance**: Test with multiple concurrent workflows
+1. **Basic API endpoint** - `/api/hive-orchestrate` exists
+2. **Agent classes** - All 5 agents available
+3. **Image generation** - Working image generation
+4. **Basic workflow** - Simple orchestration flow
 
 ## Implementation Timeline
 
-### Week 1: Backend UI Integration
+### Week 1: Backend Fixes
 
-- Update HiveOrchestrator for UI state management
-- Add API endpoints for workflow state
-- Test backend integration
+- Fix agent execution order and add Brand Lens
+- Add UI state management and endpoints
+- Test backend workflow
 
-### Week 2: Frontend Components
+### Week 2: Frontend Enhancements
 
-- Create HiveMomentForm component
-- Create HiveWorkflowState hook
-- Create HiveAgentCollaboration component
+- Improve HiveAgentCollaboration with real-time updates
+- Add SharedProgressPanel integration
+- Enhance useHiveWorkflowState hook
 
-### Week 3: Image Handling
+### Week 3: Image Handling & Testing
 
-- Create ImageDeliverableCard component
-- Update SharedDeliverablePanel
-- Test image display and download
-
-### Week 4: Integration & Testing
-
-- Update HiveOrchestrationPage
+- Update ImageDeliverableCard and types
 - Comprehensive testing
 - Bug fixes and refinements
 
@@ -1296,4 +398,4 @@ export default SharedDeliverablePanel;
 
 ## Conclusion
 
-This plan adapts the Hive orchestration to use the same UI components and patterns as Hyatt while maintaining its unique moment-based workflow and image generation capabilities. The result will be a consistent user experience across orchestrations with proper visualization of the 5-agent sequential workflow and support for image deliverables.
+The foundation is in place with frontend components implemented. The remaining work focuses on fixing the backend workflow logic, enhancing real-time progress tracking, and improving image deliverable handling. This will create a consistent user experience across orchestrations with proper visualization of the 5-agent sequential workflow and support for image deliverables.
