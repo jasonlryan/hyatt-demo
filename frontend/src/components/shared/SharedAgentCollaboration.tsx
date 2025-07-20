@@ -1,7 +1,6 @@
 import React from "react";
 import { Campaign } from "../../types";
 import {
-  Clock,
   CheckCircle,
   Play,
   Pause,

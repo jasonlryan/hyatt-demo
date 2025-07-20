@@ -77,7 +77,7 @@ class OrchestrationManager {
   extractAgentsFromClass(instance, className) {
     const agents = {};
 
-    if (className === "AgentOrchestrator") {
+    if (className === "HyattOrchestrator") {
       // Hyatt orchestration agents
       agents.research = { class: "ResearchAudienceAgent" };
       agents.trending = { class: "TrendingNewsAgent" };
@@ -99,7 +99,7 @@ class OrchestrationManager {
   // Get name for orchestration class
   getNameForClass(className) {
     const names = {
-      AgentOrchestrator: "Hyatt Orchestrator",
+      HyattOrchestrator: "Hyatt Orchestrator",
       HiveOrchestrator: "Hive Orchestrator",
     };
     return names[className] || className;
@@ -108,7 +108,7 @@ class OrchestrationManager {
   // Get description for orchestration class
   getDescriptionForClass(className) {
     const descriptions = {
-      AgentOrchestrator:
+      HyattOrchestrator:
         "Hyatt orchestration with 5 specialized agents for comprehensive campaign development",
       HiveOrchestrator:
         "Reactive framework orchestration with parallel agent collaboration for visual content generation",
@@ -119,7 +119,7 @@ class OrchestrationManager {
   // Get workflows for orchestration class
   getWorkflowsForClass(className) {
     const workflows = {
-      AgentOrchestrator: [
+      HyattOrchestrator: [
         "hyatt_campaign_development",
         "hyatt_research_analysis",
         "hyatt_strategic_planning",
@@ -347,7 +347,7 @@ class OrchestrationManager {
   // Map orchestration class names to frontend-expected IDs
   mapToFrontendId(className) {
     const mappings = {
-      agentorchestrator: "hyatt",
+      hyattorchestrator: "hyatt",
       hiveorchestrator: "hive",
     };
     return mappings[className] || className;
