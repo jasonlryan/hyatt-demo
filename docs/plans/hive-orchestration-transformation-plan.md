@@ -1,8 +1,12 @@
+---
+
 # Hive Orchestration UI Pattern Adaptation Plan
+
+**Note:** This plan assumes the Hive Orchestrator has already been genericized using the patterns validated in Hyatt (see Phase 1 of the hyatt-hive-genericization-plan.md). Complete genericization before starting this transformation.
 
 ## Overview
 
-This plan outlines how to adapt the Hive Orchestrator for **PR response to cultural/brand moments** using the same UI components and patterns as the Hyatt orchestration. The goal is to create a moment-based workflow orchestrated by a PR Manager that generates strategic PR responses and visual assets.
+This plan outlines how to adapt the Hive Orchestrator for PR response to cultural/brand moments using the same UI components and patterns as the Hyatt orchestration. All new workflow logic will use dynamic industry/brand context and generic prompts.
 
 ## What Hive Orchestration Actually Does
 
@@ -26,13 +30,14 @@ This plan outlines how to adapt the Hive Orchestrator for **PR response to cultu
 7. **BrandQAAgent** - "Final brand alignment and effectiveness assessment"
 
 ### **Correct Agent Flow:**
+
 ```
-Manual Moment Input → PR Manager (Orchestrator) 
+Manual Moment Input → PR Manager (Orchestrator)
   ↓
-TrendingNews (Moment Analysis) 
+TrendingNews (Moment Analysis)
   ↓
 Strategic Insight (Creative Step)
-  ↓ 
+  ↓
 Story Angles (Narrative Options)
   ↓
 Brand Lens (How can brand tell the story?)
@@ -51,11 +56,13 @@ Brand QA (Final Assessment)
 **Objective**: Implement correct PR Manager-led workflow with proper agent sequence
 
 **Current Situation**:
+
 - Wrong agent order: Trend → Brand Lens → Visual Prompt → Modular Elements → QA
 - Missing PR Manager orchestration role
 - Brand Lens used incorrectly in position 2
 
 **End Goal**:
+
 - PR Manager orchestrates the entire workflow
 - Correct sequence: Manual Input → Trending News → Strategic Insight → Story Angles → Brand Lens → Visual Generator → Brand QA
 - Brand Lens positioned correctly to determine how brand tells the story
@@ -93,7 +100,7 @@ REQUIREMENTS:
 
 4. Update deliverable structure:
    - PR Strategy Overview (text)
-   - Moment Analysis (text)  
+   - Moment Analysis (text)
    - Creative Insights (text)
    - Narrative Angles (text)
    - Brand Story Approach (text)
@@ -106,11 +113,13 @@ REQUIREMENTS:
 **Objective**: Align agent prompts with their correct roles in PR workflow
 
 **Current Situation**:
+
 - Agent prompts don't match the correct PR workflow roles
 - Brand Lens prompt positioned as general brand analysis
 - Missing PR Manager orchestration prompts
 
 **End Goal**:
+
 - PR Manager prompt for orchestrating overall strategy
 - Trending News prompt for analyzing manual moment input
 - Strategic Insight prompt for creative opportunity discovery
@@ -174,11 +183,13 @@ REQUIREMENTS:
 **Objective**: Update API to support PR Manager-led 7-agent workflow
 
 **Current Situation**:
+
 - API configured for 5-agent visual creation workflow
 - Missing PR Manager orchestration endpoint
 - Wrong phase definitions and tracking
 
 **End Goal**:
+
 - Support 7-agent PR Manager workflow
 - Correct phase names and tracking
 - Proper manual moment input handling
@@ -231,11 +242,13 @@ REQUIREMENTS:
 **Objective**: Display correct 7-agent PR Manager workflow in UI
 
 **Current Situation**:
+
 - UI shows 5-agent workflow with wrong sequence
 - Missing PR Manager orchestration visualization
 - Wrong phase descriptions and agent roles
 
 **End Goal**:
+
 - Display 7-agent PR Manager-led workflow
 - Correct agent roles and phase descriptions
 - Visual indication of PR Manager orchestration role
@@ -251,7 +264,7 @@ REQUIREMENTS:
 1. Update to 7 phases:
    - pr_strategy: "PR Manager - Orchestrating response strategy"
    - moment_analysis: "Trending News - Analyzing the moment"
-   - creative_insights: "Strategic Insight - Finding creative opportunities"  
+   - creative_insights: "Strategic Insight - Finding creative opportunities"
    - story_angles: "Story Angles - Generating narrative approaches"
    - brand_approach: "Brand Lens - How can the brand tell this story?"
    - key_visual: "Visual Generator - Creating key visual"
@@ -282,11 +295,13 @@ REQUIREMENTS:
 **Objective**: Emphasize manual moment input (not automated discovery)
 
 **Current Situation**:
+
 - Form might suggest automated moment discovery
 - Missing emphasis on manual input requirement
 - Needs clearer guidance for moment description
 
 **End Goal**:
+
 - Clear indication this is manual moment input
 - Better guidance for describing moments
 - Proper context fields for PR Manager orchestration
@@ -334,11 +349,13 @@ Example placeholders:
 **Objective**: Verify complete 7-agent workflow with correct sequencing
 
 **Current Situation**:
+
 - Need to test new PR Manager orchestration
 - Verify correct agent sequencing and outputs
 - Test manual moment input processing
 
 **End Goal**:
+
 - Complete 7-agent workflow functions correctly
 - PR Manager properly orchestrates other agents
 - Brand Lens correctly positioned for storytelling approach
@@ -352,7 +369,7 @@ Test complete PR Manager workflow with different moment types.
 Testing requirements:
 1. Test manual moment input:
    - Crisis response scenario
-   - Cultural opportunity scenario  
+   - Cultural opportunity scenario
    - Competitor response scenario
    - Brand activation moment
 
@@ -379,7 +396,7 @@ Testing requirements:
 
 Expected outputs:
 1. PR Strategy Framework (text)
-2. Moment Analysis (text) 
+2. Moment Analysis (text)
 3. Creative Opportunities (text)
 4. Narrative Approaches (text)
 5. Brand Storytelling Approach (text)
@@ -392,6 +409,7 @@ Expected outputs:
 ### ✅ Phase 1: Backend Workflow Infrastructure - COMPLETE
 
 #### 1.1 Backend Foundation - ✅ **DONE**
+
 - **✅ Sequential API endpoint**: `/api/hive-orchestrate` with workflow management
 - **✅ Agent classes**: All agent classes properly implemented
 - **✅ Image generation**: Working image generation functionality
@@ -399,6 +417,7 @@ Expected outputs:
 - **✅ Real-time updates**: Polling and progress tracking system
 
 #### 1.2 UI State Management - ✅ **DONE**
+
 - **✅ activeWorkflows Map**: Tracking running workflows
 - **✅ Workflow state structure**: Complete phase/status/deliverable tracking
 - **✅ API endpoints**: GET /api/hive/workflows/:id and /workflows
@@ -407,6 +426,7 @@ Expected outputs:
 ### ✅ Phase 2: Frontend Components - COMPLETE
 
 #### 2.1 Core Components - ✅ **DONE**
+
 - **✅ HiveOrchestrationPage**: Uses SharedOrchestrationLayout
 - **✅ HiveMomentForm**: Moment-based input form
 - **✅ HiveAgentCollaboration**: Agent workflow visualization
@@ -414,6 +434,7 @@ Expected outputs:
 - **✅ useHiveWorkflowState**: Workflow state management hook
 
 #### 2.2 UI Integration - ✅ **DONE**
+
 - **✅ SharedProgressPanel**: Overall workflow progress
 - **✅ SharedDeliverablePanel**: Deliverable viewing
 - **✅ Real-time updates**: 2-second polling for progress
@@ -422,18 +443,23 @@ Expected outputs:
 ### ✅ Phase 3: Type System - COMPLETE
 
 #### 3.1 Type Definitions - ✅ **DONE**
+
 - **✅ HiveWorkflowState**: Complete workflow state typing
 - **✅ Deliverable types**: text/image/mixed support
 - **✅ Phase status tracking**: Proper TypeScript definitions
 
 ## Implementation Timeline
 
+**Prerequisite:** Complete Hyatt genericization and apply the same to Hive before starting this transformation. See hyatt-hive-genericization-plan.md for details.
+
 ### Week 1: Workflow Restructure
+
 - ✅ **Day 1-2**: Update HiveOrchestrator for 7-agent PR Manager workflow
 - ✅ **Day 3-4**: Update all agent prompts for correct roles
 - ✅ **Day 5**: Update API endpoint for new workflow phases
 
-### Week 2: Frontend Updates and Testing  
+### Week 2: Frontend Updates and Testing
+
 - ✅ **Day 1-2**: Update HiveAgentCollaboration for 7-agent display
 - ✅ **Day 3**: Update HiveMomentForm for manual input emphasis
 - ✅ **Day 4-5**: End-to-end testing of complete PR Manager workflow
@@ -442,7 +468,7 @@ Expected outputs:
 
 1. **PR Manager Orchestration**: PR Manager properly coordinates all agents ⚠️ **NEEDS IMPLEMENTATION**
 2. **Correct Agent Sequence**: Trending News → Strategic Insight → Story Angles → Brand Lens → Visual Generator → Brand QA ⚠️ **NEEDS IMPLEMENTATION**
-3. **Brand Lens Positioning**: Brand Lens correctly answers "how can brand tell this story?" ⚠️ **NEEDS IMPLEMENTATION**  
+3. **Brand Lens Positioning**: Brand Lens correctly answers "how can brand tell this story?" ⚠️ **NEEDS IMPLEMENTATION**
 4. **Manual Input Processing**: System handles manual moment input effectively ⚠️ **NEEDS IMPLEMENTATION**
 5. **Visual Consistency**: Uses same UI patterns as Hyatt orchestration ✅
 6. **Complete Deliverables**: All 7 phases produce quality outputs ⚠️ **NEEDS TESTING**
