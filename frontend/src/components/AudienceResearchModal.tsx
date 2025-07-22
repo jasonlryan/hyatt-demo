@@ -1,6 +1,7 @@
 import React from 'react';
 import { AudienceResearch } from '../types';
 import { X } from 'lucide-react';
+import './deliverableStyles.css';
 
 interface AudienceResearchModalProps {
   research: AudienceResearch;
@@ -12,19 +13,23 @@ const AudienceResearchModal: React.FC<AudienceResearchModalProps> = ({ research,
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center p-6 border-b border-slate-200">
-          <h2 className="text-2xl font-bold text-slate-800">Audience Research & Insights</h2>
-          <button 
+    <div className="deliverable-modal" onClick={onClose}>
+      <div
+        className="deliverable-modal-content"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="deliverable-modal-header">
+          <h2 className="deliverable-modal-title">Audience Research & Insights</h2>
+          <button
             onClick={onClose}
-            className="text-slate-500 hover:text-slate-700"
+            className="deliverable-modal-close"
+            aria-label="Close modal"
           >
-            <X size={24} />
+            <X size={20} />
           </button>
         </div>
-        
-        <div className="p-6">
+
+        <div className="deliverable-modal-body space-y-6">
           <section className="mb-8">
             <h3 className="text-xl font-semibold text-slate-800 mb-4">Primary Demographics:</h3>
             <ul className="space-y-4">
@@ -93,23 +98,13 @@ const AudienceResearchModal: React.FC<AudienceResearchModalProps> = ({ research,
             </ul>
           </section>
         </div>
-        
-        <div className="flex justify-center space-x-4 p-6 border-t border-slate-200">
-          <button 
-            className="px-6 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-md transition-colors"
-            onClick={() => {
-              onClose();
-            }}
+
+        <div className="deliverable-modal-footer">
+          <button
+            className="deliverable-btn deliverable-btn-primary"
+            onClick={onClose}
           >
-            Resume
-          </button>
-          <button 
-            className="px-6 py-2 bg-pink-500 hover:bg-pink-600 text-white rounded-md transition-colors"
-            onClick={() => {
-              onClose();
-            }}
-          >
-            Refine
+            Close
           </button>
         </div>
       </div>
