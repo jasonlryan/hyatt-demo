@@ -1,12 +1,15 @@
-import { useState } from 'react';
-import SharedOrchestrationLayout from './SharedOrchestrationLayout';
-import SidePanel from '../SidePanel';
-import { SharedDeliverablePanel, SharedProgressPanel } from '../shared';
-import HiveMomentForm from '../shared/HiveMomentForm';
-import HiveAgentCollaboration from '../shared/HiveAgentCollaboration';
-import { useHiveWorkflowState } from '../../hooks/useHiveWorkflowState';
-import DeliverableModal from '../DeliverableModal';
-import { Deliverable } from '../../types';
+import { useState } from "react";
+import SharedOrchestrationLayout from "./SharedOrchestrationLayout";
+import SidePanel from "../SidePanel";
+import {
+  SharedDeliverablePanel,
+  SharedProgressPanel,
+  SharedCampaignForm,
+} from "../shared";
+import HiveAgentCollaboration from "../shared/HiveAgentCollaboration";
+import { useHiveWorkflowState } from "../../hooks/useHiveWorkflowState";
+import DeliverableModal from "../DeliverableModal";
+import { Deliverable } from "../../types";
 
 interface HiveOrchestrationPageProps {
   hitlReview?: boolean;
@@ -19,13 +22,24 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
   onToggleHitl,
   onNavigateToOrchestrations,
 }) => {
-  const { workflow, isLoading, startOrchestration, resetWorkflow } = useHiveWorkflowState();
+  const { workflow, isLoading, startOrchestration, resetWorkflow } =
+    useHiveWorkflowState();
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
-  const [modalDeliverable, setModalDeliverable] = useState<Deliverable | null>(null);
+  const [modalDeliverable, setModalDeliverable] = useState<Deliverable | null>(
+    null
+  );
   const [isDeliverableModalOpen, setIsDeliverableModalOpen] = useState(false);
 
   const handleStart = async (context: any) => {
     await startOrchestration(context);
+  };
+
+  const handleSelectCampaign = (campaign: any) => {
+    // This function is not fully implemented in the new_code,
+    // so it will be a placeholder for now.
+    console.log("Selecting campaign:", campaign);
+    // In a real scenario, you would update the workflow state
+    // with the selected campaign and potentially trigger a new orchestration.
   };
 
   const deliverables = workflow ? Object.values(workflow.deliverables) : [];
@@ -36,13 +50,17 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
         <div className="mb-6 flex items-center justify-between">
           <nav className="flex items-center space-x-2 text-sm text-text-secondary">
             <button
-              onClick={onNavigateToOrchestrations || (() => window.history.back())}
+              onClick={
+                onNavigateToOrchestrations || (() => window.history.back())
+              }
               className="text-success hover:text-success-hover transition-colors"
             >
               Orchestrations
             </button>
             <span>›</span>
-            <span className="text-text-primary font-medium">Hive Orchestrator</span>
+            <span className="text-text-primary font-medium">
+              Hive Orchestrator
+            </span>
           </nav>
           {onToggleHitl && (
             <div className="flex items-center gap-2">
@@ -50,20 +68,22 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
               <button
                 onClick={onToggleHitl}
                 className={`relative inline-flex h-6 w-12 items-center rounded-full ${
-                  hitlReview ? 'bg-success' : 'bg-secondary'
+                  hitlReview ? "bg-success" : "bg-secondary"
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white ${
-                    hitlReview ? 'translate-x-7' : 'translate-x-1'
+                    hitlReview ? "translate-x-7" : "translate-x-1"
                   }`}
                 />
                 <span
                   className={`absolute text-xs font-medium ${
-                    hitlReview ? 'text-white left-1' : 'text-text-secondary right-1'
+                    hitlReview
+                      ? "text-white left-1"
+                      : "text-text-secondary right-1"
                   }`}
                 >
-                  {hitlReview ? 'ON' : 'OFF'}
+                  {hitlReview ? "ON" : "OFF"}
                 </span>
               </button>
             </div>
@@ -100,7 +120,17 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
           }
         >
           {!workflow ? (
-            <HiveMomentForm onSubmit={handleStart} onCancel={resetWorkflow} isLoading={isLoading} />
+            <SharedCampaignForm
+              onCreate={(brief) => handleStart({ campaign: brief })}
+              onCancel={resetWorkflow}
+              isLoading={isLoading}
+              selectedOrchestration={"hive"}
+              onNewCampaign={resetWorkflow}
+              onLoadCampaign={handleSelectCampaign}
+              campaigns={[]}
+              dropdownOpen={false}
+              setDropdownOpen={() => {}}
+            />
           ) : (
             <HiveAgentCollaboration
               workflow={workflow}
