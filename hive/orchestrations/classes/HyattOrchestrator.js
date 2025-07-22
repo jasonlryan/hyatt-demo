@@ -374,12 +374,25 @@ class HyattOrchestrator extends BaseOrchestrator {
         externalData
       );
 
+      // DEBUG: Log the actual result
+      console.log(
+        `[${campaignId}] DEBUG: researchResult =`,
+        JSON.stringify(researchResult, null, 2)
+      );
+      console.log(
+        `[${campaignId}] DEBUG: researchResult.insights =`,
+        JSON.stringify(researchResult?.insights, null, 2)
+      );
+
       const hasRealData =
         researchResult &&
         researchResult.insights &&
         typeof researchResult.insights.analysis === "string" &&
         researchResult.insights.analysis.trim() !== "" &&
         researchResult.insights.analysis.trim() !== "N/A";
+
+      // DEBUG: Log the validation result
+      console.log(`[${campaignId}] DEBUG: hasRealData = ${hasRealData}`);
 
       // Remove processing indicator and add results
       campaign.conversation = campaign.conversation.filter(

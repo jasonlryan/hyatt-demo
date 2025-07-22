@@ -57,27 +57,9 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
   const [reviewPhaseKey, setReviewPhaseKey] = useState<string | null>(null);
 
   const handleViewDetails = (deliverable: Deliverable) => {
-    if (deliverable.title === "Audience Research") {
-      const dummyResearch: AudienceResearch = {
-        demographics: {
-          age: "N/A",
-          income: "N/A",
-          geography: "N/A",
-          lifestyle: "N/A",
-        },
-        psychographics: {
-          values: "N/A",
-          motivations: "N/A",
-          travelBehaviors: "N/A",
-        },
-        segmentation: { primary: "N/A", secondary: "N/A", tertiary: "N/A" },
-      };
-      setModalResearch(dummyResearch);
-      setIsResearchModalOpen(true);
-    } else {
-      setModalDeliverable(deliverable);
-      setIsDeliverableModalOpen(true);
-    }
+    // Use generic modal for all deliverables, including research
+    setModalDeliverable(deliverable);
+    setIsDeliverableModalOpen(true);
   };
 
   const handleSelectCampaign = (campaignId: string) => {

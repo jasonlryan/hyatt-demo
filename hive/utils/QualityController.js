@@ -22,6 +22,59 @@ class QualityController {
     };
 
     try {
+      // Handle new format where everything is in an 'analysis' field
+      if (researchData.analysis && typeof researchData.analysis === "string") {
+        const analysisLength = researchData.analysis.length;
+        const analysisLower = researchData.analysis.toLowerCase();
+
+        // Check for key components in the analysis text
+        const hasDemographics =
+          analysisLower.includes("demographic") ||
+          analysisLower.includes("age") ||
+          analysisLower.includes("income");
+        const hasDrivers =
+          analysisLower.includes("motivation") ||
+          analysisLower.includes("driver") ||
+          analysisLower.includes("value");
+        const hasRecommendations =
+          analysisLower.includes("recommendation") ||
+          analysisLower.includes("strategic") ||
+          analysisLower.includes("messaging");
+        const hasSegments =
+          analysisLower.includes("segment") ||
+          analysisLower.includes("target") ||
+          analysisLower.includes("audience");
+
+        // Give confidence based on content
+        if (hasDemographics) validation.confidence += 25;
+        else
+          validation.issues.push("Demographics section not clearly identified");
+
+        if (hasDrivers) validation.confidence += 25;
+        else
+          validation.issues.push("Motivational drivers not clearly identified");
+
+        if (hasRecommendations) validation.confidence += 20;
+        else
+          validation.issues.push(
+            "Strategic recommendations not clearly identified"
+          );
+
+        if (hasSegments) validation.confidence += 20;
+        else validation.issues.push("Audience segments not clearly identified");
+
+        // Bonus for comprehensive analysis
+        if (analysisLength > 500) validation.confidence += 10;
+
+        // If we have a good comprehensive analysis, consider it valid
+        if (validation.confidence >= this.minAudienceConfidence) {
+          validation.isValid = true;
+        }
+
+        return validation;
+      }
+
+      // Original validation for structured format
       // Check target demographics (more lenient)
       if (
         !researchData.targetDemographics ||
