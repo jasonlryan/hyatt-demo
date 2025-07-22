@@ -7,12 +7,16 @@ interface HiveAgentCollaborationProps {
   onViewDeliverable?: (phaseKey: string) => void;
 }
 
+// Workflow phases mirror the 7-step process defined by the HiveOrchestrator
+// docs/orchestrations/HiveOrchestrator.md
 const phases = [
-  { key: 'trend_analysis', label: 'Trend Analysis', icon: '📈' },
+  { key: 'pr-manager', label: 'PR Manager', icon: '📋' },
+  { key: 'trending', label: 'Trending News', icon: '📰' },
+  { key: 'strategic', label: 'Strategic Insight', icon: '💡' },
+  { key: 'story', label: 'Story Angles', icon: '✍️' },
   { key: 'brand_lens', label: 'Brand Lens', icon: '👓' },
-  { key: 'visual_prompt', label: 'Visual Prompt', icon: '🎨' },
-  { key: 'modular_elements', label: 'Modular Elements', icon: '🧩' },
-  { key: 'qa_review', label: 'Quality Review', icon: '✅' },
+  { key: 'visual_prompt_generator', label: 'Visual Generator', icon: '🎨' },
+  { key: 'brand_qa', label: 'Brand QA', icon: '✅' },
 ];
 
 const HiveAgentCollaboration: React.FC<HiveAgentCollaborationProps> = ({ workflow, onViewDeliverable }) => {
