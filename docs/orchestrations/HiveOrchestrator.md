@@ -2,11 +2,11 @@
 
 ## Overview
 
-The Hive Orchestrator is a **reactive framework orchestration** designed for visual creative generation workflows. It coordinates 5 specialized AI agents in a sequential 5-step process to create comprehensive visual creative campaigns with cultural trend analysis, brand alignment, and quality assurance.
+The Hive Orchestrator is a **reactive framework orchestration** designed for moment-based PR workflows. It now coordinates **7 specialized AI agents** in a sequential process to create industry-agnostic campaigns with cultural analysis, brand alignment, visual generation, and quality assurance.
 
 ## 🎯 Purpose
 
-- **Visual Creative Generation**: Generate visual prompts and modular elements for creative campaigns
+- **Visual Creative Generation**: Generate visual prompts and key visuals for creative campaigns
 - **Cultural Trend Analysis**: Analyze current trends and cultural insights to inform creative direction
 - **Brand Alignment**: Ensure all creative outputs align with brand guidelines and identity
 - **Quality Assurance**: Comprehensive review process for brand consistency and creative quality
@@ -17,7 +17,7 @@ The Hive Orchestrator is a **reactive framework orchestration** designed for vis
 ### Core Components
 
 1. **Campaign Form** - Visual creative campaign brief input
-2. **Workflow Progress** - 5-step sequential workflow visualization
+2. **Workflow Progress** - 7-step sequential workflow visualization
 3. **Agent Status** - Real-time status monitoring for all 5 agents
 4. **Progress Panel** - Campaign progress tracking and metrics
 5. **Deliverables Panel** - Final outputs and creative assets
@@ -43,50 +43,44 @@ The Hive Orchestrator is a **reactive framework orchestration** designed for vis
 
 | Agent ID                       | Agent Name                   | Role Description                                                          |
 | ------------------------------ | ---------------------------- | ------------------------------------------------------------------------- |
-| `trend_cultural_analyzer`      | Trend Cultural Analyzer      | Analyzes cultural trends and market insights to inform creative direction |
-| `brand_lens`                   | Brand Lens                   | Applies brand perspective and guidelines to ensure alignment              |
-| `visual_prompt_generator`      | Visual Prompt Generator      | Generates base visual prompts based on context and requirements           |
-| `modular_elements_recommender` | Modular Elements Recommender | Creates modular visual elements and components                            |
-| `brand_qa`                     | Brand QA                     | Performs quality assurance checks for brand consistency                   |
+| `pr-manager`                   | PR Manager                   | Orchestrates workflow and manages handoffs                               |
+| `trending`                     | Trending News                | Analyzes the manual moment input                                         |
+| `strategic`                    | Strategic Insight            | Provides creative opportunity analysis                                   |
+| `story`                        | Story Angles                 | Generates narrative angles                                               |
+| `brand_lens`                   | Brand Lens                   | Determines how the brand tells the story                                 |
+| `visual_prompt_generator`      | Visual Generator             | Creates the key visual and image prompt                                  |
+| `brand_qa`                     | Brand QA                     | Final brand alignment assessment                                         |
 
 ### Agent Workflow
 
 ```
-Trend Analysis → Brand Lens → Visual Prompts → Modular Elements → QA Review
+PR Manager → Trending News → Strategic Insight → Story Angles → Brand Lens → Visual Generator → Brand QA
 ```
 
 ## 📋 Workflows
 
-### 5-Step Sequential Process
+### 7-Step Sequential Process
 
-1. **Trend Analysis** (`trend_cultural_analyzer`)
+1. **PR Manager** (`pr-manager`)
+   - Establishes overall strategy and context
 
-   - Analyzes current cultural trends and market insights
-   - Identifies relevant cultural movements and consumer behaviors
-   - Provides trend insights to inform creative direction
+2. **Trending News** (`trending`)
+   - Analyzes the manual moment input
 
-2. **Brand Lens** (`brand_lens`)
+3. **Strategic Insight** (`strategic`)
+   - Provides creative opportunity analysis
 
-   - Applies brand perspective and guidelines
-   - Ensures creative direction aligns with brand identity
-   - Provides brand-specific insights and recommendations
+4. **Story Angles** (`story`)
+   - Generates multiple narrative approaches
 
-3. **Visual Prompt Generation** (`visual_prompt_generator`)
+5. **Brand Lens** (`brand_lens`)
+   - Determines how the brand should tell the story
 
-   - Generates base visual prompts based on context
-   - Incorporates trend insights and brand guidelines
-   - Creates foundation for visual creative development
+6. **Visual Generator** (`visual_prompt_generator`)
+   - Creates the key visual and image prompt
 
-4. **Modular Elements** (`modular_elements_recommender`)
-
-   - Creates modular visual elements and components
-   - Builds upon base prompts and trend analysis
-   - Provides flexible creative components for campaigns
-
-5. **QA Review** (`brand_qa`)
-   - Performs quality assurance checks
-   - Ensures brand consistency across all outputs
-   - Validates creative quality and alignment
+7. **Brand QA** (`brand_qa`)
+   - Performs final brand alignment assessment
 
 ## ⚙️ Configuration
 
@@ -127,17 +121,18 @@ Trend Analysis → Brand Lens → Visual Prompts → Modular Elements → QA Rev
 
 ### Analysis Deliverables
 
-- **Trend Insights**: Cultural trend analysis results
-- **Brand Lens**: Brand perspective analysis
+- **Trend Insights**: Moment analysis results
+- **Strategic Insights**: Creative opportunity analysis
+- **Story Angles**: Narrative options
+- **Brand Lens**: Brand storytelling approach
 
 ### Creative Deliverables
 
-- **Visual Prompts**: Generated visual prompts
-- **Modular Elements**: Recommended modular elements
+- **Key Visual**: Generated visual concept and prompt
 
 ### Review Deliverables
 
-- **QA Review**: Quality assurance results
+- **Brand QA**: Final quality assessment
 
 ## 🚀 How to Use
 
@@ -155,7 +150,7 @@ Trend Analysis → Brand Lens → Visual Prompts → Modular Elements → QA Rev
 
 ### 3. Monitor Progress
 
-- Watch the 5-step workflow progress in real-time
+- Watch the 7-step workflow progress in real-time
 - Monitor individual agent status and outputs
 - Review progress metrics in the side panel
 
@@ -179,8 +174,7 @@ Trend Analysis → Brand Lens → Visual Prompts → Modular Elements → QA Rev
 We're launching a new eco-friendly hotel brand targeting millennial travelers.
 We need visual creative assets that reflect sustainability, luxury, and adventure.
 The campaign should appeal to environmentally conscious consumers who value
-unique travel experiences. Include modular elements for social media, website,
-and print materials.
+unique travel experiences. Include a key visual concept that can adapt across social media, website and print materials.
 ```
 
 **Poor Example:**
@@ -196,13 +190,6 @@ Make some hotel marketing stuff
 - Detailed creative briefs for visual assets
 - Style guidelines and aesthetic direction
 - Color palette and typography recommendations
-
-### Modular Elements
-
-- Reusable visual components
-- Social media templates
-- Website design elements
-- Print material layouts
 
 ### Trend Insights
 
@@ -262,7 +249,7 @@ Make some hotel marketing stuff
 
 - AI-powered creative optimization
 - Automated A/B testing integration
-- Advanced modular element library
+- Advanced visual prompt library
 - Cross-platform asset generation
 
 ## 📚 Related Documentation
