@@ -376,13 +376,20 @@ Be concise but insightful. Reference specific findings and data points.
 
   async generateConversationResponse(context, messageType, data = null) {
     // Use ONLY the centralized GPT prompt - no hardcoded logic
-    const { campaignType, targetMarket, focusAreas, urgency, originalBrief } =
-      context;
+    const {
+      campaignType,
+      targetMarket,
+      targetIndustry,
+      brandContext,
+      focusAreas,
+      urgency,
+      originalBrief,
+    } = context;
 
     // Create simple context for the centralized prompt
     const campaignContext = originalBrief
       ? `CAMPAIGN BRIEF: ${originalBrief}`
-      : `Campaign Type: ${campaignType} targeting ${targetMarket} travelers.`;
+      : `Campaign Type: ${campaignType} in ${targetIndustry} targeting ${targetMarket}. Brand context: ${brandContext}.`;
 
     // Let the centralized prompt handle ALL scenarios
     const prompt = `

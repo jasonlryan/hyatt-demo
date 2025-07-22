@@ -14,9 +14,7 @@ class BrandLensAgent extends BaseAgent {
     const userContent = `
 Campaign Context: ${campaignContext.campaign}
 Target Market: ${campaignContext.targetMarket}
-Brand Guidelines: ${
-      campaignContext.brandGuidelines || "Hyatt luxury hospitality"
-    }
+Brand Guidelines: ${campaignContext.brandGuidelines || campaignContext.brandContext || "general"}
 
 Trend Insights:
 ${trendInsights}
@@ -35,7 +33,7 @@ Respond in JSON format with "brandPositioning", "brandVoice", "keyPrinciples", a
     } catch (_) {
       return {
         brandPositioning: raw,
-        brandVoice: "Authentic luxury hospitality",
+        brandVoice: "Authentic brand voice",
         keyPrinciples: ["Quality", "Service", "Innovation"],
         risksOpportunities: "Analysis provided in brandPositioning",
       };
