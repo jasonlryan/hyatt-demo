@@ -1,5 +1,7 @@
 ---
 
+# ARCHIVED: This plan has been superseded by hive-orchestration-modernization-plan.md. Please refer to the new plan for all future work.
+
 # Hive Orchestration UI Pattern Adaptation Plan
 
 **Note:** This plan assumes the Hive Orchestrator has already been genericized using the patterns validated in Hyatt (see Phase 1 of the hyatt-hive-genericization-plan.md). Complete genericization before starting this transformation.
