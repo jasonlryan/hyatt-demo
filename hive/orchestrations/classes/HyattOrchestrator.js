@@ -374,6 +374,13 @@ class HyattOrchestrator extends BaseOrchestrator {
         externalData
       );
 
+      const hasRealData =
+        researchResult &&
+        researchResult.insights &&
+        typeof researchResult.insights.analysis === "string" &&
+        researchResult.insights.analysis.trim() !== "" &&
+        researchResult.insights.analysis.trim() !== "N/A";
+
       // Remove processing indicator and add results
       campaign.conversation = campaign.conversation.filter(
         (msg) => !msg.isProcessing
@@ -397,24 +404,30 @@ class HyattOrchestrator extends BaseOrchestrator {
         }
       }
 
-      campaign.phases.research = researchResult;
+      if (hasRealData) {
+        campaign.phases.research = researchResult;
 
-      // Generate dynamic delivery message using the agent's system prompt
-      const deliveryMessage = await this.generateAgentDeliveryMessage(
-        this.researchAgent,
-        campaignContext,
-        "research",
-        researchResult.insights
-      );
+        // Generate dynamic delivery message using the agent's system prompt
+        const deliveryMessage = await this.generateAgentDeliveryMessage(
+          this.researchAgent,
+          campaignContext,
+          "research",
+          researchResult.insights
+        );
 
-      campaign.conversation.push({
-        speaker: "Research & Audience GPT",
-        message: deliveryMessage,
-        deliverable: researchResult.insights,
-        agent: "Research & Audience GPT",
-        qualityScore: qualityValidation.confidence,
-        timestamp: new Date().toISOString(),
-      });
+        campaign.conversation.push({
+          speaker: "Research & Audience GPT",
+          message: deliveryMessage,
+          deliverable: researchResult.insights,
+          agent: "Research & Audience GPT",
+          qualityScore: qualityValidation.confidence,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        console.warn(
+          `[${campaignId}] Research agent returned empty insights, skipping deliverable.`
+        );
+      }
 
       campaign.lastUpdated = new Date().toISOString();
       console.log(`[${campaignId}] Research phase completed`);
