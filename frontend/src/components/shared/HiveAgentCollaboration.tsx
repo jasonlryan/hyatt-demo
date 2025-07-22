@@ -7,15 +7,19 @@ interface HiveAgentCollaborationProps {
   onViewDeliverable?: (phaseKey: string) => void;
 }
 
-const phases = [
-  { key: 'trend_analysis', label: 'Trend Analysis', icon: '📈' },
+const phaseConfig = [
+  { key: 'pr_manager', label: 'PR Manager', icon: '📋' },
+  { key: 'trending', label: 'Trending News', icon: '📰' },
+  { key: 'strategic', label: 'Strategic Insight', icon: '💡' },
+  { key: 'story', label: 'Story Angles', icon: '✍️' },
   { key: 'brand_lens', label: 'Brand Lens', icon: '👓' },
-  { key: 'visual_prompt', label: 'Visual Prompt', icon: '🎨' },
-  { key: 'modular_elements', label: 'Modular Elements', icon: '🧩' },
-  { key: 'qa_review', label: 'Quality Review', icon: '✅' },
+  { key: 'visual_prompt_generator', label: 'Visual Generator', icon: '🎨' },
+  { key: 'brand_qa', label: 'Brand QA', icon: '✅' },
 ];
 
 const HiveAgentCollaboration: React.FC<HiveAgentCollaborationProps> = ({ workflow, onViewDeliverable }) => {
+  const phases = phaseConfig.filter((p) => workflow.phases[p.key]);
+
   const renderStatusIcon = (phaseKey: string) => {
     const phase = workflow.phases[phaseKey];
     if (!phase) return null;
