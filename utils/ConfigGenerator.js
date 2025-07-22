@@ -27,6 +27,7 @@ class ConfigGenerator {
     const config = {
       id: agent.id,
       name: agent.name,
+      class: agent.class,
       description: agent.description,
       enabled: true,
       model: agent.model || "gpt-4o-2024-08-06",
