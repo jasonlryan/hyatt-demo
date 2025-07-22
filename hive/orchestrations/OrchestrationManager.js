@@ -126,11 +126,13 @@ class OrchestrationManager {
         "strategic",
       ],
       HiveOrchestrator: [
-        "visual_prompt_generator",
-        "modular_elements_recommender",
-        "trend_cultural_analyzer",
-        "brand_qa",
+        "pr-manager",
+        "trending",
+        "strategic",
+        "story",
         "brand_lens",
+        "visual_prompt_generator",
+        "brand_qa",
       ],
     };
 

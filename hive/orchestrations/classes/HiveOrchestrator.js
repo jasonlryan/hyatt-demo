@@ -1,9 +1,11 @@
 const BaseOrchestrator = require("./BaseOrchestrator");
-const VisualPromptGeneratorAgent = require("../../agents/classes/VisualPromptGeneratorAgent");
-const ModularElementsRecommenderAgent = require("../../agents/classes/ModularElementsRecommenderAgent");
-const TrendCulturalAnalyzerAgent = require("../../agents/classes/TrendCulturalAnalyzerAgent");
-const BrandQAAgent = require("../../agents/classes/BrandQAAgent");
+const PRManagerAgent = require("../../agents/classes/PRManagerAgent");
+const TrendingNewsAgent = require("../../agents/classes/TrendingNewsAgent");
+const StrategicInsightAgent = require("../../agents/classes/StrategicInsightAgent");
+const StoryAnglesAgent = require("../../agents/classes/StoryAnglesAgent");
 const BrandLensAgent = require("../../agents/classes/BrandLensAgent");
+const VisualPromptGeneratorAgent = require("../../agents/classes/VisualPromptGeneratorAgent");
+const BrandQAAgent = require("../../agents/classes/BrandQAAgent");
 
 class HiveOrchestrator extends BaseOrchestrator {
   constructor(config = {}) {
@@ -13,26 +15,32 @@ class HiveOrchestrator extends BaseOrchestrator {
       ...config,
     });
 
-    this.visualAgent = new VisualPromptGeneratorAgent();
-    this.modularAgent = new ModularElementsRecommenderAgent();
-    this.trendAgent = new TrendCulturalAnalyzerAgent();
-    this.qaAgent = new BrandQAAgent();
+    this.prManager = new PRManagerAgent();
+    this.trendingAgent = new TrendingNewsAgent();
+    this.strategicAgent = new StrategicInsightAgent();
+    this.storyAgent = new StoryAnglesAgent();
     this.brandLensAgent = new BrandLensAgent();
+    this.visualAgent = new VisualPromptGeneratorAgent();
+    this.qaAgent = new BrandQAAgent();
   }
 
   async loadAgents() {
     try {
-      await this.visualAgent.loadSystemPrompt();
-      await this.modularAgent.loadSystemPrompt();
-      await this.trendAgent.loadSystemPrompt();
-      await this.qaAgent.loadSystemPrompt();
+      await this.prManager.loadSystemPrompt();
+      await this.trendingAgent.loadSystemPrompt();
+      await this.strategicAgent.loadSystemPrompt();
+      await this.storyAgent.loadSystemPrompt();
       await this.brandLensAgent.loadSystemPrompt();
+      await this.visualAgent.loadSystemPrompt();
+      await this.qaAgent.loadSystemPrompt();
 
-      this.agents.set("visual_prompt_generator", this.visualAgent);
-      this.agents.set("modular_elements_recommender", this.modularAgent);
-      this.agents.set("trend_cultural_analyzer", this.trendAgent);
-      this.agents.set("brand_qa", this.qaAgent);
+      this.agents.set("pr-manager", this.prManager);
+      this.agents.set("trending", this.trendingAgent);
+      this.agents.set("strategic", this.strategicAgent);
+      this.agents.set("story", this.storyAgent);
       this.agents.set("brand_lens", this.brandLensAgent);
+      this.agents.set("visual_prompt_generator", this.visualAgent);
+      this.agents.set("brand_qa", this.qaAgent);
 
       this.log("Hive agents loaded successfully");
     } catch (error) {
@@ -45,46 +53,70 @@ class HiveOrchestrator extends BaseOrchestrator {
     this.log(`Executing hive workflow: ${workflow.id}`);
 
     try {
-      const testContext = execution.input;
+      const context = execution.input;
 
-      // Step 1: Trend Analysis
-      this.log("Step 1: Analyzing cultural trends...");
-      const trendInsights = await this.trendAgent.analyzeTrends(testContext);
+      // Step 1: PR Manager introduction
+      this.log("Step 1: Establishing strategy...");
+      const prIntro = await this.prManager.generateCampaignIntroduction(
+        context.moment || context.campaign,
+        context
+      );
 
-      // Step 2: Brand Lens
-      this.log("Step 2: Applying brand lens...");
+      // Step 2: Moment analysis
+      this.log("Step 2: Analyzing moment...");
+      const trendInsights = await this.trendingAgent.analyzeTrends(
+        context.moment || context.campaign,
+        null,
+        null
+      );
+
+      // Step 3: Strategic insight
+      this.log("Step 3: Discovering opportunities...");
+      const strategicInsights = await this.strategicAgent.discoverHumanTruth(
+        trendInsights,
+        context
+      );
+
+      // Step 4: Story angle generation
+      this.log("Step 4: Generating story angles...");
+      const storyAngles = await this.storyAgent.generateStoryAngles(
+        context.moment || context.campaign,
+        strategicInsights,
+        trendInsights
+      );
+
+      // Step 5: Brand lens
+      this.log("Step 5: Applying brand lens...");
       const brandLens = await this.brandLensAgent.analyzeBrandPerspective(
-        trendInsights,
-        testContext
+        storyAngles,
+        context
       );
 
-      // Step 3: Visual Prompt Generation
-      this.log("Step 3: Generating visual prompts...");
-      const basePrompt = await this.visualAgent.generatePrompt(testContext);
+      // Step 6: Key visual creation
+      this.log("Step 6: Creating key visual...");
+      const visual = await this.visualAgent.generatePrompt({
+        campaign: context.moment || context.campaign,
+        momentType: context.momentType,
+        visualObjective: brandLens.brandPositioning,
+        heroVisualDescription: brandLens.brandVoice,
+      });
 
-      // Step 4: Modular Elements
-      this.log("Step 4: Creating modular elements...");
-      const modulars = await this.modularAgent.recommendElements(
-        testContext,
-        basePrompt,
-        trendInsights,
-        brandLens
-      );
-
-      // Step 5: QA Review
-      this.log("Step 5: Quality assurance review...");
+      // Step 7: Brand QA
+      this.log("Step 7: Brand QA review...");
       const qaResult = await this.qaAgent.reviewPrompt(
-        basePrompt,
-        modulars,
+        visual,
+        null,
         trendInsights,
         brandLens
       );
 
       const result = {
+        prIntro,
         trendInsights,
+        strategicInsights,
+        storyAngles,
         brandLens,
-        basePrompt,
-        modularElements: modulars,
+        visual,
         qaResult,
         timestamp: new Date().toISOString(),
       };
