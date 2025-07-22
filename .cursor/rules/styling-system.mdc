@@ -1,3 +1,274 @@
+---
+alwaysApply: false
+---
+
+# Unified Styling System Rule
+
+## 🎯 Objective
+
+**PROACTIVELY** enforce the unified styling system across all new pages and components. This rule prevents hardcoded colors from being written and ensures consistent, maintainable styling from the start.
+
+## 🚨 CRITICAL: NEVER Use Hardcoded Colors
+
+### **❌ FORBIDDEN - These will be flagged and must be changed:**
+
+```jsx
+// NEVER use these hardcoded colors:
+bg-blue-500, bg-blue-600, bg-blue-700, bg-blue-50, bg-blue-100
+bg-green-500, bg-green-600, bg-green-700, bg-green-50, bg-green-100
+bg-gray-50, bg-gray-100, bg-gray-200, bg-gray-300, bg-gray-400
+bg-slate-50, bg-slate-100, bg-slate-200, bg-slate-300, bg-slate-400
+text-blue-500, text-blue-600, text-blue-700, text-blue-800
+text-green-500, text-green-600, text-green-700, text-green-800
+text-gray-800, text-gray-900, text-slate-800, text-slate-900
+border-blue-200, border-blue-500, border-blue-600
+border-green-200, border-green-500, border-green-600
+border-gray-200, border-slate-200
+focus:ring-blue-500, focus:border-blue-500
+hover:bg-blue-600, hover:bg-green-600
+```
+
+### **✅ REQUIRED - Always use these design tokens instead:**
+
+```jsx
+// ALWAYS use these design tokens:
+bg-primary, bg-primary-hover, bg-primary-light, bg-primary-lighter
+bg-success, bg-success-hover, bg-success-light, bg-success-lighter
+bg-secondary, bg-secondary-hover
+bg-warning, bg-error, bg-info
+text-primary, text-primary-light, text-primary-lighter
+text-success, text-success-light, text-success-lighter
+text-text-primary, text-text-secondary, text-text-muted
+border-border, border-border-focus, border-primary
+focus:ring-primary, focus:border-primary
+hover:bg-primary-hover, hover:bg-success-hover
+```
+
+## 🎨 Mandatory Component Patterns
+
+### **Page Container (ALWAYS use this structure)**
+
+```jsx
+<div className="bg-secondary min-h-screen">
+  <div className="max-w-7xl mx-auto px-4 py-8">
+    <h1 className="text-2xl font-bold text-text-primary mb-6">Page Title</h1>
+    {/* Content goes here */}
+  </div>
+</div>
+```
+
+### **Card Component (ALWAYS use this pattern)**
+
+```jsx
+<div className="bg-white rounded-lg shadow-md p-6 border border-border">
+  <h2 className="text-xl font-semibold text-text-primary mb-4">Card Title</h2>
+  <p className="text-text-secondary mb-4">Card description</p>
+  <div className="flex gap-3">
+    <button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors">
+      Primary Action
+    </button>
+    <button className="px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-secondary-hover transition-colors">
+      Secondary Action
+    </button>
+  </div>
+</div>
+```
+
+### **Primary Button (ALWAYS use this pattern)**
+
+```jsx
+<button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors font-medium">
+  Primary Action
+</button>
+```
+
+### **Secondary Button (ALWAYS use this pattern)**
+
+```jsx
+<button className="px-4 py-2 bg-secondary text-text-primary border border-border rounded hover:bg-secondary-hover transition-colors font-medium">
+  Secondary Action
+</button>
+```
+
+### **Success Button (ALWAYS use this pattern)**
+
+```jsx
+<button className="px-4 py-2 bg-success hover:bg-success-hover text-white rounded transition-colors font-medium">
+  Success Action
+</button>
+```
+
+### **Form Input (ALWAYS use this pattern)**
+
+```jsx
+<input
+  className="w-full px-3 py-2 border border-border rounded focus:ring-2 focus:ring-primary focus:border-primary transition"
+  placeholder="Enter text"
+/>
+```
+
+### **Form Label (ALWAYS use this pattern)**
+
+```jsx
+<label className="block text-sm font-medium text-text-secondary mb-2">
+  Label Text
+</label>
+```
+
+### **Status Badge (ALWAYS use this pattern)**
+
+```jsx
+<span className="inline-block px-2 py-1 rounded-full text-xs font-medium bg-success text-white">
+  Success
+</span>
+```
+
+## 🔧 Proactive Implementation Rules
+
+### **When Creating ANY New Component:**
+
+1. **ALWAYS start with design tokens** - Never write hardcoded colors
+2. **ALWAYS use the mandatory patterns** above
+3. **ALWAYS include hover states** for interactive elements
+4. **ALWAYS include focus states** for accessibility
+5. **ALWAYS use semantic color choices**:
+   - `bg-primary` for main actions
+   - `bg-success` for positive/success actions
+   - `bg-secondary` for neutral elements
+   - `text-text-primary` for main text
+   - `text-text-secondary` for secondary text
+
+### **When Writing ANY Styling Code:**
+
+```jsx
+// ❌ WRONG - This will be flagged
+<div className="bg-blue-600 text-white p-4">
+  <h1 className="text-gray-900">Title</h1>
+  <button className="bg-green-500 hover:bg-green-600">Save</button>
+</div>
+
+// ✅ CORRECT - This follows the system
+<div className="bg-primary text-white p-4">
+  <h1 className="text-text-primary">Title</h1>
+  <button className="bg-success hover:bg-success-hover">Save</button>
+</div>
+```
+
+## 🎯 Semantic Color Usage
+
+### **Primary Actions (Main CTAs)**
+
+```jsx
+// Use bg-primary for main actions
+<button className="bg-primary hover:bg-primary-hover text-white">
+  Save Campaign
+</button>
+```
+
+### **Success Actions (Positive outcomes)**
+
+```jsx
+// Use bg-success for success/positive actions
+<button className="bg-success hover:bg-success-hover text-white">
+  Complete
+</button>
+```
+
+### **Secondary Elements (Supporting content)**
+
+```jsx
+// Use bg-secondary for neutral backgrounds
+<div className="bg-secondary p-4">
+  <p className="text-text-secondary">Supporting text</p>
+</div>
+```
+
+### **Text Hierarchy**
+
+```jsx
+// Main headings
+<h1 className="text-text-primary font-bold">Main Title</h1>
+
+// Secondary text
+<p className="text-text-secondary">Description text</p>
+
+// Muted text
+<span className="text-text-muted">Helper text</span>
+```
+
+## ⚠️ Automatic Enforcement
+
+### **This rule will automatically:**
+
+1. **Flag any hardcoded color usage** with warnings
+2. **Suggest design token replacements** automatically
+3. **Enforce mandatory patterns** for common components
+4. **Prevent inconsistent styling** across the application
+
+### **Before ANY commit, verify:**
+
+- [ ] **NO hardcoded colors** (`bg-blue-600`, `text-gray-900`, etc.)
+- [ ] **ALL colors use design tokens** (`bg-primary`, `text-text-primary`, etc.)
+- [ ] **Consistent patterns** used throughout
+- [ ] **Hover states** included for all interactive elements
+- [ ] **Focus states** included for accessibility
+- [ ] **Semantic color choices** made appropriately
+
+## 🔍 Quick Reference
+
+### **Color Mapping (OLD → NEW)**
+
+```css
+bg-blue-500/600 → bg-primary
+bg-green-500/600 → bg-success
+bg-gray-50/100 → bg-secondary
+text-blue-600 → text-primary
+text-green-600 → text-success
+text-gray-900 → text-text-primary
+text-gray-600 → text-text-secondary
+border-blue-200 → border-border
+hover:bg-blue-600 → hover:bg-primary-hover
+focus:ring-blue-500 → focus:ring-primary
+```
+
+### **Common Patterns**
+
+```jsx
+// Page structure
+<div className="bg-secondary min-h-screen">
+  <div className="max-w-7xl mx-auto px-4 py-8">
+    {/* Content */}
+  </div>
+</div>
+
+// Card
+<div className="bg-white rounded-lg shadow-md p-6 border border-border">
+  {/* Content */}
+</div>
+
+// Button
+<button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded transition-colors">
+  Action
+</button>
+```
+
+## 🚀 Best Practices
+
+1. **Start with design tokens** - Never write hardcoded colors
+2. **Use established patterns** - Follow the mandatory component patterns
+3. **Think semantically** - Choose colors based on meaning, not appearance
+4. **Test accessibility** - Ensure proper contrast and focus states
+5. **Maintain consistency** - Use the same approach across all components
+
+## 📚 Reference Documentation
+
+- [Unified Styling System Guide](../docs/frontend/STYLING_SYSTEM_GUIDE.md) - Complete styling system documentation
+- [Design Tokens](../frontend/src/styles/design-tokens.css) - All available design tokens
+- [Tailwind Config](../frontend/tailwind.config.js) - Token mapping configuration
+
+---
+
+**Remember: This rule is PROACTIVE - it prevents hardcoded colors from being written in the first place, ensuring consistent styling from the start of development.**
 # Unified Styling System Rule
 
 ## 🎯 Objective

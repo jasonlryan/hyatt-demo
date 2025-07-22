@@ -7,6 +7,11 @@ class OrchestrationManager {
     this.loadedAgents = new Map(); // Cache for loaded agents
     this.agentsConfig = this.loadAgentsConfig();
     this.orchestrationConfigs = this.generateConfigsFromClasses();
+
+    console.log(
+      "🔍 OrchestrationManager initialized with configs:",
+      Object.keys(this.orchestrationConfigs)
+    );
   }
 
   // Load agents configuration as the single source of truth
@@ -38,12 +43,16 @@ class OrchestrationManager {
     const configs = {};
     const classesDir = path.join(__dirname, "classes");
 
+    console.log("🎭 Generating configs from classes in:", classesDir);
+
     if (fs.existsSync(classesDir)) {
       const classFiles = fs
         .readdirSync(classesDir)
         .filter(
           (file) => file.endsWith(".js") && file !== "BaseOrchestrator.js"
         );
+
+      console.log("📚 Found class files:", classFiles);
 
       for (const file of classFiles) {
         try {
@@ -58,6 +67,13 @@ class OrchestrationManager {
       }
     }
 
+    // Add aliases for orchestration IDs
+    if (configs["hyattorchestrator"])
+      configs["hyatt"] = configs["hyattorchestrator"];
+    if (configs["hiveorchestrator"])
+      configs["hive"] = configs["hiveorchestrator"];
+
+    console.log("⚙️ Final generated configs:", Object.keys(configs));
     return configs;
   }
 
@@ -150,13 +166,14 @@ class OrchestrationManager {
 
   // Map agent id to class name
   getAgentClassName(agentId) {
-    // First check if agent exists in config and has a name
-    if (
-      this.agentsConfig &&
-      this.agentsConfig[agentId] &&
-      this.agentsConfig[agentId].name
-    ) {
-      return this.agentsConfig[agentId].name;
+    // First check if agent exists in config and has a class or name
+    if (this.agentsConfig && this.agentsConfig[agentId]) {
+      if (this.agentsConfig[agentId].class) {
+        return this.agentsConfig[agentId].class;
+      }
+      if (this.agentsConfig[agentId].name) {
+        return this.agentsConfig[agentId].name;
+      }
     }
 
     // Fallback to hardcoded mapping

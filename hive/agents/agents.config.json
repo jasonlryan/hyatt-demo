@@ -3,6 +3,7 @@
     "research": {
       "id": "research",
       "name": "Research & Audience GPT",
+      "class": "ResearchAudienceAgent",
       "description": "Analyzes target audiences and provides demographic insights",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -17,6 +18,7 @@
     "trending": {
       "id": "trending",
       "name": "Trending News GPT",
+      "class": "TrendingNewsAgent",
       "description": "Identifies trending topics and news opportunities",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -31,6 +33,7 @@
     "story": {
       "id": "story",
       "name": "Story Angles & Headlines GPT",
+      "class": "StoryAnglesAgent",
       "description": "Creates compelling story angles and headlines",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -45,6 +48,7 @@
     "strategic": {
       "id": "strategic",
       "name": "Strategic Insight GPT",
+      "class": "StrategicInsightAgent",
       "description": "Provides strategic insights and recommendations",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -59,6 +63,7 @@
     "pr-manager": {
       "id": "pr-manager",
       "name": "PR Manager GPT",
+      "class": "PRManagerAgent",
       "description": "Coordinates campaigns and manages overall strategy",
       "enabled": true,
       "model": "gpt-4o-mini-2024-07-18",
@@ -73,6 +78,7 @@
     "visual_prompt_generator": {
       "id": "visual_prompt_generator",
       "name": "Visual Prompt Generator",
+      "class": "VisualPromptGeneratorAgent",
       "description": "Generates detailed, actionable visual prompts for campaign creative based on strategy and objectives.",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -87,6 +93,7 @@
     "modular_elements_recommender": {
       "id": "modular_elements_recommender",
       "name": "Modular Elements Recommender",
+      "class": "ModularElementsRecommenderAgent",
       "description": "Suggests modular visual elements, overlays, and motifs based on campaign context and objectives.",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -101,6 +108,7 @@
     "trend_cultural_analyzer": {
       "id": "trend_cultural_analyzer",
       "name": "Trend & Cultural Analyzer",
+      "class": "TrendCulturalAnalyzerAgent",
       "description": "Analyzes current trends and cultural moments to inform visual creative direction.",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -115,6 +123,7 @@
     "brand_qa": {
       "id": "brand_qa",
       "name": "Brand QA Agent",
+      "class": "BrandQAAgent",
       "description": "Reviews visual prompts and modular elements for brand alignment, tone, and quality.",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
@@ -129,6 +138,7 @@
     "brand_lens": {
       "id": "brand_lens",
       "name": "Brand Lens Agent",
+      "class": "BrandLensAgent",
       "description": "Analyzes brand perspective and provides authentic brand positioning for trends and campaigns.",
       "enabled": true,
       "model": "gpt-4o-2024-08-06",
