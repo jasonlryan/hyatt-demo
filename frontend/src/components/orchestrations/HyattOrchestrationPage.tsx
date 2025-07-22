@@ -110,8 +110,9 @@ const HyattOrchestrationPage: React.FC<HyattOrchestrationPageProps> = ({
 
   // New: handle view from phase card
   const handleViewPhaseDeliverable = (phaseKey: string) => {
-    // Try to find deliverable by phase key (e.g., "research")
-    const key = Object.keys(deliverables).find((k) => k.includes(phaseKey));
+    // Normalize underscores to hyphens since deliverable keys use hyphenated agent names
+    const normalized = phaseKey.replace(/_/g, "-");
+    const key = Object.keys(deliverables).find((k) => k.includes(normalized));
     if (key && deliverables[key]) {
       setModalDeliverable(deliverables[key]);
       setIsDeliverableModalOpen(true);
