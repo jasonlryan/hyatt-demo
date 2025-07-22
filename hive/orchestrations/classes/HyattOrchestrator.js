@@ -13,6 +13,16 @@ const StrategicInsightAgent = require("../../agents/classes/StrategicInsightAgen
 const DataSourceManager = require("../../utils/DataSourceManager");
 const QualityController = require("../../utils/QualityController");
 
+// Generic industry keyword map for basic classification
+const INDUSTRY_KEYWORDS = {
+  hospitality: ["hotel", "resort", "hospitality", "travel", "tourism"],
+  technology: ["tech", "software", "saas", "cloud", "it"],
+  healthcare: ["health", "medical", "pharma", "hospital"],
+  finance: ["finance", "bank", "fintech", "investment"],
+  retail: ["retail", "ecommerce", "shopping", "store"],
+  automotive: ["auto", "car", "vehicle", "automotive"],
+};
+
 class HyattOrchestrator extends BaseOrchestrator {
   constructor(config = {}) {
     super({
@@ -175,6 +185,7 @@ class HyattOrchestrator extends BaseOrchestrator {
       complexity,
       keywords,
       targetIndustry: this.identifyIndustry(brief),
+      brandContext: this.extractBrandContext(brief),
       estimatedDuration: this.estimateDuration(complexity, urgency),
       riskLevel: this.assessRiskLevel(brief),
       dataRequirements: this.identifyDataRequirements(brief),
@@ -188,20 +199,12 @@ class HyattOrchestrator extends BaseOrchestrator {
     const text = brief.toLowerCase();
     const keywords = [];
 
-    // Industry keywords
-    const industryTerms = [
-      "hospitality",
-      "hotel",
-      "resort",
-      "travel",
-      "tourism",
-      "luxury",
-      "eco",
-      "wellness",
-    ];
-    industryTerms.forEach((term) => {
-      if (text.includes(term)) keywords.push(term);
-    });
+    // Industry keywords - scan generic industry map
+    for (const terms of Object.values(INDUSTRY_KEYWORDS)) {
+      terms.forEach((term) => {
+        if (text.includes(term)) keywords.push(term);
+      });
+    }
 
     // Audience keywords
     const audienceTerms = [
@@ -267,15 +270,11 @@ class HyattOrchestrator extends BaseOrchestrator {
 
   identifyIndustry(brief) {
     const text = brief.toLowerCase();
-    if (
-      text.includes("hotel") ||
-      text.includes("resort") ||
-      text.includes("hospitality")
-    )
-      return "hospitality";
-    if (text.includes("tech") || text.includes("software")) return "technology";
-    if (text.includes("health") || text.includes("medical"))
-      return "healthcare";
+    for (const [industry, terms] of Object.entries(INDUSTRY_KEYWORDS)) {
+      if (terms.some((t) => text.includes(t))) {
+        return industry;
+      }
+    }
     return "general";
   }
 
@@ -479,7 +478,7 @@ class HyattOrchestrator extends BaseOrchestrator {
   }
 
   async gatherResearchData(campaignContext) {
-    const keywords = campaignContext.keywords || ["hospitality", "travel"];
+    const keywords = campaignContext.keywords || [campaignContext.targetIndustry || "general"];
 
     try {
       const [socialData, newsData] = await Promise.all([
@@ -655,7 +654,7 @@ class HyattOrchestrator extends BaseOrchestrator {
   }
 
   async gatherStrategicInsightData(campaignContext) {
-    const keywords = campaignContext.keywords || ["hospitality", "travel"];
+    const keywords = campaignContext.keywords || [campaignContext.targetIndustry || "general"];
 
     try {
       const [insightsData, newsData] = await Promise.all([
@@ -817,7 +816,7 @@ class HyattOrchestrator extends BaseOrchestrator {
   }
 
   async gatherTrendingData(campaignContext) {
-    const keywords = campaignContext.keywords || ["hospitality", "travel"];
+    const keywords = campaignContext.keywords || [campaignContext.targetIndustry || "general"];
 
     try {
       const [trendsData, newsData] = await Promise.all([
@@ -1634,13 +1633,13 @@ class HyattOrchestrator extends BaseOrchestrator {
 
     if (text.includes("millennial")) markets.push("Millennials");
     if (text.includes("gen z")) markets.push("Gen Z");
-    if (text.includes("business")) markets.push("Business travelers");
+    if (text.includes("business")) markets.push("Business audience");
     if (text.includes("family") || text.includes("families"))
       markets.push("Families");
-    if (text.includes("luxury")) markets.push("Luxury travelers");
-    if (text.includes("wellness")) markets.push("Wellness seekers");
+    if (text.includes("luxury")) markets.push("Luxury consumers");
+    if (text.includes("wellness")) markets.push("Wellness focused");
     if (text.includes("eco") || text.includes("sustainable"))
-      markets.push("Eco-conscious travelers");
+      markets.push("Eco-conscious audience");
 
     return markets.length > 0 ? markets.join(" and ") : "General market";
   }
@@ -1651,9 +1650,8 @@ class HyattOrchestrator extends BaseOrchestrator {
 
     if (text.includes("sustain") || text.includes("eco"))
       areas.push("Sustainability");
-    if (text.includes("wellness") || text.includes("spa"))
-      areas.push("Wellness");
-    if (text.includes("luxury")) areas.push("Luxury experiences");
+    if (text.includes("wellness") || text.includes("spa")) areas.push("Wellness");
+    if (text.includes("luxury")) areas.push("Premium experiences");
     if (text.includes("community")) areas.push("Community engagement");
     if (text.includes("technology") || text.includes("digital"))
       areas.push("Technology innovation");
@@ -1661,6 +1659,16 @@ class HyattOrchestrator extends BaseOrchestrator {
       areas.push("Cultural immersion");
 
     return areas;
+  }
+
+  extractBrandContext(brief) {
+    const text = brief.toLowerCase();
+    if (text.includes("luxury")) return "luxury";
+    if (text.includes("budget")) return "budget";
+    if (text.includes("premium")) return "premium";
+    if (text.includes("eco")) return "eco-friendly";
+    if (text.includes("innovative")) return "innovative";
+    return "general";
   }
 
   // Load existing campaigns from files on startup

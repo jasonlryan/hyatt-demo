@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Hyatt Orchestrator is the primary PR campaign orchestration system, designed specifically for hotel and hospitality PR campaigns. It provides a comprehensive workflow for research, strategy development, content creation, and campaign management.
+The Hyatt Orchestrator is the primary PR campaign orchestration system. It now supports campaigns across any industry, providing a comprehensive workflow for research, strategy development, content creation, and campaign management.
 
 ## 🎯 Purpose
 
