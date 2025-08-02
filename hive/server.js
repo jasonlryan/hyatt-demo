@@ -39,6 +39,10 @@ require('./routes/generation')(app, { orchestrationManager });
 require('./routes/visual')(app);
 require('./routes/files')(app);
 
+// PeakMetrics API routes
+const peakMetricsRouter = require('./routes/peakmetrics');
+app.use('/api/peakmetrics', peakMetricsRouter);
+
 app.get('/api/manual-review', (req, res) => res.json({ enabled: true }));
 app.post('/api/manual-review', (req, res) => res.json({ enabled: !!req.body.enabled }));
 app.get('/health', (req, res) => {
