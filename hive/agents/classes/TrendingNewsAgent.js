@@ -14,12 +14,14 @@ class TrendingNewsAgent extends BaseAgent {
       maxTokens: 3000,
     });
 
-    // Initialize PeakMetrics client
+    // Initialize PeakMetrics client only if feature flag enabled
     this.peakMetrics = null;
-    try {
-      this.peakMetrics = new PeakMetricsClient();
-    } catch (error) {
-      console.warn("⚠️ PeakMetrics client not available:", error.message);
+    if (process.env.ENABLE_PEAK_METRICS === 'true') {
+      try {
+        this.peakMetrics = new PeakMetricsClient();
+      } catch (error) {
+        console.warn("⚠️ PeakMetrics client not available:", error.message);
+      }
     }
   }
 

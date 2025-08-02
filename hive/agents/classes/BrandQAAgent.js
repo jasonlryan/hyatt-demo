@@ -19,7 +19,7 @@ class BrandQAAgent extends BaseAgent {
     let peakMetricsContext = "";
     let numericalSignals = {};
 
-    if (trendInsights?.peakMetrics) {
+    if (process.env.ENABLE_PEAK_METRICS === 'true' && trendInsights?.peakMetrics) {
       const pm = trendInsights.peakMetrics;
       numericalSignals = {
         totalMentions: pm.totalMentions,
