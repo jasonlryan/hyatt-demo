@@ -1,3 +1,6 @@
+// Re-export PeakMetrics types
+export * from './peakMetrics';
+
 export interface CampaignEvent {
   id: string;
   timestamp: string;
@@ -113,6 +116,7 @@ export interface HiveWorkflowState {
   currentPhase?: string;
   phases: { [key: string]: HiveWorkflowPhase };
   deliverables: { [key: string]: Deliverable };
+  conversation?: ConversationMessage[];
   createdAt?: string;
   lastUpdated?: string;
   error?: string;

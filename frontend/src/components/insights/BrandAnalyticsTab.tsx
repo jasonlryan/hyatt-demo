@@ -22,39 +22,43 @@ const BrandAnalyticsTab: React.FC<BrandAnalyticsTabProps> = ({
   const [activeView, setActiveView] = useState<
     "overview" | "narratives" | "trends"
   >("overview");
-  const [pollingEnabled, setPollingEnabled] = useState(false);
-  const [currentRefreshInterval, setCurrentRefreshInterval] = useState(refreshInterval);
 
   const {
     data: brandDetail,
     loading: detailLoading,
     error: detailError,
     cached: detailCached,
-  } = useBrandDetail(brandName, { refreshInterval: currentRefreshInterval });
+    refetch: refetchBrand,
+  } = useBrandDetail(brandName, {
+    refreshInterval: 0, // No polling
+    enabled: isOpen, // Only load when tab is open
+  });
 
   const {
     data: trends,
     loading: trendsLoading,
     error: trendsError,
+    refetch: refetchTrends,
   } = useBrandTrends(brandName, {
-    enabled: activeView === "trends",
-    refreshInterval: currentRefreshInterval,
+    enabled: activeView === "trends" && isOpen,
+    refreshInterval: 0, // No polling
   });
 
   // Memoize the narratives options to prevent infinite re-renders
   const narrativesOptions = useMemo(
     () => ({
-      enabled: activeView === "narratives",
+      enabled: activeView === "narratives" && isOpen,
       limit: 20,
       sort: "relevancy" as const,
     }),
-    [activeView]
+    [activeView, isOpen]
   );
 
   const {
     data: narratives,
     loading: narrativesLoading,
     error: narrativesError,
+    refetch: refetchNarratives,
   } = useBrandNarratives(brandName, narrativesOptions);
 
   if (!isOpen) return null;
@@ -262,7 +266,6 @@ const BrandAnalyticsTab: React.FC<BrandAnalyticsTabProps> = ({
         {detailCached && (
           <div className="text-center text-xs text-text-secondary bg-blue-50 text-blue-600 p-3 rounded">
             📦 Showing cached data
-            {pollingEnabled ? ` - updates every ${Math.round(currentRefreshInterval / 1000)} seconds` : " - click 'Live' to enable updates"}
           </div>
         )}
       </div>
@@ -443,21 +446,17 @@ const BrandAnalyticsTab: React.FC<BrandAnalyticsTabProps> = ({
             📊 {brandName} Analytics
           </h3>
           <div className="flex items-center gap-2">
-            {/* Polling Toggle */}
+            {/* Manual Refresh Button */}
             <button
-              className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-                pollingEnabled
-                  ? "bg-green-100 text-green-800 border border-green-300"
-                  : "bg-gray-100 text-gray-600 border border-gray-300"
-              }`}
+              className="px-3 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200 transition-colors"
               onClick={() => {
-                const newPollingState = !pollingEnabled;
-                setPollingEnabled(newPollingState);
-                setCurrentRefreshInterval(newPollingState ? 30000 : 0); // 30s when enabled, 0 when disabled
+                refetchBrand();
+                if (activeView === "narratives") refetchNarratives();
+                if (activeView === "trends") refetchTrends();
               }}
-              title={pollingEnabled ? "Disable live updates" : "Enable live updates"}
+              title="Refresh data manually"
             >
-              {pollingEnabled ? "🔄 Live" : "⏸️ Static"}
+              🔄 Refresh
             </button>
             <button
               className="text-text-secondary hover:text-text-primary hover:bg-white rounded p-1 transition-colors"

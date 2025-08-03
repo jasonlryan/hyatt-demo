@@ -4,6 +4,7 @@ import GlobalNav from "./components/GlobalNav";
 import AgentsPage from "./components/AgentsPage";
 import WorkflowsPage from "./components/WorkflowsPage";
 import OrchestrationsPage from "./components/OrchestrationsPage";
+import InsightsPage from "./components/insights/InsightsPage";
 import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrationPage";
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
@@ -88,6 +89,7 @@ function App() {
 
   const [isHitlModalOpen, setIsHitlModalOpen] = useState(false);
   const [hitlReview, setHitlReview] = useState(true);
+  const [isInsightsView, setIsInsightsView] = useState(false);
 
   // Load HITL review state from backend
   const loadHitlReviewState = async () => {
@@ -134,18 +136,31 @@ function App() {
   };
 
   const handleNavigateToAgents = () => {
+    setIsInsightsView(false);
     navigateToAgents();
   };
 
   const handleNavigateToWorkflows = () => {
+    setIsInsightsView(false);
     navigateToWorkflows();
   };
 
   const handleNavigateToOrchestrations = () => {
+    setIsInsightsView(false);
     navigateToOrchestrations();
   };
 
+  const handleNavigateToInsights = () => {
+    setIsInsightsView(true);
+    window.history.pushState({ view: 'insights' }, '', '/insights');
+  };
+
   const renderCurrentView = () => {
+    // If insights view is active, show insights page
+    if (isInsightsView) {
+      return <InsightsPage />;
+    }
+
     // If an orchestration is selected, show the specific orchestration page
     if (selectedOrchestration) {
       switch (selectedOrchestration) {
@@ -180,7 +195,6 @@ function App() {
         case "hive":
           return (
             <HiveOrchestrationPage
-              orchestrationId={selectedOrchestration}
               hitlReview={hitlReview}
               onToggleHitl={async () => {
                 const newState = !hitlReview;
@@ -247,10 +261,11 @@ function App() {
   return (
     <div className="min-h-screen">
       <GlobalNav
-        currentView={currentView}
+        currentView={isInsightsView ? "insights" : currentView}
         onNavigateToAgents={handleNavigateToAgents}
         onNavigateToWorkflows={handleNavigateToWorkflows}
         onNavigateToOrchestrations={handleNavigateToOrchestrations}
+        onNavigateToInsights={handleNavigateToInsights}
       />
 
       {renderCurrentView()}

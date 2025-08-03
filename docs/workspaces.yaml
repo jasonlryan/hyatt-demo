@@ -1,0 +1,495 @@
+openapi: '3.1.0'
+info:
+  title: PeakMetrics API
+  #description: Optional multiline or single-line description in [CommonMark](http://commonmark.org/help/) or HTML.
+  version: 2.0.0
+servers:
+  - url: https://api.peakmetrics.com
+    description: Main (production) server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []
+tags:
+  - name: Authorization
+    description: Operations related to authorization
+  - name: Workspaces
+    description: Operations related to workspaces
+paths:
+  /access/token:
+    post:
+      security: []
+      tags: 
+        - Authorization
+      summary: Returns an access token for the provided credentials.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username of the user.
+                password:
+                  type: string
+                  description: The password of the user.
+                client_id:
+                  type: string
+                  description: The client ID of the user.
+      responses:
+        '200':    # status code
+          description: A JSON object with the access token
+          content:
+            application/json:
+              schema: 
+                type: object
+                properties:
+                  Token:
+                    type: string
+                    description: The access token.
+                  ExpiresIn:
+                    type: integer
+                    description: The number of seconds until the token expires.
+  /workspaces:
+    get:
+      tags: 
+        - Workspaces
+      summary: Returns a list of workspaces.
+      description: |
+        A Workspace defines a segment of the media ecosystem that you’re interested 
+        in analyzing and is comprised of all the related *mentions*. Typical 
+        workspace are a company, a key executive, an industry or a topic but 
+        can be other more nuanced things like a group of sources or geographic 
+        region.<br/>
+        Examples: “Home Depot”, “Artificial Intelligence”
+      responses:
+        '200':    # status code
+          description: A JSON array of workspace objects
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      minimum: 1
+                      description: The unique identifier for the workspace.
+                    title:
+                      type: string
+                      description: The user entered title of the workspace.
+                    owner:
+                      type: string
+                      description: The unique identifier of the user who owns the workspace.
+                    query:
+                      type: string
+                      description: The query used to match mentions to the workspace.
+                    channels:
+                      type: array
+                      items:
+                        type: string
+                        enum: [news, reddit, telegram, twitter, youtube]
+                      description: The unique identifiers of the channels that are part of the workspace.
+                    narrativeDetection:
+                      type: object
+                      properties:
+                        status:
+                          type: string
+                          enum: [new, backfill, active, inactive, error]
+                          description: Whether narrative detection is enabled for the workspace.
+                    created:
+                      type: string
+                      format: date-time
+                      description: The date and time the workspace was created.
+                    modified:
+                      type: string
+                      format: date-time
+                      description: The date and time the workspace was last updated.
+                    folder:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: The unique folder id.
+                        title:
+                          type: string
+                          description: The folder title.
+                      description: The folder, if any, this workspace belongs to.
+                    summary:
+                      type: string
+                      description: The summary of the given workspace.
+  /workspaces/{workspaceId}/narratives:
+    get:
+      tags: 
+        - Workspaces
+      summary: Returns a list of narratives within the provided workspace ID.
+      #description: Optional extended description in CommonMark or HTML.
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: integer
+          description: The unique identifier for the workspace.
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            maximum: 1000
+            minimum: 1
+          description: The maximum number of narratives to return, default 1000. 
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+          description: The number of narratives to skip before returning, default 0.
+        - in: query
+          name: sort
+          required: false
+          schema:
+            type: string
+            enum: [relevancy, mentionCount, avgSentiment, created, favorite]
+          description: The field to sort the narratives by descending, default relevancy.
+        - in: query
+          name: since
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: The minimum published date of the mentions to include in the narratives.
+          example: "2024-01-01T00:00:00Z"
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: The maximum published date of the mentions to include in the narratives.
+          example: "2024-01-01T23:59:59Z"
+        - in: query
+          name: channels
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [
+                blogsdiscussions,
+                bluesky,
+                facebook,
+                instagram,
+                news,
+                reddit,
+                redditComment,
+                telegram,
+                threads,
+                tiktok,
+                twitter,
+                vk,
+                weibo,
+                youtube
+              ]
+          description: Filter the returned narratives to those whose mentions are part of the provided channel.
+          example: "['twitter', 'news']"
+      responses:
+        '200':    # status code
+          description: A JSON array of narrative objects
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      minimum: 1
+                      description: The unique identifier for the narrative.
+                    title:
+                      type: string
+                      description: The AI generated title for the narrative.
+                    isFavorite:
+                      type: boolean
+                      description: Favorited status of narrative for requesting user.
+                    aggregations:
+                      type: object
+                      properties:
+                        mentionCount:
+                          type: integer
+                          minimum: 0
+                          description: The number of mentions that are part of the narrative.
+                        avgSentiment:
+                          type: number
+                          minimum: -100
+                          maximum: 100
+                          description: The average sentiment polarity of the narrative mentions, from -100 to 100.
+                        relevancyScore:
+                          type: number
+                          minimum: 0
+                          maximum: 100
+                          description: The probability that this narrative is relevant to the provided workspace ID query, from 0 to 100.
+                    created:
+                      type: string
+                      format: date-time
+                      description: The date and time the narrative was created.
+                    summary:
+                      type: string
+                      description: The summary of the given narrative.
+                    tags:
+                      type: array
+                      description: Tags assigned by team members to the narrative.
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: number
+                            description: Unique tag for given narrative tag.
+                          name:
+                            type: string
+                            description: Tag name given by user.
+                          createdDate:
+                            type: string
+                            format: date-time
+                            description: The date the narrative tag was assigned to the given narrative.
+  /workspaces/{workspaceId}/mentions:
+    get:
+      tags: 
+        - Workspaces
+      summary: Returns a list of mentions within the provided workspace ID.
+      description: |
+        A mention is a piece of content (a mention) written by an author, 
+        promoted by a publisher, and released on a domain as part of a channel. 
+      parameters:
+        - in: path
+          name: workspaceId
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          description: The unique identifier for the workspace.
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            maximum: 50
+            minimum: 1
+          description: The maximum number of mentions to return, default 10. To get more mentions, use in combination with the offset parameter to paginate. 
+        - in: query
+          name: offset
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+          description: The number of mentions to skip before returning, default 0. Use in combination with the limit parameter to paginate.
+        - in: query
+          name: sort
+          required: false
+          schema:
+            type: string
+            enum: [created, published, confidence]
+          description: The field to sort the mentions by descending, default published.
+        - in: query
+          name: order
+          required: false
+          schema:
+            type: string
+            enum: [asc, desc]
+          description: The order to sort the mentions by, default desc.
+        - in: query
+          name: since
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: The minimum published date of the mentions to return.
+          example: "2024-01-01T00:00:00Z"
+        - in: query
+          name: to
+          required: true
+          schema:
+            type: string
+            format: date-time
+          description: The maximum published date of the mentions to return.
+          example: "2024-01-01T23:59:59Z"
+        - in: query
+          name: narratives.id
+          required: false
+          schema:
+            type: array
+            items:
+              type: number
+          description: Filter the returned mentions to those that are part of the provided narrative IDs.
+          example: "[1234, 5678]"
+        - in: query
+          name: channels
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [
+                blogsdiscussions,
+                bluesky,
+                facebook,
+                instagram,
+                news,
+                reddit,
+                redditComment,
+                telegram,
+                threads,
+                tiktok,
+                twitter,
+                vk,
+                weibo,
+                youtube
+              ]
+          description: Filter the returned mentions to those that are part of the provided channel.
+          example: "['twitter', 'news']"
+        - in: query
+          name: filter_expression
+          required: false
+          schema:
+            type: string
+          description: Filter the returned mentions to those that match the filtered expression.
+          example: "(title:word OR text:word2) AND (title:word4 OR text:word3)"
+
+      responses:
+        '400':
+          description: Invalid parameters
+        '404':
+          description: No mentions found for the provided workspace ID.
+        '200':    # status code
+          description: A JSON array of mention objects
+          content:
+            application/json:
+              schema: 
+                type: array
+                items: 
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: The unique identifier for the narrative.
+                      example: 1234
+                    title:
+                      type: string
+                      description: The title for the mention, if available.
+                    text:
+                      type: string
+                      description: The text for the mention, if available.
+                    url:
+                      type: string
+                      description: The original URL to the mention.
+                    domain:
+                      type: string
+                      description: |
+                        The domain of the mention URL.<br/>
+                        A Domain is a distinct subset of the internet with URL addresses sharing a common 
+                        suffix or under the control of a particular organization or individual. This can 
+                        be an organization publishing content through their website, a social network or 
+                        messaging platform. <br/>
+                        Common sub-domains such as `www` are removed from the PeakMetrics domain.<br/>
+                        Examples: nytimes.com, twitter.com, telegram.org
+                    author:
+                      type: string
+                      description: |
+                        The author of the mention. An author is an individual who writes a piece of 
+                        digital content and is indicated by the byline or social account attached 
+                        to the mention.
+                        <aside>💡 An author can be a “journalist”, “twitter account”, or “influencer”.</aside>
+                    channels:
+                      type: array
+                      items:
+                        type: string
+                        enum: [
+                          blogsdiscussions,
+                          bluesky,
+                          facebook,
+                          instagram,
+                          news,
+                          reddit,
+                          redditComment,
+                          telegram,
+                          threads,
+                          tiktok,
+                          twitter,
+                          vk,
+                          weibo,
+                          youtube
+                        ]
+                      description: |
+                        A Channel represents a specific type of way that content is released and consumed.<br/>
+                        Examples: news, twitter
+                    media:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          type:
+                            type: string
+                            enum: [image, video]
+                          url:
+                            type: string
+                            description: The URL to the media.
+                    language:
+                      type: string
+                      description: |
+                        The language of the mention, represented as a two-letter ISO 639-1 code.<br/>
+                        Examples: 'en', 'es', 'fr'<br/>
+                        <aside>💡 The language is detected automatically and may not be 100% accurate.</aside>
+                    enrichments:
+                      type: object
+                      description: The enrichments of the mention.
+                      properties:
+                        narratives:
+                          description: |
+                            The narrative(s) that the mention has been assigned to.<br/>
+                            Note that this field is only populated if specific narratives have been requested in the "narratives.id" parameter.
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: integer
+                                description: The unique identifier for the narrative.
+                              confidence:
+                                type: number
+                                minimum: 0
+                                maximum: 100
+                                description: A score from 0 - 100 denoting the likelihood that this mention belongs the given narrative.
+                        sentiment:
+                          type: object
+                          properties:
+                            polarity:
+                              type: number
+                              minimum: -100
+                              maximum: 100
+                              description: The sentiment polarity of the mention, from -100 to 100.
+                            version:
+                              type: number
+                              enum: [1]
+                              description: The major version of the PeakMetrics sentiment model used.
+                    created:
+                      type: string
+                      format: date-time
+                      description: The date and time the mention was created.
+                    processed:
+                      type: string
+                      format: date-time
+                      description: The date and time the mention was last updated by data processor.
+                    published:
+                      type: string
+                      format: date-time
+                      description: The date and time the mention was published.
+                  

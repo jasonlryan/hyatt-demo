@@ -2,10 +2,11 @@ import React from "react";
 import { Bot } from "lucide-react";
 
 interface GlobalNavProps {
-  currentView: "orchestrations" | "agents" | "workflows";
+  currentView: "orchestrations" | "agents" | "workflows" | "insights";
   onNavigateToAgents: () => void;
   onNavigateToWorkflows: () => void;
   onNavigateToOrchestrations: () => void;
+  onNavigateToInsights: () => void;
 }
 
 const GlobalNav: React.FC<GlobalNavProps> = ({
@@ -13,6 +14,7 @@ const GlobalNav: React.FC<GlobalNavProps> = ({
   onNavigateToAgents,
   onNavigateToWorkflows,
   onNavigateToOrchestrations,
+  onNavigateToInsights,
 }) => {
   return (
     <nav className="bg-white border-b border-border">
@@ -60,6 +62,16 @@ const GlobalNav: React.FC<GlobalNavProps> = ({
                 onClick={onNavigateToWorkflows}
               >
                 Workflows
+              </button>
+              <button
+                className={`px-4 py-2 text-sm font-medium rounded ${
+                  currentView === "insights"
+                    ? "bg-success text-white"
+                    : "text-text-secondary hover:text-text-primary hover:bg-secondary"
+                }`}
+                onClick={onNavigateToInsights}
+              >
+                📊 Insights
               </button>
             </div>
           </div>

@@ -9,6 +9,7 @@ import {
 import HiveAgentCollaboration from "../shared/HiveAgentCollaboration";
 import { useHiveWorkflowState } from "../../hooks/useHiveWorkflowState";
 import DeliverableModal from "../DeliverableModal";
+import RefineInputModal from "../RefineInputModal";
 import { Deliverable } from "../../types";
 
 interface HiveOrchestrationPageProps {
@@ -22,13 +23,23 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
   onToggleHitl,
   onNavigateToOrchestrations,
 }) => {
-  const { workflow, isLoading, startOrchestration, resetWorkflow } =
-    useHiveWorkflowState();
+  const {
+    workflow,
+    isLoading,
+    error,
+    startOrchestration,
+    resetWorkflow,
+    refineWorkflow,
+    resumeWorkflow,
+    setError,
+  } = useHiveWorkflowState();
+
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [modalDeliverable, setModalDeliverable] = useState<Deliverable | null>(
     null
   );
   const [isDeliverableModalOpen, setIsDeliverableModalOpen] = useState(false);
+  const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
 
   const handleStart = async (context: any) => {
     await startOrchestration(context);
@@ -40,6 +51,24 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
     console.log("Selecting campaign:", campaign);
     // In a real scenario, you would update the workflow state
     // with the selected campaign and potentially trigger a new orchestration.
+  };
+
+  const handleViewDeliverable = (deliverable: Deliverable) => {
+    setModalDeliverable(deliverable);
+    setIsDeliverableModalOpen(true);
+  };
+
+  const handleRefine = () => {
+    setIsRefineModalOpen(true);
+  };
+
+  const handleSubmitRefinement = async (instructions: string) => {
+    setIsRefineModalOpen(false);
+    await refineWorkflow(instructions);
+  };
+
+  const handleResume = async () => {
+    await resumeWorkflow();
   };
 
   const deliverables = workflow ? Object.values(workflow.deliverables) : [];
@@ -95,13 +124,48 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
               campaign={{ id: workflow.id, status: workflow.status } as any}
               onViewProgress={() => setIsSidePanelOpen(true)}
             />
+
+            {/* HITL Controls */}
+            {hitlReview && (
+              <div className="mt-4 flex gap-3">
+                {workflow.status === "running" && (
+                  <button
+                    onClick={handleRefine}
+                    className="px-4 py-2 bg-warning text-white rounded-md hover:bg-warning-hover transition-colors"
+                  >
+                    Refine Workflow
+                  </button>
+                )}
+                {workflow.status === "failed" && (
+                  <button
+                    onClick={handleResume}
+                    className="px-4 py-2 bg-success text-white rounded-md hover:bg-success-hover transition-colors"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Resuming..." : "Resume Workflow"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-6 p-4 bg-error-light border border-error rounded-lg">
+            <p className="text-error font-medium">Error: {error}</p>
+            <button
+              onClick={() => setError(null)}
+              className="mt-2 text-sm text-error hover:text-error-hover underline"
+            >
+              Dismiss
+            </button>
           </div>
         )}
         <SharedOrchestrationLayout
           isSidePanelOpen={isSidePanelOpen}
           sidePanel={
             <SidePanel
-              messages={[]}
+              messages={workflow?.conversation || []}
               isOpen={isSidePanelOpen}
               onClose={() => setIsSidePanelOpen(false)}
             />
@@ -149,6 +213,12 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
         deliverable={modalDeliverable}
         isOpen={isDeliverableModalOpen}
         onClose={() => setIsDeliverableModalOpen(false)}
+      />
+
+      <RefineInputModal
+        isOpen={isRefineModalOpen}
+        onClose={() => setIsRefineModalOpen(false)}
+        onSubmit={handleSubmitRefinement}
       />
     </div>
   );

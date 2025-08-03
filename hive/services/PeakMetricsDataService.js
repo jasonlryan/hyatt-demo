@@ -26,6 +26,14 @@ class PeakMetricsDataService {
       trendInsights: 900000, // 15 minutes
     };
 
+    // Rate limiting for API calls
+    this._lastCallTime = {};
+    this._minCallInterval = 5000; // 5 seconds between calls for same endpoint
+
+    // Prevent repeated calls for same data
+    this._lastCallResults = {};
+    this._lastCallErrors = {};
+
     // Initialize client if feature enabled
     if (process.env.ENABLE_PEAK_METRICS === "true") {
       try {
@@ -50,6 +58,50 @@ class PeakMetricsDataService {
   }
 
   /**
+   * Check if we should rate limit a call
+   */
+  _shouldRateLimit(endpoint) {
+    const now = Date.now();
+    const lastCall = this._lastCallTime[endpoint];
+
+    if (lastCall && now - lastCall < this._minCallInterval) {
+      return true;
+    }
+
+    this._lastCallTime[endpoint] = now;
+    return false;
+  }
+
+  /**
+   * Get cached result for repeated calls
+   */
+  _getCachedResult(endpoint, cacheKey) {
+    const now = Date.now();
+    const lastCall = this._lastCallTime[endpoint];
+
+    // If called within 10 seconds, return cached result
+    if (lastCall && now - lastCall < 10000) {
+      const cached = this._lastCallResults[cacheKey];
+      if (cached) {
+        console.log(
+          `📋 PeakMetricsDataService: Returning cached result for ${endpoint}`
+        );
+        return cached;
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Cache result for future calls
+   */
+  _cacheResult(endpoint, cacheKey, result) {
+    this._lastCallResults[cacheKey] = result;
+    this._lastCallTime[endpoint] = Date.now();
+  }
+
+  /**
    * Get all brands overview (lightweight list for dashboards)
    */
   async getAllBrandsOverview(options = {}) {
@@ -57,9 +109,26 @@ class PeakMetricsDataService {
       return this._createErrorResponse("PeakMetrics service not available");
     }
 
-    const cacheKey = `brands:overview:${JSON.stringify(options)}`;
-    const cached = this.cache.get(cacheKey);
+    // Rate limiting disabled for now
+    // if (this._shouldRateLimit("brands:overview")) {
+    //   console.log(
+    //     "⏳ PeakMetricsDataService: Rate limiting brands overview request"
+    //   );
+    //   return this._createErrorResponse(
+    //     "Rate limit exceeded, please try again in a few seconds"
+    //   );
+    // }
 
+    const cacheKey = `brands:overview:${JSON.stringify(options)}`;
+
+    // Check for recent cached result
+    const recentCached = this._getCachedResult("brands:overview", cacheKey);
+    if (recentCached) {
+      return recentCached;
+    }
+
+    // Check LRU cache
+    const cached = this.cache.get(cacheKey);
     if (cached) {
       return this._createSuccessResponse(cached, true);
     }
@@ -67,6 +136,10 @@ class PeakMetricsDataService {
     try {
       // Get all workspaces
       const workspaces = await this.client.getWorkspaces();
+      console.log(
+        `📋 PeakMetricsDataService: Found ${workspaces.length} workspaces:`,
+        workspaces.map((w) => `${w.title} (${w.id})`)
+      );
 
       // Transform to brand overviews with parallel processing
       const brandPromises = workspaces.map(async (workspace) => {
@@ -116,10 +189,19 @@ class PeakMetricsDataService {
             query: workspace.query,
           };
         } catch (error) {
-          console.error(
-            `Failed to get overview for workspace ${workspace.id}:`,
-            error.message
-          );
+          // Log error but don't spam console for repeated failures
+          if (
+            !this._recentErrors ||
+            !this._recentErrors[workspace.id] ||
+            Date.now() - this._recentErrors[workspace.id] > 60000
+          ) {
+            // Log once per minute
+            console.error(
+              `❌ PeakMetricsDataService: Failed to get overview for workspace ${workspace.id}: ${error.message}`
+            );
+            this._recentErrors = this._recentErrors || {};
+            this._recentErrors[workspace.id] = Date.now();
+          }
           return null;
         }
       });
@@ -128,10 +210,17 @@ class PeakMetricsDataService {
         (b) => b !== null
       );
 
+      console.log(
+        `✅ PeakMetricsDataService: Successfully processed ${brands.length} out of ${workspaces.length} workspaces`
+      );
+
       // Cache the result
       this.cache.set(cacheKey, brands, this.ttlConfig.brandOverview);
 
-      return this._createSuccessResponse(brands, false);
+      const result = this._createSuccessResponse(brands, false);
+      this._cacheResult("brands:overview", cacheKey, result);
+
+      return result;
     } catch (error) {
       console.error(
         "❌ PeakMetricsDataService: Failed to get brands overview:",
@@ -218,15 +307,26 @@ class PeakMetricsDataService {
         topNarrs.reduce((sum, n) => sum + calculateRiskScore(n), 0) /
         (topNarrs.length || 1);
 
-      // Provide helpful feedback for low activity
+      // Provide helpful feedback for low activity (only log once per workspace)
       if (narratives.length === 0 && recentMentions.length > 0) {
-        console.log(
-          `ℹ️ PeakMetricsDataService: No narratives found for ${workspace.title} (${recentMentions.length} mentions in last 48h). Narratives require higher mention volume to be generated.`
-        );
+        if (
+          !this._loggedNoNarratives ||
+          !this._loggedNoNarratives[workspace.id]
+        ) {
+          console.log(
+            `ℹ️ PeakMetricsDataService: No narratives found for ${workspace.title} (${recentMentions.length} mentions in last 48h). Narratives require higher mention volume to be generated.`
+          );
+          this._loggedNoNarratives = this._loggedNoNarratives || {};
+          this._loggedNoNarratives[workspace.id] = true;
+        }
       } else if (narratives.length > 0) {
-        console.log(
-          `✅ PeakMetricsDataService: Found ${narratives.length} narratives for ${workspace.title}`
-        );
+        if (!this._loggedNarratives || !this._loggedNarratives[workspace.id]) {
+          console.log(
+            `✅ PeakMetricsDataService: Found ${narratives.length} narratives for ${workspace.title}`
+          );
+          this._loggedNarratives = this._loggedNarratives || {};
+          this._loggedNarratives[workspace.id] = true;
+        }
       }
 
       const brandDetail = {
@@ -336,15 +436,18 @@ class PeakMetricsDataService {
 
       const transformed = narratives.map((n) => this._transformNarrative(n));
 
-      // Provide helpful feedback for empty narratives
+      // Provide helpful feedback for empty narratives (only log once per workspace)
       if (transformed.length === 0) {
-        console.log(
-          `ℹ️ PeakMetricsDataService: No narratives found for workspace ${workspaceId}. This may be due to low mention volume in the specified time window.`
-        );
-      } else {
-        console.log(
-          `✅ PeakMetricsDataService: Found ${transformed.length} narratives for workspace ${workspaceId}`
-        );
+        if (
+          !this._loggedNoNarratives ||
+          !this._loggedNoNarratives[workspaceId]
+        ) {
+          console.log(
+            `ℹ️ PeakMetricsDataService: No narratives found for workspace ${workspaceId}. This may be due to low mention volume in the specified time window.`
+          );
+          this._loggedNoNarratives = this._loggedNoNarratives || {};
+          this._loggedNoNarratives[workspaceId] = true;
+        }
       }
 
       // Cache the result

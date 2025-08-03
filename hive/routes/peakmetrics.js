@@ -38,6 +38,9 @@ router.use(checkPeakMetricsEnabled);
  */
 router.get("/brands", async (req, res) => {
   try {
+    console.log(
+      `🔍 PeakMetrics API called: GET /brands at ${new Date().toISOString()}`
+    );
     const service = getInstance();
     const options = {
       sortBy: req.query.sortBy,
@@ -104,6 +107,11 @@ router.get("/brands/:id", async (req, res) => {
  */
 router.get("/brands/:id/narratives", async (req, res) => {
   try {
+    console.log(
+      `🔍 PeakMetrics API called: GET /brands/${
+        req.params.id
+      }/narratives at ${new Date().toISOString()}`
+    );
     const service = getInstance();
     const brandId = req.params.id;
 
