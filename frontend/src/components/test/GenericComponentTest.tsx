@@ -3,6 +3,8 @@ import ConfigurableAgentCollaboration from '../shared/ConfigurableAgentCollabora
 import { getOrchestrationPhases } from '../../config/phase-definitions';
 import { adaptHiveWorkflow, adaptHyattCampaign } from '../../utils/workflow-adapters';
 import { HiveWorkflowState, Campaign } from '../../types';
+import { useConfigurableOrchestration } from '../../hooks/useConfigurableOrchestration';
+import { getOrchestrationConfig } from '../../config/orchestration-configs';
 
 const GenericComponentTest: React.FC = () => {
   const [selectedTest, setSelectedTest] = useState<'hive' | 'hyatt' | 'both'>('both');
