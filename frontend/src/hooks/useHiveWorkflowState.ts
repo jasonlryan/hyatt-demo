@@ -8,15 +8,20 @@ export function useHiveWorkflowState() {
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<number | null>(null);
 
-  // Start polling when workflow is running
+  // Start polling when workflow is running or paused
   useEffect(() => {
-    if (workflow && workflow.id && workflow.status === 'running') {
+    if (workflow && workflow.id && (workflow.status === 'running' || workflow.status === 'paused')) {
       intervalRef.current = window.setInterval(async () => {
         try {
           const updatedWorkflow = await apiFetch(`/api/hive-orchestrate/${workflow.id}`);
-          setWorkflow(updatedWorkflow);
+          // Ensure deliverables and conversation are always defined
+          setWorkflow({
+            ...updatedWorkflow,
+            deliverables: updatedWorkflow.deliverables || {},
+            conversation: updatedWorkflow.conversation || [],
+          });
           
-          // Stop polling when workflow completes or fails
+          // Stop polling when workflow completes or fails (but keep polling if paused)
           if (updatedWorkflow.status === 'completed' || updatedWorkflow.status === 'failed') {
             if (intervalRef.current) {
               window.clearInterval(intervalRef.current);
@@ -43,7 +48,7 @@ export function useHiveWorkflowState() {
     };
   }, [workflow?.id, workflow?.status]);
 
-  const startOrchestration = useCallback(async (context: any) => {
+  const startOrchestration = useCallback(async (context: any, hitlEnabled = false) => {
     setIsLoading(true);
     setError(null);
     
@@ -51,7 +56,7 @@ export function useHiveWorkflowState() {
       const response = await apiFetch('/api/hive-orchestrate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(context),
+        body: JSON.stringify({ ...context, hitlEnabled }),
       });
       
       // Set initial workflow state
@@ -98,13 +103,16 @@ export function useHiveWorkflowState() {
     setError(null);
     
     try {
-      const response = await apiFetch(`/api/hive-orchestrate/${workflow.id}/refine`, {
+      await apiFetch(`/api/hive-orchestrate/${workflow.id}/refine`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ instructions }),
       });
       
-      setWorkflow(response);
+      console.log('Refine API call successful - polling will update UI');
+      // Don't update workflow state here - let polling handle it gradually
+      // This prevents the UI from flashing/emptying and repopulating
+      
     } catch (err: any) {
       setError(err.message || 'Failed to refine workflow');
       console.error('Refine workflow error:', err);
@@ -116,18 +124,22 @@ export function useHiveWorkflowState() {
   const resumeWorkflow = useCallback(async () => {
     if (!workflow?.id) return;
     
+    console.log('Resuming workflow:', workflow.id);
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await apiFetch(`/api/hive-orchestrate/${workflow.id}/resume`, {
+      await apiFetch(`/api/hive-orchestrate/${workflow.id}/resume`, {
         method: 'POST',
       });
       
-      setWorkflow(response);
+      console.log('Resume API call successful - polling will update UI');
+      // Don't update workflow state here - let polling handle it gradually
+      // This prevents the UI from flashing/emptying and repopulating
+      
     } catch (err: any) {
-      setError(err.message || 'Failed to resume workflow');
       console.error('Resume workflow error:', err);
+      setError(err.message || 'Failed to resume workflow');
     } finally {
       setIsLoading(false);
     }

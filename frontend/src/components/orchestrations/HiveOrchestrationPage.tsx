@@ -10,6 +10,7 @@ import HiveAgentCollaboration from "../shared/HiveAgentCollaboration";
 import { useHiveWorkflowState } from "../../hooks/useHiveWorkflowState";
 import DeliverableModal from "../DeliverableModal";
 import RefineInputModal from "../RefineInputModal";
+import ErrorBoundary from "../ErrorBoundary";
 import { Deliverable } from "../../types";
 
 interface HiveOrchestrationPageProps {
@@ -42,7 +43,7 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
   const [isRefineModalOpen, setIsRefineModalOpen] = useState(false);
 
   const handleStart = async (context: any) => {
-    await startOrchestration(context);
+    await startOrchestration(context, hitlReview);
   };
 
   const handleSelectCampaign = (campaign: any) => {
@@ -71,11 +72,12 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
     await resumeWorkflow();
   };
 
-  const deliverables = workflow ? Object.values(workflow.deliverables) : [];
+  const deliverables = workflow?.deliverables ? Object.values(workflow.deliverables) : [];
 
   return (
-    <div className="min-h-screen">
-      <div className="container pt-6 pb-8">
+    <ErrorBoundary>
+      <div className="min-h-screen">
+        <div className="container pt-6 pb-8">
         <div className="mb-6 flex items-center justify-between">
           <nav className="flex items-center space-x-2 text-sm text-text-secondary">
             <button
@@ -124,29 +126,6 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
               campaign={{ id: workflow.id, status: workflow.status } as any}
               onViewProgress={() => setIsSidePanelOpen(true)}
             />
-
-            {/* HITL Controls */}
-            {hitlReview && (
-              <div className="mt-4 flex gap-3">
-                {workflow.status === "running" && (
-                  <button
-                    onClick={handleRefine}
-                    className="px-4 py-2 bg-warning text-white rounded-md hover:bg-warning-hover transition-colors"
-                  >
-                    Refine Workflow
-                  </button>
-                )}
-                {workflow.status === "failed" && (
-                  <button
-                    onClick={handleResume}
-                    className="px-4 py-2 bg-success text-white rounded-md hover:bg-success-hover transition-colors"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Resuming..." : "Resume Workflow"}
-                  </button>
-                )}
-              </div>
-            )}
           </div>
         )}
 
@@ -205,6 +184,8 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
                   setIsDeliverableModalOpen(true);
                 }
               }}
+              onResume={hitlReview ? handleResume : undefined}
+              onRefine={hitlReview ? handleRefine : undefined}
             />
           )}
         </SharedOrchestrationLayout>
@@ -220,7 +201,8 @@ const HiveOrchestrationPage: React.FC<HiveOrchestrationPageProps> = ({
         onClose={() => setIsRefineModalOpen(false)}
         onSubmit={handleSubmitRefinement}
       />
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 };
 

@@ -112,7 +112,7 @@ export interface AudienceResearch {
 
 export interface HiveWorkflowState {
   id: string;
-  status: 'running' | 'completed' | 'failed';
+  status: 'running' | 'completed' | 'failed' | 'paused';
   currentPhase?: string;
   phases: { [key: string]: HiveWorkflowPhase };
   deliverables: { [key: string]: Deliverable };
@@ -120,4 +120,7 @@ export interface HiveWorkflowState {
   createdAt?: string;
   lastUpdated?: string;
   error?: string;
+  hitlEnabled?: boolean;
+  isPaused?: boolean;
+  pausedAt?: string;
 }

@@ -38,6 +38,7 @@ require('./routes/campaigns')(app, { orchestrationManager, existingCampaigns, ge
 require('./routes/generation')(app, { orchestrationManager });
 require('./routes/visual')(app);
 require('./routes/files')(app);
+require('./routes/hitl')(app, { orchestrationManager });
 
 // PeakMetrics API routes
 const peakMetricsRouter = require('./routes/peakmetrics');
