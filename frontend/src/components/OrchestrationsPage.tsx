@@ -42,39 +42,7 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
             data.orchestrators || {}
           ) as Orchestration[];
           
-          // Add test orchestration to the list
-          const testOrchestration: Orchestration = {
-            id: "test-unified-hive",
-            name: "Test: Unified Hive",
-            description:
-              "TEST VERSION: Hive Orchestrator using unified architecture. Test before switching to production.",
-            enabled: true,
-            config: {
-              maxConcurrentWorkflows: 10,
-              timeout: 600000,
-              retryAttempts: 2,
-              enableLogging: true,
-              reactiveFramework: true,
-              parallelExecution: true,
-            },
-            workflows: [
-              "hive_pr_campaign",
-              "hive_content_creation",
-              "hive_research_collaboration",
-            ],
-            agents: [
-              "pr_manager",
-              "research_audience", 
-              "strategic_insight",
-              "trending_news",
-              "story_angles",
-              "visual_prompt_generator",
-              "brand_qa",
-              "modular_elements_recommender",
-            ],
-          };
-          
-          setOrchestrations([...orchestrationsArray, testOrchestration]);
+          setOrchestrations(orchestrationsArray);
         } else {
           // Fallback to demo data if API fails
           setOrchestrations([
@@ -144,36 +112,6 @@ const OrchestrationsPage: React.FC<OrchestrationsPageProps> = ({
               agents: [
                 "pr_manager",
                 "research_audience",
-                "strategic_insight",
-                "trending_news",
-                "story_angles",
-                "visual_prompt_generator",
-                "brand_qa",
-                "modular_elements_recommender",
-              ],
-            },
-            {
-              id: "test-unified-hive",
-              name: "Test: Unified Hive",
-              description:
-                "TEST VERSION: Hive Orchestrator using unified architecture. Test before switching to production.",
-              enabled: true,
-              config: {
-                maxConcurrentWorkflows: 10,
-                timeout: 600000,
-                retryAttempts: 2,
-                enableLogging: true,
-                reactiveFramework: true,
-                parallelExecution: true,
-              },
-              workflows: [
-                "hive_pr_campaign",
-                "hive_content_creation",
-                "hive_research_collaboration",
-              ],
-              agents: [
-                "pr_manager",
-                "research_audience", 
                 "strategic_insight",
                 "trending_news",
                 "story_angles",

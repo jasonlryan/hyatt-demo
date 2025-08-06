@@ -10,9 +10,7 @@ import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestration
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
 // Removed unused import: GenericOrchestrationPage
 import { loadOrchestrationPage } from "./components/orchestrations/generated";
-// Test imports for unified architecture
-import TestUnifiedHive from "./components/orchestrations/TestUnifiedHive";
-import TestUnifiedDebug from "./components/orchestrations/TestUnifiedDebug";
+// Test imports removed - cleaned up failed unified architecture attempt
 type OrchestrationPageProps = {
   orchestrationId: string;
   orchestrationName: string;
@@ -208,32 +206,6 @@ function App() {
               }}
             />
           );
-        case "test-unified-hive":
-          try {
-            return (
-              <TestUnifiedHive
-                hitlReview={hitlReview}
-                onToggleHitl={async () => {
-                  const newState = !hitlReview;
-                  await updateHitlReviewState(newState);
-                  if (newState) {
-                    setIsHitlModalOpen(true);
-                  }
-                }}
-                onNavigateToOrchestrations={handleNavigateToOrchestrations}
-              />
-            );
-          } catch (error) {
-            console.error('Error rendering TestUnifiedHive:', error);
-            return (
-              <div className="min-h-screen p-8 bg-red-50">
-                <h1 className="text-3xl font-bold text-red-700">Error Loading Unified Test</h1>
-                <pre className="mt-4 p-4 bg-white rounded text-red-600">
-                  {String(error)}
-                </pre>
-              </div>
-            );
-          }
         default:
           return (
             <Suspense
