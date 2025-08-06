@@ -1,0 +1,51 @@
+{
+  "timestamp": "2025-08-05T10:56:42.685Z",
+  "collectionId": "e5841b1f-9419-4cc7-9842-a82341c6a2b8",
+  "publishedId": "TW6wJodn",
+  "ownerId": "4839979",
+  "outputDirectory": "/Users/jasonryan/Documents/DEMO/docs/scraped",
+  "files": [
+    {
+      "name": "collection_data.json",
+      "size": 2309573,
+      "modified": "2025-08-05T10:56:42.684Z"
+    },
+    {
+      "name": "collection_metadata.json",
+      "size": 10451,
+      "modified": "2025-08-05T10:56:41.366Z"
+    },
+    {
+      "name": "main_page.html",
+      "size": 40003,
+      "modified": "2025-08-05T10:55:42.104Z"
+    },
+    {
+      "name": "peakmetrics_openapi_from_collection.json",
+      "size": 27477,
+      "modified": "2025-08-05T10:56:42.685Z"
+    },
+    {
+      "name": "peakmetrics_openapi_from_collection.yaml",
+      "size": 18349,
+      "modified": "2025-08-05T10:56:42.686Z"
+    },
+    {
+      "name": "scraping_report.json",
+      "size": 424,
+      "modified": "2025-08-05T10:55:46.100Z"
+    }
+  ],
+  "summary": {
+    "totalFiles": 6,
+    "totalSize": 2406277,
+    "endpoints": [
+      "peakmetrics_openapi_from_collection.json",
+      "peakmetrics_openapi_from_collection.yaml"
+    ],
+    "folders": [
+      "collection_data.json",
+      "collection_metadata.json"
+    ]
+  }
+}

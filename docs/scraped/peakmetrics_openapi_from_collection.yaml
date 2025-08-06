@@ -1,0 +1,832 @@
+openapi: 3.1.0
+info:
+  title: PeakMetrics - Enterprise Application API
+  description: <html><head></head><body><p>PeakMetrics' API allows for querying PeakMetrics.</p>
+</body></html>
+  version: 2.0.0
+servers:
+  - url: https://api.peakmetrics.com
+    description: Main API server
+  - url: https://flux.peakm.com
+    description: Alerting API server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth:
+paths:
+  /access/token:
+    post:
+      tags:
+        - Get Authentication Token
+      summary: Get Authentication Token
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+   "username" : "nick",
+   "password": "{{password}}",
+   "client_id" : "{{client_id}}"
+}
+
+  /alerts/alert/:username:
+    get:
+      tags:
+        - List Alerts
+      summary: List Alerts
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /alerts/alert/:username/:alertId/:
+    get:
+      tags:
+        - Get Alert
+      summary: Get Alert
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /alerts/alert:
+    post:
+      tags:
+        - Create Alert
+      summary: Create Alert
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+	"whenThis": {
+		"value": null,
+		"text": "(\"Emerson College\")",
+		"parts": {
+			"always": [
+				"Emerson College"
+			],
+			"sometimes": [],
+			"never": []
+		},
+		"case_sensitive": false,
+		"advanced_search": false
+	},
+	"happens": {
+		"text": "appears in News",
+		"value": {
+			"tags": [
+				{
+					"tag": "news",
+					"id": 1,
+					"meta": null,
+					"friendly": "News"
+				}
+			],
+			"sources": []
+		},
+		"search": "workspaces"
+	},
+	"that": [
+		{
+			"text": "send me an email",
+			"value": 2
+		}
+	],
+	"title": "Emerson College",
+	"frequency": {
+		"value": 1440,
+		"text": "once a day"
+	},
+	"tags": []
+}
+    delete:
+      tags:
+        - Delete an Alert
+      summary: Delete an Alert
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+	"id": 60799
+}
+  /alerts/alert/nick/68223/stream:
+    get:
+      tags:
+        - Get Stream
+      summary: Get Stream
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /https://flux.peakmetrics.com/alerts/alert/v2/{username}/stream:
+    post:
+      tags:
+        - Get Stream V2
+      summary: Get Stream V2
+      description: 
+      parameters:
+        - name: authority
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: accept
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: accept-language
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: content-type
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: origin
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: referer
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: sec-fetch-dest
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: sec-fetch-mode
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: sec-fetch-site
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: sec-gpc
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: user-agent
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "page": 1,
+    "sort": [
+        {
+            "publish_date": {
+                "order": "desc"
+            }
+        }
+    ],
+    "buckets": 1,
+    "since": "2023-01-01",
+    "to": "2023-01-02",
+    "post_filter": []
+}
+  /alerts/alert/${owner}/${alert_id}:
+    put:
+      tags:
+        - Edit Alert
+      summary: Edit Alert
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+	"whenThis": {
+		"value": null,
+		"text": "(\"Emerson College\")",
+		"parts": {
+			"always": [
+				"Emerson College"
+			],
+			"sometimes": [],
+			"never": []
+		},
+		"case_sensitive": false,
+		"advanced_search": false
+	},
+	"happens": {
+		"text": "appears in News",
+		"value": {
+			"tags": [
+				{
+					"tag": "news",
+					"id": 1,
+					"meta": null,
+					"friendly": "News"
+				}
+			],
+			"sources": []
+		},
+		"search": "workspaces"
+	},
+	"that": [
+		{
+			"text": "send me an email",
+			"value": 2
+		}
+	],
+	"title": "Emerson College",
+	"frequency": {
+		"value": 1440,
+		"text": "once a day"
+	},
+	"tags": [],
+	"owner": "nick"
+}
+  /journalists/search_beta:
+    post:
+      tags:
+        - Search Journalists
+      summary: Search Journalists
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "author": null,
+    "bio": null,
+    "publication": "cbsnews.com",
+    "article_text": "misinformation",
+    "topics": ["POLITICS"],
+    "limit": 10,
+    "page": 1,
+    "emails": true
+}
+  /journalists/:_source/:_name:
+    get:
+      tags:
+        - Get a Journalist
+      summary: Get a Journalist
+      description: 
+      parameters:
+        - name: accept
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: content-type
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /mentions/org/:_source/detailed:
+    get:
+      tags:
+        - Get a Source
+      summary: Get a Source
+      description: 
+      parameters:
+        - name: accept
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: content-type
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /journalists/:_source/:_name/stats:
+    get:
+      tags:
+        - Get a Journalist - Stats & Topics
+      summary: Get a Journalist - Stats & Topics
+      description: 
+      parameters:
+        - name: accept
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: content-type
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /journalists/:_source/:_name/articles:
+    get:
+      tags:
+        - Get a Journalist - Recent Articles
+      summary: Get a Journalist - Recent Articles
+      description: 
+      parameters:
+        - name: accept
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: content-type
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /journalists/search_bulk:
+    post:
+      tags:
+        - Search Journalists Bulk
+      summary: Search Journalists Bulk
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "queries": [
+        {   
+            "author": "Janell Hazelwood",
+            "publication": "xonecole.com"
+        },
+        {
+            "author": "Olivia Harrison",
+            "publication": "refinery29.com"
+        }
+    ]
+}
+  /journalists/list:
+    get:
+      tags:
+        - Get Media Lists
+      summary: Get Media Lists
+      description: 
+      parameters:
+        - name: accept
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      tags:
+        - Create Media List
+      summary: Create Media List
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "title": "Test"
+}
+    delete:
+      tags:
+        - Delete a Media List
+      summary: Delete a Media List
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {"ids":["bfb117ea-e0d8-11ea-aac2-12a73396ab39"]}
+
+  /journalists/list/:listId:
+    get:
+      tags:
+        - Get a Media List
+      summary: Get a Media List
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /journalists/contact:
+    post:
+      tags:
+        - Add Contacts to a Media List
+      summary: Add Contacts to a Media List
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: [{"organization":"Arkansas Times","email":null,"first_name":"Lucas","last_name":"Hnath","contact_link":"369870","contact_link_url":"6737/Lucas Hnath","twitter":{"profile_image_url_https":"https://pbs.twimg.com/profile_images/1058519932407701506/8cD_1yvl_normal.jpg","screen_name":"HillaryAndCBway","description":"Laurie Metcalf and John Lithgow star in HILLARY AND CLINTON. By Lucas Hnath. Directed by Joe Mantello. Previews begin March 16. #HillaryAndClinton"},"list":"8add8fbc-e0d8-11ea-b554-12a73396ab39"}]
+
+  /journalists/list/:listId/connect:
+    delete:
+      tags:
+        - Remove Contacts from a Media List
+      summary: Remove Contacts from a Media List
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "contacts": [
+        "604ab338-dbe7-11ea-8791-12a73396ab39"
+    ]
+}
+  /journalists/export:
+    post:
+      tags:
+        - Export Contacts to CSV
+      summary: Export Contacts to CSV
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "ids": [
+        "d58f7eee-e0d8-11ea-af60-12a73396ab39"
+    ]
+}
+  /https://api-beta.peakmetrics.com/news-enterprise/search:
+    post:
+      tags:
+        - Advanced Search
+      summary: Advanced Search
+      description: 
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+        - name: Content-Type
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "include_source_meta": true,
+	"range": {
+		"since": "2021-05-15",
+		"to": "2021-05-25"
+	},
+	"tags": ["news","news-glob"],
+    "filter": [
+        {
+            "geo_distance": {
+                "distance": "200mi",
+                "geo_primary": {
+                    "lat": 34.0522,
+                    "lon": -118.2437
+                }
+            }
+        }
+    ],
+    "must": [
+        {
+            "match": {
+                "title": "Pete Buttigieg"
+            }
+        }
+    ],
+    "must_not": [
+        {
+            "match": {
+                "text": "Elizabeth Warren"
+            }
+        }
+    ],
+    "should": [],
+    "highlight": {
+        "fields": {
+            "title": {}
+        },
+        "fragment_size": 300
+    },
+    "from": 0,
+    "size": 2
+}
+  /search:
+    get:
+      tags:
+        - Search
+      summary: Search
+      description: 
+      parameters:
+        - name: x-api-key
+          in: header
+          required: true
+          schema:
+            type: string
+          description:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /workspaces:
+    get:
+      tags:
+        - List Workspaces
+      summary: List Workspaces
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /workspaces/:workspaceId/narratives:
+    get:
+      tags:
+        - Get Narratives in Workspace
+      summary: Get Narratives in Workspace
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+  /workspaces/:workspaceId/narratives/:narrativeId:
+    post:
+      tags:
+        - Get Mentions in Narrative
+      summary: Get Mentions in Narrative
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "post_filter": [
+        // Filters
+    ],
+    "sort": [
+        // Sort
+    ],
+    "limit": 10, // Limit
+    "offset": 0, // Offset
+    "since": "2023-09-01", // Start date
+    "to": "2023-09-08" // End date
+}
+  /https://flux.peakmetrics.com/aggregations/aggregate:
+    post:
+      tags:
+        - Aggregate
+      summary: Aggregate
+      description: 
+      parameters:
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+            example: {
+    "tags": ["twitter"],
+    "query": "title: \"seattle\"",
+    "since": "2023-09-01",
+    "to": "2023-09-20",
+    "interval": "day"
+}
+tags:

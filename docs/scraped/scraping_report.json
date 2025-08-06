@@ -1,0 +1,20 @@
+{
+  "timestamp": "2025-08-05T10:55:46.096Z",
+  "baseURL": "https://docs.api.peakmetrics.com",
+  "outputDirectory": "/Users/jasonryan/Documents/DEMO/docs/scraped",
+  "files": [
+    {
+      "name": "main_page.html",
+      "size": 40003,
+      "modified": "2025-08-05T10:55:42.104Z"
+    }
+  ],
+  "summary": {
+    "totalFiles": 1,
+    "totalSize": 40003,
+    "endpoints": [],
+    "sections": [
+      "main_page.html"
+    ]
+  }
+}
