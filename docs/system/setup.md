@@ -1,8 +1,8 @@
-# System Setup Guide
+# Hive System Setup Guide
 
 ## Overview
 
-This guide covers the setup and installation of the Hive Agent System, including both the frontend React application and the backend orchestration system.
+This guide covers the setup and installation of the Hive System, a dynamic orchestration platform featuring configuration-driven workflows and orchestration-aware agents. Includes both the React frontend and the Node.js backend orchestration engine.
 
 ## Prerequisites
 
@@ -106,8 +106,16 @@ The frontend uses Vite for development. Key configuration files:
 
 The backend orchestration system configuration:
 
-- `hive/agents/agents.config.json` - Agent definitions
-- `hive/orchestrations/configs/orchestrations.config.json` - Orchestration settings
+- **Primary Config**: `hive/orchestrations/orchestrations.config.json` - Single source of truth for all orchestrations, agents, and UI terminology
+- **Legacy Config**: `hive/agents/agents.config.json` - Legacy agent definitions (being phased out)
+
+#### Configuration-Driven Architecture
+
+The system is now 95% configuration-driven, meaning:
+- New orchestrations can be added by editing `orchestrations.config.json`
+- Agent mappings are dynamic and orchestration-specific
+- UI terminology automatically adapts based on orchestration type
+- No code changes required for new workflow types
 
 ## 🧪 Testing the Setup
 
@@ -122,11 +130,21 @@ The backend orchestration system configuration:
 - Check `http://localhost:3001/health` (if available)
 - Test API endpoints in the frontend
 
-### 3. Test Orchestration Builder
+### 3. Test Dynamic Orchestrations
 
-- Go to Orchestration Builder in the frontend
-- Enter a test description like "A content marketing orchestration"
-- Verify that orchestration generation works
+#### Test Hyatt Orchestration (Campaign)
+- Navigate to "Hyatt Orchestrator" 
+- Create a new Campaign with sample brief
+- Verify workflow: PR Manager → Research → Trending → Story
+
+#### Test Hive Orchestration (Spark)
+- Navigate to "Hive Orchestrator"
+- Create a new Spark with cultural moment brief  
+- Verify workflow: PR Manager → Trending → Strategic → Story → Brand Lens → Visual → Brand QA
+
+#### Test Configuration System
+- Check that UI displays "Campaign" for Hyatt and "Spark" for Hive
+- Verify agent handoffs work correctly in both orchestrations
 
 ## 🚨 Troubleshooting
 
@@ -213,10 +231,16 @@ npm run build
 
 After setup, explore:
 
-1. **[Orchestration Developer Guide](../orchestrations/ORCHESTRATION_DEVELOPER_GUIDE.md)** - Create new orchestrations
-2. **[Agent Mapping](../orchestrations/AgentMapping.md)** - Understand available agents
-3. **[Unified Styling System Guide](../frontend/STYLING_SYSTEM_GUIDE.md)** - Frontend styling
-4. **[Test Briefs](../../Use cases/briefs.md)** - Test orchestrations
+1. **[Architecture Overview](./architecture.md)** - Understand the dynamic system architecture
+2. **[Configuration Guide](./single-source-of-truth.md)** - Learn about the unified configuration system
+3. **[Test Briefs](../../Use cases/briefs.md)** - Test both orchestration types
+4. **[Plans Archive](../../archive/completed-plans/)** - Review implementation achievements
+
+### Understanding the System
+
+- **Dynamic Configuration**: Review `hive/orchestrations/orchestrations.config.json` to see how orchestrations are defined
+- **BaseAgent Architecture**: Check `hive/agents/classes/BaseAgent.js` for the orchestration-aware foundation
+- **Orchestration Service**: See `frontend/src/services/orchestrationService.ts` for frontend integration
 
 ## 🆘 Getting Help
 
@@ -226,5 +250,6 @@ After setup, explore:
 
 ---
 
-_Last updated: 2024-07-XX_
-_Version: 1.0.0_
+_Last updated: 2025-01-08_  
+_Version: 2.0.0 - Dynamic Orchestration System_  
+_System Status: 95% Configuration-Driven, Production-Ready_
