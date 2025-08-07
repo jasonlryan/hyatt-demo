@@ -59,15 +59,16 @@ class HiveOrchestrator extends BaseOrchestrator {
       this.log("Step 1: Establishing strategy...");
       const prIntro = await this.prManager.generateCampaignIntroduction(
         context.moment || context.campaign,
-        context
+        context,
+        'hive'
       );
 
       // Step 2: Moment analysis
       this.log("Step 2: Analyzing moment...");
       const trendInsights = await this.trendingAgent.analyzeTrends(
         context.moment || context.campaign,
-        null,
-        null
+        context,
+        'hive'
       );
 
       // Step 3: Strategic insight

@@ -1,5 +1,30 @@
 module.exports = function(app, { orchestrationManager, existingCampaigns, getOrchestrationForCampaign }) {
-  // Create a new campaign
+  // Create a new workflow (unified endpoint)
+  app.post('/api/workflows', async (req, res) => {
+    try {
+      const { brief, orchestrationId = 'hyatt' } = req.body;
+      if (!brief || brief.trim().length === 0) {
+        return res.status(400).json({ error: 'Brief is required' });
+      }
+      
+      const orchestration = await orchestrationManager.getOrchestration(orchestrationId);
+      const orchestrationConfig = require('../orchestrations/OrchestrationConfig');
+      const workflowLabel = orchestrationConfig.getWorkflowLabel(orchestrationId);
+      
+      console.log(
+        `Creating new ${workflowLabel.toLowerCase()} with ${orchestrationId} orchestration, brief:`,
+        brief.substring(0, 100) + '...'
+      );
+      
+      const workflow = await orchestration.startCampaign(brief);
+      res.status(201).json(workflow);
+    } catch (error) {
+      console.error('Workflow creation error:', error);
+      res.status(500).json({ error: 'Failed to create workflow', details: error.message });
+    }
+  });
+
+  // Create a new campaign (backward compatibility)
   app.post('/api/campaigns', async (req, res) => {
     try {
       const { campaignBrief, orchestrationId = 'hyatt' } = req.body;
@@ -16,6 +41,26 @@ module.exports = function(app, { orchestrationManager, existingCampaigns, getOrc
     } catch (error) {
       console.error('Campaign creation error:', error);
       res.status(500).json({ error: 'Failed to create campaign', details: error.message });
+    }
+  });
+
+  // Create a new spark (Hive-specific endpoint)
+  app.post('/api/sparks', async (req, res) => {
+    try {
+      const { sparkBrief } = req.body;
+      if (!sparkBrief || sparkBrief.trim().length === 0) {
+        return res.status(400).json({ error: 'Spark brief is required' });
+      }
+      console.log(
+        `Creating new spark with hive orchestration, brief:`,
+        sparkBrief.substring(0, 100) + '...'
+      );
+      const orchestration = await orchestrationManager.getOrchestration('hive');
+      const spark = await orchestration.startCampaign(sparkBrief);
+      res.status(201).json(spark);
+    } catch (error) {
+      console.error('Spark creation error:', error);
+      res.status(500).json({ error: 'Failed to create spark', details: error.message });
     }
   });
 

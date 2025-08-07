@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { getOrchestrationUI } from '../../services/orchestrationService';
 
 /**
  * SharedCampaignForm replicates Hyatt's campaign creation form.
@@ -45,7 +46,9 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-text-primary mb-4">Create New Campaign</h2>
+      <h2 className="text-2xl font-bold text-text-primary mb-4">
+        {selectedOrchestration ? getOrchestrationUI(selectedOrchestration).createNew : 'Create New Workflow'}
+      </h2>
       {selectedOrchestration && (
         <div className="mb-4 p-3 bg-primary-light border border-border rounded-md">
           <p className="text-sm text-primary">
@@ -57,7 +60,7 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="campaignBrief" className="block text-sm font-medium text-text-secondary mb-2">
-            Campaign Brief
+            {selectedOrchestration ? getOrchestrationUI(selectedOrchestration).briefLabel : 'Workflow Brief'}
           </label>
           <textarea
             id="campaignBrief"
@@ -75,7 +78,7 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
               onClick={onNewCampaign}
               className="px-4 py-2 bg-primary text-white font-medium rounded hover:bg-primary-hover transition-colors"
             >
-              New Campaign
+              {selectedOrchestration ? getOrchestrationUI(selectedOrchestration).createNew : 'New Workflow'}
             </button>
             <div className="relative">
               <button
@@ -87,7 +90,7 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
                 </svg>
-                Load Campaign
+                {selectedOrchestration ? getOrchestrationUI(selectedOrchestration).buttonLoad : 'Load Workflow'}
                 <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
@@ -95,7 +98,9 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
               {dropdownOpen && (
                 <div className="absolute left-0 mt-1 w-80 bg-white rounded border border-border shadow-sm z-50">
                   <div className="p-3 border-b border-border">
-                    <div className="text-text-primary font-medium text-sm">All Campaigns ({campaigns.length})</div>
+                    <div className="text-text-primary font-medium text-sm">
+                      All {selectedOrchestration ? getOrchestrationUI(selectedOrchestration).workflowNounPlural : 'Workflows'} ({campaigns.length})
+                    </div>
                   </div>
                   <div className="max-h-64 overflow-y-auto">
                     {campaigns.length > 0 ? (
@@ -113,7 +118,9 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
                         </button>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-text-muted text-sm">No campaigns available</div>
+                      <div className="p-4 text-center text-text-muted text-sm">
+                        No {selectedOrchestration ? getOrchestrationUI(selectedOrchestration).workflowNounPlural?.toLowerCase() : 'workflows'} available
+                      </div>
                     )}
                   </div>
                 </div>
@@ -126,7 +133,7 @@ const SharedCampaignForm: React.FC<SharedCampaignFormProps> = ({
               disabled={isLoading || !brief.trim()}
               className="px-4 py-2 bg-primary text-white font-medium rounded hover:bg-primary-hover disabled:bg-secondary disabled:cursor-not-allowed transition-colors"
             >
-              {isLoading ? 'Creating...' : 'Create Campaign'}
+              {isLoading ? 'Creating...' : (selectedOrchestration ? getOrchestrationUI(selectedOrchestration).buttonCreate : 'Create Workflow')}
             </button>
             <button
               type="button"

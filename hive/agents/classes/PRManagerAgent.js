@@ -1,6 +1,7 @@
 const fs = require("fs").promises;
 const path = require("path");
 const OpenAI = require("openai");
+const orchestrationConfig = require("../../orchestrations/OrchestrationConfig");
 
 class PRManagerAgent {
   constructor() {
@@ -81,10 +82,10 @@ class PRManagerAgent {
     throw new Error(`Failed to load system prompt: ${this.promptFile}`);
   }
 
-  async generateCampaignIntroduction(campaignBrief, campaignContext) {
+  async generateCampaignIntroduction(campaignBrief, campaignContext, orchestrationType = 'hyatt') {
     try {
       console.log(
-        `🔄 PR Manager generating campaign introduction via Responses API...`
+        `🔄 PR Manager generating campaign introduction via Chat API...`
       );
 
       // Ensure system prompt is loaded before making API call
@@ -95,7 +96,26 @@ class PRManagerAgent {
         await this.loadSystemPrompt();
       }
 
+      // Get orchestration configuration
+      const orchestration = orchestrationConfig.getOrchestration(orchestrationType);
+      if (!orchestration) {
+        throw new Error(`Unknown orchestration type: ${orchestrationType}`);
+      }
+
+      const workflowDescription = orchestrationConfig.getWorkflowDescription(orchestrationType);
+      const nextAgentInfo = orchestrationConfig.getNextAgent(orchestrationType, 'pr-manager');
+      
       const prompt = `
+CRITICAL INSTRUCTION: You are the PR Manager in the ${orchestration.name} orchestration.
+
+THE ONLY AGENTS IN THIS ORCHESTRATION ARE:
+${orchestration.workflow.map(step => `- ${step.name}: ${step.role}`).join('\n')}
+
+DO NOT MENTION ANY OTHER AGENTS THAT ARE NOT LISTED ABOVE.
+
+YOUR NEXT AGENT IS: ${nextAgentInfo ? nextAgentInfo.name : 'None'}
+THEIR ROLE IS: ${nextAgentInfo ? nextAgentInfo.role : 'N/A'}
+
 ORIGINAL CAMPAIGN BRIEF:
 ${campaignBrief}
 
@@ -114,28 +134,45 @@ CAMPAIGN ANALYSIS:
           : "none identified"
       }
 
-Based on the ORIGINAL CAMPAIGN BRIEF above, generate a campaign introduction that:
-1. References specific details from the campaign brief
-2. Sets the strategic direction for the team based on the brief's objectives
-3. Directs the Research & Audience agent to begin analysis of the specific target market mentioned in the brief
-4. Establishes the campaign's unique positioning and goals
+GENERATE A CAMPAIGN INTRODUCTION FOLLOWING THESE RULES:
+1. Reference specific details from the campaign brief
+2. Set strategic direction based on the brief's objectives
+3. In your "Next Steps" section, you MUST write: "I am directing the ${nextAgentInfo ? nextAgentInfo.name : 'next agent'} to ${nextAgentInfo ? nextAgentInfo.role : 'proceed with their analysis'}."
+4. DO NOT mention "Research & Audience Agent" unless it is specifically listed in the agents above
+5. ONLY reference agents that exist in the ${orchestration.name} orchestration
 
-Be specific to THIS campaign - reference the actual campaign details, objectives, and requirements from the brief. Avoid generic language.
+Be specific to THIS campaign - reference the actual campaign details.
 `;
 
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
+        max_tokens: this.maxTokens,
       });
 
-      const introduction = response.output_text.trim();
+      const introduction = response.choices[0].message.content?.trim() || "[No content returned]";
+
+      // Validate response doesn't contain wrong agent references
+      if (orchestrationType === 'hive' && introduction.includes('Research & Audience')) {
+        console.warn('⚠️  WARNING: Response contains incorrect agent reference for HIVE orchestration');
+        console.warn('🔧 Auto-correcting: Research & Audience Agent → Trending News Agent');
+        
+        // More comprehensive correction
+        let correctedIntro = introduction
+          .replace(/Research & Audience Agent/g, 'Trending News Agent')
+          .replace(/Research & Audience/g, 'Trending News Agent')
+          .replace(/Audience analysis and market research/g, 'Analyze current trends and cultural moments');
+        
+        console.log('✅ Response corrected for HIVE orchestration');
+        return correctedIntro;
+      }
 
       console.log(
-        `✅ PR Manager generated introduction via Responses API: ${introduction.substring(
+        `✅ PR Manager generated introduction via Chat API: ${introduction.substring(
           0,
           100
         )}...`
@@ -143,17 +180,17 @@ Be specific to THIS campaign - reference the actual campaign details, objectives
       return introduction;
     } catch (error) {
       console.error(
-        "❌ PR Manager Responses API introduction generation failed:",
+        "❌ PR Manager Chat API introduction generation failed:",
         error
       );
       return "Campaign introduction unavailable - please retry";
     }
   }
 
-  async generateHandoffMessage(campaignContext, nextPhase, previousData) {
+  async generateHandoffMessage(campaignContext, nextPhase, previousData, orchestrationType = 'hyatt') {
     try {
       console.log(
-        `🔄 PR Manager generating handoff to ${nextPhase} via Responses API...`
+        `🔄 PR Manager generating handoff to ${nextPhase} via Chat API...`
       );
 
       // Ensure system prompt is loaded before making API call
@@ -164,7 +201,24 @@ Be specific to THIS campaign - reference the actual campaign details, objectives
         await this.loadSystemPrompt();
       }
 
+      // Get orchestration configuration
+      const orchestration = orchestrationConfig.getOrchestration(orchestrationType);
+      if (!orchestration) {
+        throw new Error(`Unknown orchestration type: ${orchestrationType}`);
+      }
+
+      const workflowDescription = orchestrationConfig.getWorkflowDescription(orchestrationType);
+      const availableAgents = orchestrationConfig.getWorkflow(orchestrationType)
+        .map(step => `${step.name} (${step.role})`)
+        .join('\n- ');
+
       const prompt = `
+CRITICAL CONTEXT: You are operating in the ${orchestration.name} orchestration.
+Workflow: ${workflowDescription}
+
+AVAILABLE AGENTS IN THIS ORCHESTRATION:
+- ${availableAgents}
+
 ORIGINAL CAMPAIGN BRIEF:
 ${campaignContext.originalBrief || "Campaign brief not available"}
 
@@ -192,25 +246,27 @@ Based on the ORIGINAL CAMPAIGN BRIEF and the insights from the previous phase, g
 1. References specific details from the original campaign brief
 2. Summarizes key insights from the previous phase
 3. Connects those insights to the next phase requirements
-4. Provides specific direction for the upcoming analysis
+4. Provides specific direction for the ${nextPhase} phase
 5. Maintains strategic momentum
+6. IMPORTANT: Only reference agents listed above that exist in the ${orchestration.name} workflow
 
 Be specific to THIS campaign - avoid generic language. Reference the actual campaign details.
 `;
 
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
+        max_tokens: this.maxTokens,
       });
 
-      const handoff = response.output_text.trim();
+      const handoff = response.choices[0].message.content?.trim() || "[No content returned]";
 
       console.log(
-        `✅ PR Manager generated handoff via Responses API: ${handoff.substring(
+        `✅ PR Manager generated handoff via Chat API: ${handoff.substring(
           0,
           100
         )}...`
@@ -218,17 +274,17 @@ Be specific to THIS campaign - avoid generic language. Reference the actual camp
       return handoff;
     } catch (error) {
       console.error(
-        "❌ PR Manager Responses API handoff generation failed:",
+        "❌ PR Manager Chat API handoff generation failed:",
         error
       );
       return "Handoff message unavailable - please retry";
     }
   }
 
-  async generateFinalDelivery(campaignContext, allPhaseData) {
+  async generateFinalDelivery(campaignContext, allPhaseData, orchestrationType = 'hyatt') {
     try {
       console.log(
-        `🔄 PR Manager generating final delivery via Responses API...`
+        `🔄 PR Manager generating final delivery via Chat API...`
       );
 
       // Ensure system prompt is loaded before making API call
@@ -239,7 +295,18 @@ Be specific to THIS campaign - avoid generic language. Reference the actual camp
         await this.loadSystemPrompt();
       }
 
+      // Get orchestration configuration
+      const orchestration = orchestrationConfig.getOrchestration(orchestrationType);
+      if (!orchestration) {
+        throw new Error(`Unknown orchestration type: ${orchestrationType}`);
+      }
+
+      const workflowDescription = orchestrationConfig.getWorkflowDescription(orchestrationType);
+
       const prompt = `
+ORCHESTRATION: ${orchestration.name}
+Workflow: ${workflowDescription}
+
 ORIGINAL CAMPAIGN BRIEF:
 ${campaignContext.originalBrief || "Campaign brief not available"}
 
@@ -282,16 +349,17 @@ The deliverable must be comprehensive, actionable, and meet professional PR indu
 Generate a final delivery message that presents this comprehensive campaign plan with authority and detail.
 `;
 
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
+        max_tokens: this.maxTokens,
       });
 
-      const delivery = response.output_text.trim();
+      const delivery = response.choices[0].message.content?.trim() || "[No content returned]";
 
       if (!delivery || typeof delivery !== "string") {
         console.warn(
@@ -301,7 +369,7 @@ Generate a final delivery message that presents this comprehensive campaign plan
       }
 
       console.log(
-        `✅ PR Manager generated comprehensive final delivery via Responses API: ${delivery.substring(
+        `✅ PR Manager generated comprehensive final delivery via Chat API: ${delivery.substring(
           0,
           100
         )}...`
@@ -309,20 +377,28 @@ Generate a final delivery message that presents this comprehensive campaign plan
       return delivery;
     } catch (error) {
       console.error(
-        "❌ PR Manager Responses API final delivery generation failed:",
+        "❌ PR Manager Chat API final delivery generation failed:",
         error
       );
       return "Final delivery message unavailable - please retry";
     }
   }
 
-  async generateCampaignConclusion(campaignContext, finalStrategy) {
+  async generateCampaignConclusion(campaignContext, finalStrategy, orchestrationType = 'hyatt') {
     try {
       console.log(
-        `🔄 PR Manager generating campaign conclusion via Responses API...`
+        `🔄 PR Manager generating campaign conclusion via Chat API...`
       );
 
+      // Get orchestration configuration
+      const orchestration = orchestrationConfig.getOrchestration(orchestrationType);
+      if (!orchestration) {
+        throw new Error(`Unknown orchestration type: ${orchestrationType}`);
+      }
+
       const prompt = `
+Orchestration: ${orchestration.name}
+
 Campaign Context:
 - Type: ${campaignContext.campaignType || "general_campaign"}
 - Urgency: ${campaignContext.urgency || "medium"}
@@ -344,16 +420,17 @@ Generate a campaign conclusion that:
 Keep it executive-level and action-oriented.
 `;
 
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
+        max_tokens: this.maxTokens,
       });
 
-      const conclusion = response.output_text.trim();
+      const conclusion = response.choices[0].message.content?.trim() || "[No content returned]";
 
       if (!conclusion || typeof conclusion !== "string") {
         console.warn("⚠️ Conclusion is empty or not a string, using fallback");
@@ -361,7 +438,7 @@ Keep it executive-level and action-oriented.
       }
 
       console.log(
-        `✅ PR Manager generated conclusion via Responses API: ${conclusion.substring(
+        `✅ PR Manager generated conclusion via Chat API: ${conclusion.substring(
           0,
           100
         )}...`
@@ -369,21 +446,32 @@ Keep it executive-level and action-oriented.
       return conclusion;
     } catch (error) {
       console.error(
-        "❌ PR Manager Responses API conclusion generation failed:",
+        "❌ PR Manager Chat API conclusion generation failed:",
         error
       );
       return "Campaign conclusion unavailable - please retry";
     }
   }
 
-  async synthesizeComprehensiveStrategy(allPhaseData) {
+  async synthesizeComprehensiveStrategy(allPhaseData, orchestrationType = 'hyatt') {
     try {
       console.log(
-        `🔄 PR Manager synthesizing comprehensive strategy via Responses API...`
+        `🔄 PR Manager synthesizing comprehensive strategy via Chat API...`
       );
 
+      // Get orchestration configuration
+      const orchestration = orchestrationConfig.getOrchestration(orchestrationType);
+      if (!orchestration) {
+        throw new Error(`Unknown orchestration type: ${orchestrationType}`);
+      }
+
+      const workflowDescription = orchestrationConfig.getWorkflowDescription(orchestrationType);
+
       const prompt = `
-You are the PR Manager responsible for creating the final comprehensive campaign strategy. You must synthesize ALL the insights from your team into a detailed, professional-grade strategic deliverable.
+You are the PR Manager in the ${orchestration.name} orchestration.
+Workflow: ${workflowDescription}
+
+You are responsible for creating the final comprehensive campaign strategy. You must synthesize ALL the insights from your team into a detailed, professional-grade strategic deliverable.
 
 TEAM INSIGHTS TO SYNTHESIZE:
 
@@ -398,6 +486,8 @@ ${JSON.stringify(allPhaseData.storyAngles, null, 2)}
 
 COLLABORATIVE INPUTS:
 ${JSON.stringify(allPhaseData.collaborativeInputs, null, 2)}
+
+ORCHESTRATION TYPE: ${orchestrationType}
 
 REQUIREMENTS:
 Create a comprehensive campaign strategy that includes:
@@ -418,19 +508,20 @@ CRITICAL: Base everything on the actual data provided. Do NOT use generic placeh
 The strategy must be comprehensive (1000+ words), specific to this campaign, and ready for executive presentation.
 `;
 
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
+        max_tokens: this.maxTokens,
       });
 
-      const strategy = response.output_text.trim();
+      const strategy = response.choices[0].message.content?.trim() || "[No content returned]";
 
       console.log(
-        `✅ PR Manager synthesized comprehensive strategy: ${strategy.strategicOverview.campaignTheme}`
+        `✅ PR Manager synthesized comprehensive strategy via Chat API`
       );
       return strategy;
     } catch (error) {

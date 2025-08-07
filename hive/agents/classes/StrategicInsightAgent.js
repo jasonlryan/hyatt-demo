@@ -155,6 +155,11 @@ class StrategicInsightAgent {
     );
 
     try {
+      // Ensure system prompt is loaded
+      if (!this.systemPrompt) {
+        await this.loadSystemPrompt();
+      }
+
       // Use ONLY the centralized GPT prompt - no hardcoded logic
       const { campaignType, targetMarket, focusAreas, urgency, originalBrief } =
         campaignContext;
@@ -171,14 +176,12 @@ ${campaignContextStr}
 RESEARCH DATA RECEIVED:
 ${JSON.stringify(researchData, null, 2)}
 
-MESSAGE TYPE: human_truth_discovery
-
-Generate the appropriate response based on your conversation scenarios in your system prompt.
+Please analyze this research data and provide strategic insights following your guidelines. Focus on discovering the deeper human truth that drives behavior, not just surface-level insights.
 `;
 
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
@@ -187,7 +190,7 @@ Generate the appropriate response based on your conversation scenarios in your s
 
       // Return raw output - let centralized prompt handle structure
       const analysis = {
-        humanTruthAnalysis: response.output_text,
+        humanTruthAnalysis: response.choices[0].message.content,
         confidence_score: 95, // Default high confidence
         lastUpdated: new Date().toISOString(),
       };
@@ -208,6 +211,11 @@ Generate the appropriate response based on your conversation scenarios in your s
   }
 
   async generateConversationResponse(context, messageType, data = null) {
+    // Ensure system prompt is loaded
+    if (!this.systemPrompt) {
+      await this.loadSystemPrompt();
+    }
+
     // Use ONLY the centralized GPT prompt - no hardcoded logic
     const {
       campaignType,
@@ -231,20 +239,20 @@ ${campaignContext}
 MESSAGE TYPE: ${messageType}
 ${data ? `DATA: ${JSON.stringify(data, null, 2)}` : ""}
 
-Generate the appropriate response based on your conversation scenarios in your system prompt.
+Generate an appropriate response based on the message type and your role as Strategic Insight Agent.
 `;
 
     try {
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: prompt },
         ],
         temperature: this.temperature,
       });
 
-      return response.output_text;
+      return response.choices[0].message.content;
     } catch (error) {
       console.error(
         `❌ Strategic Insight Agent conversation response failed:`,

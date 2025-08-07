@@ -1,77 +1,101 @@
 # Orchestrations Documentation
+_Last Updated: 2025-08-07_
 
-This directory contains comprehensive documentation for all orchestrations in the Hive Agent System.
+This directory contains comprehensive documentation for all orchestrations in the unified workflow system.
 
 ## 📚 Documentation Index
 
 ### Core Orchestrations
 
-- [Hyatt Orchestrator](./HyattOrchestrator.md) - Primary PR campaign orchestration
-- [Hive Orchestrator](./HiveOrchestrator.md) - Reactive framework orchestration
-
-### Meta-Orchestrations
-
-- [Orchestration Builder](./OrchestrationBuilder.md) - AI-powered orchestration generator
+- [Hyatt Orchestrator](./HyattOrchestrator.md) - Campaign-based PR orchestration  
+- [Hive Orchestrator](./HiveOrchestrator.md) - Spark-based cultural moment orchestration
 
 ### System Documentation
 
-- [Feature Parity Checklist](./FeatureParityChecklist.md) - Ensures no features are lost during migrations
 - [Agent Mapping](./AgentMapping.md) - Maps agent IDs to configurations and capabilities
-- [Workflow Definitions](./WorkflowDefinitions.md) - Detailed workflow specifications
-- [Configuration Guide](./ConfigurationGuide.md) - How to configure and customize orchestrations
+- [Feature Parity Checklist](./FeatureParityChecklist.md) - Ensures feature consistency during migrations
+
+### Configuration System
+
+- **Orchestration Config**: `../hive/orchestrations/orchestrations.config.json` - Central workflow configuration
+- **Configuration Guide**: `../hive/orchestrations/ORCHESTRATION_CONFIG_README.md` - How to configure workflows
+- **Orchestration-Aware Agents**: `../hive/docs/ORCHESTRATION_AWARE_AGENTS.md` - Agent orchestration awareness system
 
 ## 🏗️ Architecture Overview
 
-The orchestration system consists of:
+The unified orchestration system consists of:
 
-1. **Orchestration Pages** - React components that provide the UI for each orchestration
-2. **Shared Components** - Reusable UI components (forms, panels, modals)
-3. **Agent System** - AI agents with specific roles and capabilities
-4. **Workflow Engine** - Manages the flow of work between agents
-5. **Configuration System** - JSON-based configuration for agents and orchestrations
+1. **Dynamic Configuration** - JSON-based workflow definitions with orchestration-specific terminology
+2. **Orchestration-Aware Agents** - Agents that adapt behavior based on workflow context  
+3. **Unified API** - Single endpoints supporting multiple workflow types
+4. **React Components** - Shared UI components with orchestration-specific adaptations
+5. **Workflow Engine** - Manages agent flow based on dynamic configuration
 
-## 📁 File Structure
+### Key Concepts
+
+- **Workflows**: Universal term for all orchestrations (Campaigns, Sparks, etc.)
+- **Orchestration Types**: Different workflow patterns (Hyatt = Campaigns, Hive = Sparks)  
+- **Agent Context**: Agents receive orchestration type and adapt their behavior
+- **Dynamic References**: No hardcoded agent names - all come from configuration
+
+## 📁 Current File Structure
 
 ```
-orchestrations/
-├── docs/                    # This directory
-│   ├── README.md           # This file
-│   ├── HyattOrchestrator.md
-│   ├── HiveOrchestrator.md
-│   ├── OrchestrationBuilder.md
-│   ├── FeatureParityChecklist.md
-│   ├── AgentMapping.md
-│   ├── WorkflowDefinitions.md
-│   └── ConfigurationGuide.md
-├── classes/                # Orchestrator class implementations
-├── configs/                # Configuration files
-├── workflows/              # Workflow definitions
-├── index.js               # Main entry point
-└── README.md              # Module overview
+hive/
+├── orchestrations/
+│   ├── orchestrations.config.json    # Central workflow configuration  
+│   ├── OrchestrationConfig.js         # Configuration utility class
+│   ├── ORCHESTRATION_CONFIG_README.md # Configuration guide
+│   └── classes/
+│       ├── HyattOrchestrator.js       # Campaign orchestration
+│       └── HiveOrchestrator.js        # Spark orchestration
+├── agents/
+│   ├── classes/                       # Agent implementations
+│   └── prompts/                       # Agent prompts
+├── docs/
+│   └── ORCHESTRATION_AWARE_AGENTS.md  # Agent orchestration guide
+└── routes/
+    └── campaigns.js                   # Unified API endpoints
 ```
 
 ## 🔄 Development Workflow
 
-1. **Document First** - Update documentation before making changes
-2. **Feature Parity** - Use the checklist to ensure no features are lost
-3. **Test Thoroughly** - Test each orchestration after changes
-4. **Update Changelog** - Document all changes in the relevant orchestration's changelog
+### Adding New Orchestrations
+1. **Add to Config** - Update `orchestrations.config.json` with new workflow definition
+2. **No Code Changes** - Agents automatically work with new orchestrations
+3. **Test Configuration** - Verify agents reference correct workflow agents
+4. **Update Documentation** - Document the new orchestration purpose and workflow
+
+### Making Agent Changes  
+1. **Check Orchestration Awareness** - Ensure agents accept orchestration context
+2. **Test All Workflows** - Verify changes work across all orchestration types
+3. **Update Prompts** - Ensure prompts are generic, not orchestration-specific
 
 ## 📝 Documentation Standards
 
-- **Keep it current** - Update docs with every major change
-- **Be specific** - Include code examples and configuration snippets
-- **Link everything** - Cross-reference related documentation
-- **Version control** - Include dates and version information
+- **Keep it current** - Update docs with every major change (include datestamp)
+- **Orchestration-agnostic** - Document unified concepts, not specific implementations  
+- **Configuration-driven** - Reference config files rather than hardcoded examples
+- **Cross-reference** - Link to actual configuration files and implementations
 
 ## 🚀 Quick Start
 
-1. Read the [Feature Parity Checklist](./FeatureParityChecklist.md) to understand the system
-2. Review [Agent Mapping](./AgentMapping.md) to understand available capabilities
-3. Choose an orchestration to work with from the list above
-4. Follow the specific documentation for that orchestration
+### For New Orchestrations
+1. Review the [Configuration Guide](../hive/orchestrations/ORCHESTRATION_CONFIG_README.md)
+2. Add your workflow to `orchestrations.config.json`
+3. Test with existing agents - no code changes needed!
+
+### For Agent Development
+1. Read [Orchestration-Aware Agents](../hive/docs/ORCHESTRATION_AWARE_AGENTS.md)
+2. Ensure agents accept `orchestrationType` parameter
+3. Use `OrchestrationConfig.js` utility for dynamic agent references
+
+### For API Integration  
+1. Use `/api/workflows` with `orchestrationId` parameter
+2. Or use specific endpoints: `/api/campaigns` (Hyatt) or `/api/sparks` (Hive)
+3. All endpoints support the unified workflow system
 
 ---
 
-_Last updated: 2024-07-XX_
-_Version: 1.0.0_
+_Last updated: 2025-08-07_
+_Status: Current with unified workflow system_

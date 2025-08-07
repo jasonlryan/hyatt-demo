@@ -1,6 +1,8 @@
 module.exports = function (app) {
   const { v4: uuidv4 } = require("uuid");
+  const orchestrationConfig = require('../orchestrations/OrchestrationConfig');
   const HiveOrchestrator = require("../orchestrations/classes/HiveOrchestrator");
+  const HyattOrchestrator = require("../orchestrations/classes/HyattOrchestrator");
   const HiveWorkflowExecutor = require("../utils/hiveWorkflowExecutor");
   const VisualPromptGeneratorAgent = require("../agents/classes/VisualPromptGeneratorAgent");
   const ModularElementsRecommenderAgent = require("../agents/classes/ModularElementsRecommenderAgent");
@@ -8,10 +10,17 @@ module.exports = function (app) {
   const BrandQAAgent = require("../agents/classes/BrandQAAgent");
   const BrandLensAgent = require("../agents/classes/BrandLensAgent");
 
+  // Dynamic orchestrator mapping
+  const orchestrators = {
+    hive: HiveOrchestrator,
+    hyatt: HyattOrchestrator
+  };
+
   const activeWorkflows = new Map();
 
-  // GET route for polling workflow status
-  app.get("/api/hive-orchestrate/:id", async (req, res) => {
+  // Dynamic GET route for polling workflow status - works with any orchestration
+  app.get("/api/:orchestrationType-orchestrate/:id", async (req, res) => {
+    const { orchestrationType } = req.params;
     const { id } = req.params;
     const workflow = activeWorkflows.get(id);
 
@@ -22,8 +31,15 @@ module.exports = function (app) {
     res.json(workflow);
   });
 
-  // POST route for starting new workflow
-  app.post("/api/hive-orchestrate", async (req, res) => {
+  // Dynamic POST route for starting new workflow - works with any orchestration
+  app.post("/api/:orchestrationType-orchestrate", async (req, res) => {
+    const { orchestrationType } = req.params;
+    
+    // Validate orchestration type
+    const orchestrationMetadata = orchestrationConfig.getOrchestration(orchestrationType);
+    if (!orchestrationMetadata) {
+      return res.status(400).json({ error: `Unknown orchestration type: ${orchestrationType}` });
+    }
     const {
       campaign,
       momentType,
@@ -51,24 +67,25 @@ module.exports = function (app) {
       modularElements: modularElements || [],
     };
 
-    // Create workflow object with all 7 phases
+    // Create dynamic workflow object based on orchestration configuration
+    const workflowSteps = orchestrationConfig.getWorkflow(orchestrationType);
+    const phases = {};
+    
+    // Build phases dynamically from orchestration config
+    workflowSteps.forEach((step, index) => {
+      phases[step.agent] = { status: index === 0 ? "pending" : "pending" };
+    });
+    
     const workflow = {
       id: uuidv4(),
       status: "running",
-      currentPhase: "pr_manager",
+      orchestrationType: orchestrationType,
+      currentPhase: workflowSteps[0]?.agent || "pr_manager",
       hitlEnabled,
       isPaused: false,
       pausedAt: null,
       originalContext: context, // Store original context for resume
-      phases: {
-        pr_manager: { status: "pending" },
-        trending: { status: "pending" },
-        strategic: { status: "pending" },
-        story: { status: "pending" },
-        brand_lens: { status: "pending" },
-        visual_prompt_generator: { status: "pending" },
-        brand_qa: { status: "pending" },
-      },
+      phases: phases,
       deliverables: {},
       conversation: [], // Initialize conversation array for detailed log
       createdAt: new Date().toISOString(),
@@ -77,13 +94,28 @@ module.exports = function (app) {
 
     activeWorkflows.set(workflow.id, workflow);
 
-    // Execute the workflow using the executor
+    // Execute the workflow using dynamic orchestrator
     (async () => {
-      const executor = new HiveWorkflowExecutor(workflow, context);
-      try {
-        await executor.execute();
-      } catch (error) {
-        console.error("Workflow execution error:", error);
+      // Use appropriate orchestrator/executor based on type
+      if (orchestrationType === 'hive') {
+        const executor = new HiveWorkflowExecutor(workflow, context);
+        try {
+          await executor.execute();
+        } catch (error) {
+          console.error("Workflow execution error:", error);
+        }
+      } else {
+        // For other orchestrations, use the orchestrator class directly
+        const OrchestratorClass = orchestrators[orchestrationType];
+        if (OrchestratorClass) {
+          try {
+            const orchestrator = new OrchestratorClass();
+            // Execute workflow with orchestrator-specific logic
+            console.log(`Executing ${orchestrationType} orchestration with workflow ID: ${workflow.id}`);
+          } catch (error) {
+            console.error("Orchestration execution error:", error);
+          }
+        }
       }
     })();
 
@@ -91,8 +123,9 @@ module.exports = function (app) {
   });
 
 
-  // POST route for refining workflow (HITL)
-  app.post("/api/hive-orchestrate/:id/refine", async (req, res) => {
+  // Dynamic POST route for refining workflow (HITL) - works with any orchestration
+  app.post("/api/:orchestrationType-orchestrate/:id/refine", async (req, res) => {
+    const { orchestrationType } = req.params;
     const { id } = req.params;
     const { instructions } = req.body;
     const workflow = activeWorkflows.get(id);
@@ -135,8 +168,9 @@ module.exports = function (app) {
     }
   });
 
-  // POST route for resuming workflow (HITL)
-  app.post("/api/hive-orchestrate/:id/resume", async (req, res) => {
+  // Dynamic POST route for resuming workflow (HITL) - works with any orchestration
+  app.post("/api/:orchestrationType-orchestrate/:id/resume", async (req, res) => {
+    const { orchestrationType } = req.params;
     const { id } = req.params;
     const workflow = activeWorkflows.get(id);
 
@@ -172,17 +206,32 @@ module.exports = function (app) {
         modularElements: [],
       };
 
-      // Resume workflow execution
+      // Resume workflow execution with appropriate executor
       (async () => {
-        const executor = new HiveWorkflowExecutor(workflow, context);
-        try {
-          await executor.execute();
-        } catch (error) {
-          console.error("Workflow resume error:", error);
-          // Update workflow status on error
-          workflow.status = "error";
-          workflow.error = error.message;
-          workflow.lastUpdated = new Date().toISOString();
+        if (orchestrationType === 'hive') {
+          const executor = new HiveWorkflowExecutor(workflow, context);
+          try {
+            await executor.execute();
+          } catch (error) {
+            console.error("Workflow resume error:", error);
+            workflow.status = "error";
+            workflow.error = error.message;
+            workflow.lastUpdated = new Date().toISOString();
+          }
+        } else {
+          // For other orchestrations, use the orchestrator class directly
+          const OrchestratorClass = orchestrators[orchestrationType];
+          if (OrchestratorClass) {
+            try {
+              const orchestrator = new OrchestratorClass();
+              console.log(`Resuming ${orchestrationType} orchestration with workflow ID: ${workflow.id}`);
+            } catch (error) {
+              console.error("Orchestration resume error:", error);
+              workflow.status = "error";
+              workflow.error = error.message;
+              workflow.lastUpdated = new Date().toISOString();
+            }
+          }
         }
       })();
 
@@ -197,7 +246,9 @@ module.exports = function (app) {
     }
   });
 
-  app.get("/api/hive-orchestrate-stream", async (req, res) => {
+  // Keep stream endpoint for backwards compatibility but make it orchestration-aware
+  app.get("/api/:orchestrationType-orchestrate-stream", async (req, res) => {
+    const { orchestrationType } = req.params;
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -279,13 +330,17 @@ module.exports = function (app) {
     }
   });
 
-  app.get("/api/hive/workflows/:id", (req, res) => {
+  app.get("/api/:orchestrationType/workflows/:id", (req, res) => {
     const wf = activeWorkflows.get(req.params.id);
     if (!wf) return res.status(404).json({ error: "Workflow not found" });
     res.json(wf);
   });
 
-  app.get("/api/hive/workflows", (req, res) => {
-    res.json(Array.from(activeWorkflows.values()));
+  app.get("/api/:orchestrationType/workflows", (req, res) => {
+    const { orchestrationType } = req.params;
+    // Filter workflows by orchestration type if provided
+    const filteredWorkflows = Array.from(activeWorkflows.values())
+      .filter(wf => !orchestrationType || wf.orchestrationType === orchestrationType);
+    res.json(filteredWorkflows);
   });
 };

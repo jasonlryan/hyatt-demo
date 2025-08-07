@@ -1,0 +1,93 @@
+{
+  "orchestrations": {
+    "hive": {
+      "name": "HIVE",
+      "description": "Cultural moment response orchestration",
+      "workflowType": "spark",
+      "workflowLabel": "Spark",
+      "ui": {
+        "displayName": "Hive Orchestrator",
+        "createNew": "Create New Spark",
+        "briefLabel": "Spark Brief",
+        "buttonCreate": "Create Spark",
+        "buttonLoad": "Load Spark",
+        "workflowNoun": "Spark",
+        "workflowNounPlural": "Sparks"
+      },
+      "workflow": [
+        {
+          "agent": "pr-manager",
+          "name": "PR Manager",
+          "role": "Campaign introduction and coordination"
+        },
+        {
+          "agent": "trending",
+          "name": "Trending News Agent",
+          "role": "Analyze current trends and cultural moments"
+        },
+        {
+          "agent": "strategic",
+          "name": "Strategic Insights Agent",
+          "role": "Discover strategic opportunities"
+        },
+        {
+          "agent": "story",
+          "name": "Story Angles Agent",
+          "role": "Generate compelling story angles"
+        },
+        {
+          "agent": "brand_lens",
+          "name": "Brand Lens Agent",
+          "role": "Apply brand perspective"
+        },
+        {
+          "agent": "visual_prompt_generator",
+          "name": "Visual Prompt Generator",
+          "role": "Create visual concepts"
+        },
+        {
+          "agent": "brand_qa",
+          "name": "Brand QA Agent",
+          "role": "Quality assurance and brand alignment"
+        }
+      ]
+    },
+    "hyatt": {
+      "name": "HYATT", 
+      "description": "Research-driven campaign orchestration",
+      "workflowType": "campaign",
+      "workflowLabel": "Campaign",
+      "ui": {
+        "displayName": "Hyatt Orchestrator",
+        "createNew": "Create New Campaign",
+        "briefLabel": "Campaign Brief",
+        "buttonCreate": "Create Campaign",
+        "buttonLoad": "Load Campaign",
+        "workflowNoun": "Campaign",
+        "workflowNounPlural": "Campaigns"
+      },
+      "workflow": [
+        {
+          "agent": "pr-manager",
+          "name": "PR Manager",
+          "role": "Campaign introduction and coordination"
+        },
+        {
+          "agent": "research",
+          "name": "Research & Audience Agent",
+          "role": "Audience analysis and market research"
+        },
+        {
+          "agent": "trending",
+          "name": "Trending News Agent",
+          "role": "Current trends analysis"
+        },
+        {
+          "agent": "story",
+          "name": "Story Angles Agent",
+          "role": "Story development"
+        }
+      ]
+    }
+  }
+}

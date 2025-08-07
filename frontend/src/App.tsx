@@ -1,14 +1,17 @@
 import { useState, useEffect, Suspense } from "react";
 import { useOrchestrationNavigation } from "./hooks/useOrchestrationNavigation";
+import { useGenericImplementation, getFeatureFlags } from "./config/feature-flags";
 import GlobalNav from "./components/GlobalNav";
 import AgentsPage from "./components/AgentsPage";
 import WorkflowsPage from "./components/WorkflowsPage";
 import OrchestrationsPage from "./components/OrchestrationsPage";
 import InsightsPage from "./components/insights/InsightsPage";
+import { getAvailableOrchestrations, getOrchestrationConfig } from "./services/orchestrationService";
 import HyattOrchestrationPage from "./components/orchestrations/HyattOrchestrationPage";
 import HiveOrchestrationPage from "./components/orchestrations/HiveOrchestrationPage";
+import TestConfigurableHyatt from "./components/orchestrations/TestConfigurableHyatt";
+import TestConfigurableHive from "./components/orchestrations/TestConfigurableHive";
 import OrchestrationBuilderPage from "./components/orchestrations/OrchestrationBuilderPage";
-// Removed unused import: GenericOrchestrationPage
 import { loadOrchestrationPage } from "./components/orchestrations/generated";
 // Test imports removed - cleaned up failed unified architecture attempt
 type OrchestrationPageProps = {
@@ -162,50 +165,80 @@ function App() {
       return <InsightsPage />;
     }
 
-    // If an orchestration is selected, show the specific orchestration page
+    // If an orchestration is selected, show the appropriate orchestration page
     if (selectedOrchestration) {
-      switch (selectedOrchestration) {
-        case "hyatt":
-          return (
-            <HyattOrchestrationPage
-              selectedOrchestration={selectedOrchestration}
-              hitlReview={hitlReview}
-              onToggleHitl={async () => {
-                const newState = !hitlReview;
-                await updateHitlReviewState(newState);
-                if (newState) {
-                  setIsHitlModalOpen(true);
-                }
-              }}
-            />
-          );
-        case "builder":
-          return (
-            <OrchestrationBuilderPage
-              orchestrationId="builder"
-              hitlReview={hitlReview}
-              onToggleHitl={async () => {
-                const newState = !hitlReview;
-                await updateHitlReviewState(newState);
-                if (newState) {
-                  setIsHitlModalOpen(true);
-                }
-              }}
-            />
-          );
-        case "hive":
-          return (
-            <HiveOrchestrationPage
-              hitlReview={hitlReview}
-              onToggleHitl={async () => {
-                const newState = !hitlReview;
-                await updateHitlReviewState(newState);
-                if (newState) {
-                  setIsHitlModalOpen(true);
-                }
-              }}
-            />
-          );
+      // Dynamic orchestration loading based on configuration
+      const orchestrationConfig = getOrchestrationConfig(selectedOrchestration);
+      
+      if (!orchestrationConfig) {
+        return (
+          <div className="min-h-screen bg-background p-8">
+            <div className="max-w-4xl mx-auto">
+              <h1 className="text-2xl font-bold text-text-primary mb-4">Orchestration Not Found</h1>
+              <p className="text-text-secondary">Unknown orchestration type: {selectedOrchestration}</p>
+              <button 
+                onClick={handleNavigateToOrchestrations}
+                className="mt-4 px-4 py-2 bg-primary text-white rounded hover:bg-primary-hover"
+              >
+                Back to Orchestrations
+              </button>
+            </div>
+          </div>
+        );
+      }
+      
+      // Handle special cases that need specific components
+      if (selectedOrchestration === "builder") {
+        return (
+          <OrchestrationBuilderPage
+            orchestrationId="builder"
+            hitlReview={hitlReview}
+            onToggleHitl={async () => {
+              const newState = !hitlReview;
+              await updateHitlReviewState(newState);
+              if (newState) {
+                setIsHitlModalOpen(true);
+              }
+            }}
+          />
+        );
+      }
+      
+      // Dynamic component selection based on feature flags and orchestration type
+      if (useGenericImplementation(selectedOrchestration)) {
+        // Use configurable components when feature flag is enabled
+        const ConfigurableComponent = selectedOrchestration === 'hyatt' ? TestConfigurableHyatt : TestConfigurableHive;
+        return (
+          <ConfigurableComponent
+            selectedOrchestration={selectedOrchestration}
+            hitlReview={hitlReview}
+            onToggleHitl={async () => {
+              const newState = !hitlReview;
+              await updateHitlReviewState(newState);
+              if (newState) {
+                setIsHitlModalOpen(true);
+              }
+            }}
+            onNavigateToOrchestrations={handleNavigateToOrchestrations}
+          />
+        );
+      } else {
+        // Use legacy orchestration-specific components
+        const LegacyComponent = selectedOrchestration === 'hyatt' ? HyattOrchestrationPage : HiveOrchestrationPage;
+        return (
+          <LegacyComponent
+            selectedOrchestration={selectedOrchestration}
+            hitlReview={hitlReview}
+            onToggleHitl={async () => {
+              const newState = !hitlReview;
+              await updateHitlReviewState(newState);
+              if (newState) {
+                setIsHitlModalOpen(true);
+              }
+            }}
+          />
+        );
+      }
         default:
           return (
             <Suspense
@@ -259,6 +292,8 @@ function App() {
     }
   };
 
+  const flags = getFeatureFlags();
+
   return (
     <div className="min-h-screen">
       <GlobalNav
@@ -269,7 +304,25 @@ function App() {
         onNavigateToInsights={handleNavigateToInsights}
       />
 
-      {renderCurrentView()}
+      {/* Feature Flag Implementation Indicator */}
+      {flags.showImplementationIndicator && (flags.useGenericHiveImplementation || flags.useGenericHyattImplementation) && (
+        <div className="fixed top-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-center py-1 text-sm font-medium z-50 shadow-lg">
+          🚀 GENERIC SYSTEM ACTIVE: 
+          {flags.useGenericHiveImplementation && " Hive"}
+          {flags.useGenericHyattImplementation && " Hyatt"}
+          {flags.useGenericHiveImplementation && flags.useGenericHyattImplementation && " (Both)"}
+          <button 
+            onClick={() => window.location.search.includes('test=') ? window.location.href = window.location.pathname : null}
+            className="ml-2 px-2 py-0.5 bg-white/20 rounded text-xs hover:bg-white/30"
+          >
+            Reset
+          </button>
+        </div>
+      )}
+
+      <div className={flags.showImplementationIndicator && (flags.useGenericHiveImplementation || flags.useGenericHyattImplementation) ? "pt-6" : ""}>
+        {renderCurrentView()}
+      </div>
 
       <HitlReviewModal
         isOpen={isHitlModalOpen}

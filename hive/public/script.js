@@ -93,7 +93,7 @@ async function createCampaign() {
       // The result contains campaignId, not id
       currentCampaignId = result.campaignId;
       document.getElementById("campaignId").innerHTML = `
-                        <div class="campaign-id">Campaign ID: ${currentCampaignId}</div>
+                        <div class="campaign-id">Spark ID: ${currentCampaignId}</div>
                         <div class="campaign-status status-active">Active</div>
                     `;
       document.getElementById("statusSection").style.display = "block";
@@ -908,7 +908,7 @@ function loadCampaign(campaignId) {
   );
 
   document.getElementById("campaignId").innerHTML = `
-                <div class="campaign-id">Campaign ID: ${campaignId}</div>
+                <div class="campaign-id">Spark ID: ${campaignId}</div>
                 <div class="campaign-status status-active">Loading...</div>
             `;
   document.getElementById("statusSection").style.display = "block";

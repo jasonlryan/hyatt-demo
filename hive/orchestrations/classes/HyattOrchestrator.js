@@ -104,6 +104,7 @@ class HyattOrchestrator extends BaseOrchestrator {
       brief: campaignBrief,
       context: campaignContext,
       status: "initializing",
+      orchestrationType: "hyatt", // Store orchestration type
       conversation: [],
       phases: {},
       qualityMetrics: {},
@@ -138,7 +139,8 @@ class HyattOrchestrator extends BaseOrchestrator {
       const introMessage =
         await this.prManagerAgent.generateCampaignIntroduction(
           campaignBrief,
-          campaignContext
+          campaignContext,
+          'hyatt'
         );
 
       campaign.conversation.push({
@@ -566,7 +568,8 @@ class HyattOrchestrator extends BaseOrchestrator {
     return await this.prManagerAgent.generateHandoffMessage(
       campaignContext,
       nextPhase,
-      previousData
+      previousData,
+      'hyatt'
     );
   }
 
@@ -1297,7 +1300,8 @@ class HyattOrchestrator extends BaseOrchestrator {
     // Use the PR Manager agent to generate dynamic final delivery messages
     return await this.prManagerAgent.generateFinalDelivery(
       context,
-      allPhaseData
+      allPhaseData,
+      'hyatt'
     );
   }
 
@@ -1305,7 +1309,8 @@ class HyattOrchestrator extends BaseOrchestrator {
     // Use the PR Manager agent to generate dynamic conclusion messages
     return await this.prManagerAgent.generateCampaignConclusion(
       context,
-      finalStrategy
+      finalStrategy,
+      'hyatt'
     );
   }
 

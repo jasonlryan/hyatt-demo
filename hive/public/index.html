@@ -31,9 +31,9 @@
                 <strong>"Finalize"</strong> or <strong>"Refine"</strong>.
             </p>
             <div class="campaign-form" id="campaignForm">
-                <h2 style="font-size: 1.4rem;">Create New Campaign</h2>
+                <h2 id="createNewHeader" style="font-size: 1.4rem;">Create New Spark</h2>
                 <div class="form-group">
-                    <label for="campaignBrief">Campaign Brief</label>
+                    <label for="campaignBrief" id="briefLabel">Spark Brief</label>
                     <textarea 
                         id="campaignBrief" 
                         name="campaignBrief" 
@@ -42,12 +42,12 @@
                     </textarea>
                 </div>
                 <button class="btn" onclick="createCampaign()" id="createBtn">
-                    Create Campaign
+                    <span id="createButtonText">Create Spark</span>
                 </button>
             </div>
 
             <div id="statusSection" class="status-section" style="display: none;">
-                <h2>Campaign Progress</h2>
+                <h2 id="progressHeader">Spark Progress</h2>
                 <div id="campaignId">
                     <div class="campaign-id">No active campaign</div>
                 </div>
@@ -127,7 +127,7 @@
 
             <div class="campaigns-list">
                 <h2 onclick="toggleCampaignsList()" style="font-size: 1.4rem; background: #e3f2fd; color: #1976d2; border: 1px solid #bbdefb;">
-                    Recent Campaigns
+                    <span id="recentListHeader">Recent Sparks</span>
                     <span id="campaignsToggle" class="campaigns-toggle">▼</span>
                 </h2>
                 <div id="campaignsList" class="campaigns-content"></div>
@@ -139,8 +139,8 @@
     <div class="panel-overlay" id="panelOverlay" onclick="closePanelsOnMobile()"></div>
     <div class="deliverables-panel" id="deliverablesPanel">
         <div class="deliverables-header">
-            <h3>
-                Campaign Deliverables
+            <h3 id="deliverablesHeader">
+                Spark Deliverables
             </h3>
         </div>
         <div class="deliverables-content" id="deliverablesContent">
@@ -152,7 +152,7 @@
     <div class="progress-panel" id="progressPanel">
         <div class="panel-header">
             <h3>
-                🔄 Campaign Progress
+                🔄 <span id="progressPanelHeader">Spark Progress</span>
                 <button class="close-panel" onclick="closeProgressPanel()">×</button>
             </h3>
         </div>

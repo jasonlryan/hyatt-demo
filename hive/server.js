@@ -32,7 +32,48 @@ function loadCampaignsFromFiles() {
   return campaigns;
 }
 const existingCampaigns = loadCampaignsFromFiles();
-async function getOrchestrationForCampaign() { return orchestrationManager.getOrchestration('hyatt'); }
+async function getOrchestrationForWorkflow(workflowId, requestContext = {}) { 
+  // Try to determine orchestration type from workflow context
+  if (!workflowId) {
+    return orchestrationManager.getOrchestration('hyatt'); // default
+  }
+  
+  // Check if request context indicates specific orchestration
+  if (requestContext.orchestrationType) {
+    return orchestrationManager.getOrchestration(requestContext.orchestrationType);
+  }
+  
+  // Check if the workflow file has orchestration type stored
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    // Try different naming conventions: campaign_id.json or spark_id.json
+    const possiblePaths = [
+      path.join(__dirname, 'workflows', `${workflowId}.json`),
+      path.join(__dirname, 'campaigns', `campaign_${workflowId}.json`), // legacy campaigns
+      path.join(__dirname, 'sparks', `spark_${workflowId}.json`), // hive sparks
+    ];
+    
+    for (const workflowPath of possiblePaths) {
+      if (fs.existsSync(workflowPath)) {
+        const workflowData = JSON.parse(fs.readFileSync(workflowPath, 'utf8'));
+        if (workflowData.orchestrationType) {
+          return orchestrationManager.getOrchestration(workflowData.orchestrationType);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('Could not determine orchestration type from workflow file:', error.message);
+  }
+  
+  // Default to hyatt for existing workflows
+  return orchestrationManager.getOrchestration('hyatt');
+}
+
+// Keep backward compatibility
+async function getOrchestrationForCampaign(campaignId, requestContext = {}) {
+  return getOrchestrationForWorkflow(campaignId, requestContext);
+}
 
 require('./routes/campaigns')(app, { orchestrationManager, existingCampaigns, getOrchestrationForCampaign });
 require('./routes/generation')(app, { orchestrationManager });

@@ -1,9 +1,12 @@
 const fs = require("fs").promises;
 const path = require("path");
 const OpenAI = require("openai");
+const orchestrationConfig = require('../../orchestrations/OrchestrationConfig');
 
 class ResearchAudienceAgent {
-  constructor() {
+  constructor(orchestrationType = 'hyatt') {
+    this.orchestrationType = orchestrationType;
+    this.orchestrationConfig = orchestrationConfig.getOrchestration(orchestrationType);
     this.name = "Research & Audience GPT";
     this.promptFile = "research_audience_gpt.md";
     this.systemPrompt = null;
@@ -15,7 +18,7 @@ class ResearchAudienceAgent {
     this.loadConfiguration();
 
     console.log(
-      `🤖 ${this.name}: Using model ${this.model} with temperature ${this.temperature}`
+      `🤖 ${this.name}: Using model ${this.model} with temperature ${this.temperature} for ${this.orchestrationType.toUpperCase()} orchestration`
     );
   }
 
@@ -426,8 +429,9 @@ Generate the appropriate response based on your conversation scenarios in your s
         error.message
       );
 
-      // Minimal fallback only
-      return `I'll be analyzing target audience demographics and psychographics for this campaign using industry research methodologies.`;
+      // Minimal fallback only - orchestration aware
+      const workflowLabel = this.orchestrationConfig?.workflowLabel || 'Campaign';
+      return `I'll be analyzing target audience demographics and psychographics for this ${workflowLabel.toLowerCase()} using industry research methodologies, tailored for ${this.orchestrationType.toUpperCase()} orchestration objectives.`;
     }
   }
 }

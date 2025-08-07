@@ -1,4 +1,5 @@
 const BaseAgent = require("./BaseAgent");
+const orchestrationConfig = require("../../orchestrations/OrchestrationConfig");
 
 class TrendingNewsAgent extends BaseAgent {
   constructor() {
@@ -10,15 +11,26 @@ class TrendingNewsAgent extends BaseAgent {
     });
   }
 
-  async analyzeTrends(topic, context = {}) {
-    console.log(`🔄 Trending News Agent: Analyzing trends for "${topic}"`);
+  async analyzeTrends(topic, context = {}, orchestrationType = 'hyatt') {
+    console.log(`🔄 Trending News Agent: Analyzing trends for "${topic}" in ${orchestrationType} orchestration`);
+
+    // Get orchestration context
+    const orchestration = orchestrationConfig.getOrchestration(orchestrationType);
+    const workflow = orchestrationConfig.getWorkflowDescription(orchestrationType);
+    const myRole = orchestrationConfig.getAgentRole(orchestrationType, 'trending');
 
     // Build the prompt
-    let userContent = `Topic: ${topic}\n`;
+    let userContent = `ORCHESTRATION CONTEXT:
+- Workflow: ${orchestration.name}
+- My Role: ${myRole}
+- Full Workflow: ${workflow}
+
+Topic: ${topic}\n`;
 
     userContent += `
 Please analyze current cultural trends and moments relevant to this topic.
 Consider what's culturally relevant/hot right now and how it might affect consumer behavior.
+Your analysis will be used by other agents in the ${orchestration.name} workflow.
 `;
 
     // Add any additional context

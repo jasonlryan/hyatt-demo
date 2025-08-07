@@ -1,8 +1,11 @@
-# Agent Mapping
+# Agent Mapping  
+_Last Updated: 2025-08-07_
 
 ## Overview
 
-This document provides a comprehensive mapping of all available AI agents in the system, their capabilities, configurations, and use cases. This mapping is used by the Orchestration Builder and other orchestrations to understand and utilize agent capabilities effectively.
+This document provides a comprehensive mapping of all available AI agents in the orchestration-aware system. All agents listed support dynamic orchestration context and adapt their behavior based on the workflow type they're operating in.
+
+**Key Change**: All agents now receive `orchestrationType` parameter and generate orchestration-appropriate responses.
 
 ## 🤖 Agent Library
 
@@ -280,31 +283,25 @@ This document provides a comprehensive mapping of all available AI agents in the
 
 ---
 
-## 🔄 Agent Workflow Patterns
+## 🔄 Orchestration-Aware Workflow Patterns
 
-### Sequential Workflow (Hyatt Style)
+### Hyatt Orchestration (Campaigns)
+**Workflow**: `PR Manager → Research & Audience → Trending News → Story Angles`
+- **Terminology**: Uses "Campaign" language
+- **Focus**: Research-driven approach with detailed audience analysis
+- **Next Agent References**: Agents correctly reference "Research & Audience Agent"
 
-```
-research → trending → strategic → story → pr-manager
-```
+### Hive Orchestration (Sparks)  
+**Workflow**: `PR Manager → Trending News → Strategic Insights → Story Angles → Brand Lens → Visual Prompt → Brand QA`
+- **Terminology**: Uses "Spark" language for cultural moments
+- **Focus**: Trend-driven rapid response to cultural moments
+- **Next Agent References**: Agents correctly reference "Trending News Agent"
 
-### Parallel Workflow (Hive Style)
-
-```
-research + trending → strategic + story → pr-manager
-```
-
-### Creative Workflow
-
-```
-research → visual_prompt_generator → modular_elements_recommender → brand_qa
-```
-
-### Crisis Management Workflow
-
-```
-trending → strategic → pr-manager → brand_qa
-```
+### Key Orchestration Differences
+- **Agent Sequence**: Different workflows have different agent orders
+- **Agent References**: PR Manager dynamically references correct next agent  
+- **Terminology**: Each orchestration uses domain-appropriate language
+- **Context Awareness**: All agents know which orchestration they're in
 
 ## 📊 Agent Selection Matrix
 
@@ -393,5 +390,6 @@ trending → strategic → pr-manager → brand_qa
 
 ---
 
-_Last updated: 2024-07-XX_
-_Version: 1.0.0_
+_Last updated: 2025-08-07_
+_Version: 2.0.0 - Orchestration-Aware Agents_
+_Status: Updated for unified workflow system_

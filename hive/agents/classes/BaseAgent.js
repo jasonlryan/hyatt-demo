@@ -46,15 +46,16 @@ class BaseAgent {
     }
 
     try {
-      const response = await this.openai.responses.create({
+      const response = await this.openai.chat.completions.create({
         model: this.model,
-        input: [
+        messages: [
           { role: "system", content: this.systemPrompt },
           { role: "user", content: userContent },
         ],
         temperature: this.temperature,
+        max_tokens: this.maxTokens,
       });
-      return response.output_text?.trim() || "[No content returned]";
+      return response.choices[0].message.content?.trim() || "[No content returned]";
     } catch (err) {
       console.warn(`OpenAI request failed (${this.id}):`, err?.message || err);
       return "[Placeholder response – OpenAI error]";
