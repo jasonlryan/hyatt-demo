@@ -75,6 +75,43 @@ class OrchestrationConfig {
   getAllOrchestrationTypes() {
     return Object.keys(this.config.orchestrations);
   }
+
+  // Agent mapping methods
+  getAgentMapping(type) {
+    const orchestration = this.getOrchestration(type);
+    return orchestration ? orchestration.agentMapping : {};
+  }
+
+  getAgentClass(type, agentId) {
+    const mapping = this.getAgentMapping(type);
+    return mapping[agentId] ? mapping[agentId].agentClass : null;
+  }
+
+  getAgentFile(type, agentId) {
+    const mapping = this.getAgentMapping(type);
+    return mapping[agentId] ? mapping[agentId].agentFile : null;
+  }
+
+  // Create agent instance dynamically
+  createAgentInstance(type, agentId, options = {}) {
+    const agentFile = this.getAgentFile(type, agentId);
+    if (!agentFile) {
+      throw new Error(`Agent mapping not found for ${agentId} in ${type} orchestration`);
+    }
+
+    try {
+      const path = require('path');
+      const agentPath = path.resolve(__dirname, agentFile);
+      const AgentClass = require(agentPath);
+      
+      // Pass orchestration type to constructor for orchestration-aware agents
+      const agentOptions = { ...options, orchestrationType: type };
+      return new AgentClass(agentOptions);
+    } catch (error) {
+      console.error(`Failed to create agent instance for ${agentId}:`, error);
+      throw new Error(`Failed to instantiate agent ${agentId}: ${error.message}`);
+    }
+  }
 }
 
 module.exports = new OrchestrationConfig();

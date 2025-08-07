@@ -2,12 +2,13 @@ const BaseAgent = require("./BaseAgent");
 const { calculateRiskScore } = require("../../utils/metricsTransform");
 
 class BrandQAAgent extends BaseAgent {
-  constructor() {
+  constructor(options = {}) {
     super("brand_qa", {
-      model: "gpt-4o-2024-08-06",
+      model: options.model || "gpt-4o-2024-08-06",
       promptFile: "brand_qa.md",
-      temperature: 0.4,
-      maxTokens: 600,
+      temperature: options.temperature ?? 0.4,
+      maxTokens: options.maxTokens ?? 600,
+      orchestrationType: options.orchestrationType
     });
   }
 

@@ -1,12 +1,13 @@
 const BaseAgent = require("./BaseAgent");
 
 class VisualPromptGeneratorAgent extends BaseAgent {
-  constructor() {
+  constructor(options = {}) {
     super("visual_prompt_generator", {
-      model: "gpt-4o-2024-05-13", // use a valid chat model for prompt generation
+      model: options.model || "gpt-4o-2024-05-13", // use a valid chat model for prompt generation
       promptFile: "visual_prompt_generator.md",
-      temperature: 0.7,
-      maxTokens: 1000,
+      temperature: options.temperature ?? 0.7,
+      maxTokens: options.maxTokens ?? 1000,
+      orchestrationType: options.orchestrationType
     });
   }
 

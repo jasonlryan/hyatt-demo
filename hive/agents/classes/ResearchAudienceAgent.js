@@ -4,9 +4,14 @@ const OpenAI = require("openai");
 const orchestrationConfig = require('../../orchestrations/OrchestrationConfig');
 
 class ResearchAudienceAgent {
-  constructor(orchestrationType = 'hyatt') {
-    this.orchestrationType = orchestrationType;
-    this.orchestrationConfig = orchestrationConfig.getOrchestration(orchestrationType);
+  constructor(options = {}) {
+    // Handle both old signature (orchestrationType as string) and new signature (options object)
+    if (typeof options === 'string') {
+      this.orchestrationType = options;
+    } else {
+      this.orchestrationType = options.orchestrationType || 'hyatt';
+    }
+    this.orchestrationConfig = orchestrationConfig.getOrchestration(this.orchestrationType);
     this.name = "Research & Audience GPT";
     this.promptFile = "research_audience_gpt.md";
     this.systemPrompt = null;
@@ -18,7 +23,7 @@ class ResearchAudienceAgent {
     this.loadConfiguration();
 
     console.log(
-      `🤖 ${this.name}: Using model ${this.model} with temperature ${this.temperature} for ${this.orchestrationType.toUpperCase()} orchestration`
+      `🤖 ${this.name}: Using model ${this.model} with temperature ${this.temperature}${this.orchestrationType ? ` for ${this.orchestrationType.toUpperCase()} orchestration` : ''}`
     );
   }
 

@@ -1,57 +1,23 @@
-const fs = require("fs").promises;
-const path = require("path");
-const OpenAI = require("openai");
+const BaseAgent = require('./BaseAgent');
 
-class StrategicInsightAgent {
-  constructor() {
-    this.name = "Strategic Insight & Human Truth GPT";
-    this.promptFile = "strategic_insight_gpt.md"; // Ensure this is set
-    this.emoji = "🧠";
-    this.model = "gpt-4o-2024-08-06";
-    this.temperature = 0.1; // Lower temperature for more focused insights
-
-    // Load system prompt from GPT file
-    // this.systemPrompt = this.loadSystemPrompt(); // Will be called by orchestrator
-    this.systemPrompt = null; // Initialize as null
-
-    // Initialize OpenAI client
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+class StrategicInsightAgent extends BaseAgent {
+  constructor(options = {}) {
+    super('strategic', {
+      model: options.model || 'gpt-4o-2024-08-06',
+      temperature: options.temperature ?? 0.1, // Lower temperature for more focused insights
+      maxTokens: options.maxTokens ?? 2000,
+      promptFile: 'strategic_insight_gpt.md',
+      orchestrationType: options.orchestrationType
     });
+    
+    this.name = "Strategic Insight & Human Truth GPT";
+    this.emoji = "🧠";
 
-    // console.log(
-    //   `✅ ${this.name}: Loaded system prompt from /Users/jasonryan/Documents/DEMO/GPTs/strategic_insight_gpt.md`
-    // ); // This log is problematic / will be handled by loadSystemPrompt
     console.log(
-      `🧠 ${this.name}: Initialized with model ${this.model} and temperature ${this.temperature}. System prompt will be loaded on demand.`
+      `🧠 ${this.name}: Initialized with model ${this.model} and temperature ${this.temperature}${this.isOrchestrationAware() ? ` for ${this.orchestrationType.toUpperCase()} orchestration` : ''}. System prompt will be loaded on demand.`
     );
   }
 
-  async loadSystemPrompt(attempt = 1) {
-    if (this.systemPrompt) {
-      console.log("System prompt already loaded.");
-      return;
-    }
-    const potentialPaths = [
-      path.join(__dirname, "../prompts", this.promptFile), // Consolidated prompts path
-    ];
-
-    for (const p of potentialPaths) {
-      try {
-        const content = await fs.readFile(p, "utf8");
-        this.systemPrompt = content;
-        console.log(`Loaded system prompt from ${p}`);
-        return;
-      } catch (error) {
-        // console.warn(`Failed to load prompt from ${p}: ${error.message}`); // Debug log
-      }
-    }
-
-    console.error(
-      `Failed to load system prompt after trying all paths: ${this.promptFile}`
-    );
-    throw new Error(`Failed to load system prompt: ${this.promptFile}`);
-  }
 
   // Response schema for structured human truth validation
   getResponseSchema() {
@@ -150,47 +116,42 @@ class StrategicInsightAgent {
   }
 
   async discoverHumanTruth(researchData, campaignContext) {
+    const workflowLabel = this.getWorkflowLabel();
+    const workflowType = this.getWorkflowType();
+    
     console.log(
-      `🔄 Strategic Insight Agent: Discovering human truth from research data...`
+      `🔄 Strategic Insight Agent: Discovering human truth from research data for ${workflowType}...`
     );
 
     try {
-      // Ensure system prompt is loaded
-      if (!this.systemPrompt) {
-        await this.loadSystemPrompt();
-      }
-
-      // Use ONLY the centralized GPT prompt - no hardcoded logic
+      // Use orchestration-aware context
       const { campaignType, targetMarket, focusAreas, urgency, originalBrief } =
         campaignContext;
 
-      // Create simple context for the centralized prompt
+      // Create orchestration-aware context
       const campaignContextStr = originalBrief
-        ? `CAMPAIGN BRIEF: ${originalBrief}`
-        : `Campaign Type: ${campaignType} targeting ${targetMarket} travelers.`;
+        ? `${workflowLabel.toUpperCase()} BRIEF: ${originalBrief}`
+        : `${workflowLabel} Type: ${campaignType} targeting ${targetMarket} travelers.`;
 
-      // Let the centralized prompt handle ALL scenarios
+      // Create orchestration-aware prompt
       const prompt = `
 ${campaignContextStr}
 
 RESEARCH DATA RECEIVED:
 ${JSON.stringify(researchData, null, 2)}
 
-Please analyze this research data and provide strategic insights following your guidelines. Focus on discovering the deeper human truth that drives behavior, not just surface-level insights.
+Please analyze this research data and provide strategic insights following your guidelines, tailored for ${workflowType} objectives within ${this.orchestrationType ? this.orchestrationType.toUpperCase() : 'GENERIC'} orchestration. Focus on discovering the deeper human truth that drives behavior, not just surface-level insights.
 `;
 
-      const response = await this.openai.chat.completions.create({
-        model: this.model,
-        messages: [
-          { role: "system", content: this.systemPrompt },
-          { role: "user", content: prompt },
-        ],
-        temperature: this.temperature,
+      // Use BaseAgent's orchestration-aware chat method
+      const responseContent = await this.chat(prompt, {
+        workflowType,
+        orchestrationType: this.orchestrationType
       });
 
       // Return raw output - let centralized prompt handle structure
       const analysis = {
-        humanTruthAnalysis: response.choices[0].message.content,
+        humanTruthAnalysis: responseContent,
         confidence_score: 95, // Default high confidence
         lastUpdated: new Date().toISOString(),
       };
@@ -259,11 +220,12 @@ Generate an appropriate response based on the message type and your role as Stra
         error
       );
 
-      // Fallback responses based on message type
+      // Orchestration-aware fallback responses
+      const workflowLabel = this.getWorkflowLabel();
       if (messageType === "introduction") {
-        return `I'll be analyzing the research data to discover the deeper human truth that drives this ${campaignType} campaign. Using psychological insight and emotional intelligence, I'll uncover the surprising truth that transforms functional benefits into authentic emotional connection.`;
+        return `I'll be analyzing the research data to discover the deeper human truth that drives this ${campaignType} ${workflowLabel.toLowerCase()}. Using psychological insight and emotional intelligence, I'll uncover the surprising truth that transforms functional benefits into authentic emotional connection within ${this.orchestrationType ? this.orchestrationType.toUpperCase() : 'GENERIC'} orchestration.`;
       } else {
-        return "I'm focused on discovering the human truth that will drive authentic connection for this campaign.";
+        return `I'm focused on discovering the human truth that will drive authentic connection for this ${workflowLabel.toLowerCase()}.`;
       }
     }
   }

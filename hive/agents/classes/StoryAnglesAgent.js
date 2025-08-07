@@ -1,59 +1,28 @@
-const fs = require("fs").promises;
-const path = require("path");
-const OpenAI = require("openai");
+const BaseAgent = require('./BaseAgent');
 
-class StoryAnglesAgent {
-  constructor() {
-    this.name = "Story Angles & Headlines GPT";
-    this.promptFile = "story_angles_headlines_gpt.md";
-    this.temperature = parseFloat(process.env.STORY_TEMPERATURE) || 0.4;
-    this.systemPrompt = null;
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || "your-api-key-here",
+class StoryAnglesAgent extends BaseAgent {
+  constructor(options = {}) {
+    super('story', {
+      model: options.model || process.env.STORY_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-2024-08-06',
+      temperature: options.temperature ?? (parseFloat(process.env.STORY_TEMPERATURE) || 0.4),
+      maxTokens: options.maxTokens ?? (parseInt(process.env.STORY_MAX_TOKENS) || parseInt(process.env.OPENAI_MAX_TOKENS) || 2000),
+      promptFile: 'story_angles_headlines_gpt.md',
+      orchestrationType: options.orchestrationType
     });
-    this.model =
-      process.env.STORY_MODEL ||
-      process.env.OPENAI_MODEL ||
-      "gpt-4o-2024-08-06";
-    this.maxTokens =
-      parseInt(process.env.STORY_MAX_TOKENS) ||
-      parseInt(process.env.OPENAI_MAX_TOKENS) ||
-      200;
-    this.timeout =
-      parseInt(process.env.STORY_TIMEOUT) ||
-      parseInt(process.env.OPENAI_TIMEOUT) ||
-      30000;
+    
+    this.name = "Story Angles & Headlines GPT";
+    this.timeout = parseInt(process.env.STORY_TIMEOUT) || parseInt(process.env.OPENAI_TIMEOUT) || 30000;
 
     console.log(
-      `✍️ ${this.name}: Initialized with model ${this.model} and temperature ${this.temperature}. System prompt will be loaded on demand.`
+      `✍️ ${this.name}: Initialized with model ${this.model} and temperature ${this.temperature}${this.isOrchestrationAware() ? ` for ${this.orchestrationType.toUpperCase()} orchestration` : ''}. System prompt will be loaded on demand.`
     );
   }
 
-  async loadSystemPrompt(attempt = 1) {
-    if (this.systemPrompt) {
-      console.log("System prompt already loaded.");
-      return;
-    }
-    const potentialPaths = [
-      path.join(__dirname, "../prompts", this.promptFile),
-    ];
-
-    for (const p of potentialPaths) {
-      try {
-        const content = await fs.readFile(p, "utf8");
-        this.systemPrompt = content;
-        console.log(`Loaded system prompt from ${p}`);
-        return;
-      } catch (error) {
-        // console.warn(`Failed to load prompt from ${p}: ${error.message}`); // Debug log
-      }
-    }
-
-    console.error(
-      `Failed to load system prompt after trying all paths: ${this.promptFile}`
-    );
-    throw new Error(`Failed to load system prompt: ${this.promptFile}`);
+  // Delay utility method (for backward compatibility)
+  delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
+
 
   async generateStoryAngles(campaignBrief, researchInsights, trendingData) {
     // Simulate processing time
@@ -81,14 +50,17 @@ class StoryAnglesAgent {
     researchInsights,
     trendingData
   ) {
+    const workflowLabel = this.getWorkflowLabel();
+    const workflowType = this.getWorkflowType();
+    
     try {
       console.log(
-        `🔄 ${this.name}: Creating story angles using Responses API...`
+        `🔄 ${this.name}: Creating story angles for ${workflowType}...`
       );
 
-      // Simple prompt - let the centralized GPT prompt handle everything
+      // Orchestration-aware prompt
       const prompt = `
-CAMPAIGN BRIEF: ${campaignBrief}
+${workflowLabel.toUpperCase()} BRIEF: ${campaignBrief}
 
 RESEARCH INSIGHTS: ${JSON.stringify(researchInsights, null, 2)}
 
@@ -96,21 +68,19 @@ TRENDING DATA: ${JSON.stringify(trendingData, null, 2)}
 
 MESSAGE TYPE: story_development
 
-Generate the appropriate response based on your conversation scenarios in your system prompt.
+Generate the appropriate response based on your conversation scenarios in your system prompt, tailored for ${workflowType} objectives within ${this.orchestrationType ? this.orchestrationType.toUpperCase() : 'GENERIC'} orchestration.
 `;
 
-      const response = await this.openai.responses.create({
-        model: this.model,
-        input: [
-          { role: "system", content: this.systemPrompt },
-          { role: "user", content: prompt },
-        ],
-        temperature: this.temperature,
+      // Use BaseAgent's orchestration-aware chat method
+      const responseContent = await this.chat(prompt, {
+        workflowType,
+        orchestrationType: this.orchestrationType,
+        messageType: 'story_development'
       });
 
       // Return raw output - let centralized prompt handle structure
       const storyAngles = {
-        storyStrategy: response.output_text,
+        storyStrategy: responseContent,
         lastUpdated: new Date().toISOString(),
       };
 
@@ -236,7 +206,10 @@ Be concise but strategic. Connect your creative angles to measurable outcomes.
   }
 
   async generateConversationResponse(context, messageType, data = null) {
-    // Use ONLY the centralized GPT prompt - no hardcoded logic
+    const workflowLabel = this.getWorkflowLabel();
+    const workflowType = this.getWorkflowType();
+    
+    // Use orchestration-aware context
     const {
       campaignType,
       targetMarket,
@@ -247,40 +220,37 @@ Be concise but strategic. Connect your creative angles to measurable outcomes.
       originalBrief,
     } = context;
 
-    // Create simple context for the centralized prompt
+    // Create orchestration-aware context
     const campaignContext = originalBrief
-      ? `CAMPAIGN BRIEF: ${originalBrief}`
-      : `Campaign Type: ${campaignType} in ${targetIndustry} targeting ${targetMarket}. Brand context: ${brandContext}.`;
+      ? `${workflowLabel.toUpperCase()} BRIEF: ${originalBrief}`
+      : `${workflowLabel} Type: ${campaignType} in ${targetIndustry} targeting ${targetMarket}. Brand context: ${brandContext}.`;
 
-    // Let the centralized prompt handle ALL scenarios
+    // Create orchestration-aware prompt
     const prompt = `
 ${campaignContext}
 
 MESSAGE TYPE: ${messageType}
 ${data ? `DATA: ${JSON.stringify(data, null, 2)}` : ""}
 
-Generate the appropriate response based on your conversation scenarios in your system prompt.
+Generate the appropriate response based on your conversation scenarios in your system prompt, tailored for ${workflowType} objectives within ${this.orchestrationType ? this.orchestrationType.toUpperCase() : 'GENERIC'} orchestration.
 `;
 
     try {
-      const response = await this.openai.responses.create({
-        model: this.model,
-        input: [
-          { role: "system", content: this.systemPrompt },
-          { role: "user", content: prompt },
-        ],
-        temperature: this.temperature,
+      // Use BaseAgent's orchestration-aware chat method
+      return await this.chat(prompt, {
+        workflowType,
+        orchestrationType: this.orchestrationType,
+        messageType
       });
-
-      return response.output_text.trim();
     } catch (error) {
       console.error(
         `[${this.name}] Conversation generation failed:`,
         error.message
       );
 
-      // Minimal fallback only
-      return `I'll be developing compelling story angles and headlines for this campaign using creative storytelling techniques.`;
+      // Orchestration-aware minimal fallback
+      const workflowLabel = this.getWorkflowLabel();
+      return `I'll be developing compelling story angles and headlines for this ${workflowLabel.toLowerCase()} using creative storytelling techniques within ${this.orchestrationType ? this.orchestrationType.toUpperCase() : 'GENERIC'} orchestration.`;
     }
   }
 }

@@ -2,12 +2,13 @@ const BaseAgent = require("./BaseAgent");
 const orchestrationConfig = require("../../orchestrations/OrchestrationConfig");
 
 class TrendingNewsAgent extends BaseAgent {
-  constructor() {
+  constructor(options = {}) {
     super("trending_news", {
-      model: "gpt-4o-2024-08-06",
+      model: options.model || "gpt-4o-2024-08-06",
       promptFile: "trending_news_gpt.md",
-      temperature: 0.3,
-      maxTokens: 3000,
+      temperature: options.temperature ?? 0.3,
+      maxTokens: options.maxTokens ?? 3000,
+      orchestrationType: options.orchestrationType
     });
   }
 
